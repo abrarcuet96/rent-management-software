@@ -1,0 +1,2113 @@
+openapi: "3.0.3"
+info:
+  title: RentFlow API
+  description: |
+    Multi-tenant Rent Management SaaS API.
+
+    **Rules enforced at every endpoint:**
+    - `public_id` is used in all URLs and responses — internal `id` is never exposed
+    - All resources are scoped to the authenticated owner via JWT
+    - Soft-deleted resources (`is_active=false`) are treated as not found (404)
+    - All monetary values are numbers (`NUMERIC(10,2)` precision)
+  version: "1.0.0"
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Local development
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Auth
+    description: No JWT required
+  - name: Buildings
+  - name: Apartments
+  - name: Tenants
+  - name: Agreements
+  - name: Monthly Dues
+  - name: Payments
+  - name: Expenses
+  - name: Expense Categories
+  - name: Dashboard
+  - name: Reports
+
+# ================================================================
+# COMPONENTS
+# ================================================================
+components:
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  # --------------------------------------------------------------
+  # Reusable path parameters
+  # --------------------------------------------------------------
+  parameters:
+    page:
+      name: page
+      in: query
+      description: Page number (1-based)
+      schema:
+        type: integer
+        default: 1
+        minimum: 1
+    page_size:
+      name: page_size
+      in: query
+      schema:
+        type: integer
+        default: 20
+        minimum: 1
+        maximum: 100
+    building_public_id:
+      name: building_public_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    apartment_public_id:
+      name: apartment_public_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    tenant_public_id:
+      name: tenant_public_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    due_public_id:
+      name: due_public_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    expense_public_id:
+      name: expense_public_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    category_public_id:
+      name: category_public_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  # --------------------------------------------------------------
+  # Reusable error responses
+  # --------------------------------------------------------------
+  responses:
+    Unauthorized:
+      description: Missing or invalid JWT token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+          example:
+            success: false
+            data: null
+            message: "Authentication required"
+    Forbidden:
+      description: Authenticated but not authorized for this resource
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+          example:
+            success: false
+            data: null
+            message: "Access denied"
+    NotFound:
+      description: Resource not found or soft-deleted
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+          example:
+            success: false
+            data: null
+            message: "Not found"
+    BadRequest:
+      description: Business logic error (e.g. duplicate unit, conflicting dates, default category delete)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    UnprocessableEntity:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrorEnvelope'
+
+  # --------------------------------------------------------------
+  # Schemas
+  # --------------------------------------------------------------
+  schemas:
+
+    # ── Envelopes ──────────────────────────────────────────────
+    ErrorEnvelope:
+      type: object
+      required: [success, data, message]
+      properties:
+        success:
+          type: boolean
+          example: false
+        data:
+          nullable: true
+          example: null
+        message:
+          type: string
+
+    ValidationErrorEnvelope:
+      type: object
+      required: [success, data, message]
+      properties:
+        success:
+          type: boolean
+          example: false
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+        message:
+          type: string
+          example: "Validation failed"
+
+    Pagination:
+      type: object
+      required: [total, page, page_size]
+      properties:
+        total:
+          type: integer
+          description: Total number of matching records
+        page:
+          type: integer
+        page_size:
+          type: integer
+
+    # ── Auth ───────────────────────────────────────────────────
+    RegisterRequest:
+      type: object
+      required: [full_name, email, password]
+      properties:
+        full_name:
+          type: string
+          maxLength: 255
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    OwnerData:
+      type: object
+      properties:
+        public_id:
+          type: string
+          format: uuid
+        full_name:
+          type: string
+        email:
+          type: string
+          format: email
+        created_at:
+          type: string
+          format: date-time
+
+    TokenData:
+      type: object
+      properties:
+        access_token:
+          type: string
+        token_type:
+          type: string
+          example: bearer
+        owner:
+          $ref: '#/components/schemas/OwnerData'
+
+    # ── Buildings ──────────────────────────────────────────────
+    BuildingCreate:
+      type: object
+      required: [name, address, total_floors]
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        address:
+          type: string
+        total_floors:
+          type: integer
+          minimum: 1
+
+    BuildingUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        address:
+          type: string
+        total_floors:
+          type: integer
+          minimum: 1
+
+    BuildingData:
+      type: object
+      properties:
+        public_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        address:
+          type: string
+        total_floors:
+          type: integer
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    # ── Apartments ─────────────────────────────────────────────
+    ApartmentCreate:
+      type: object
+      required: [unit_number, floor]
+      properties:
+        unit_number:
+          type: string
+          maxLength: 50
+        floor:
+          type: integer
+          minimum: 1
+        status:
+          type: string
+          enum: [vacant, occupied]
+          default: vacant
+
+    ApartmentUpdate:
+      type: object
+      properties:
+        unit_number:
+          type: string
+          maxLength: 50
+        floor:
+          type: integer
+          minimum: 1
+        status:
+          type: string
+          enum: [vacant, occupied]
+
+    ApartmentData:
+      type: object
+      properties:
+        public_id:
+          type: string
+          format: uuid
+        building_public_id:
+          type: string
+          format: uuid
+        unit_number:
+          type: string
+        floor:
+          type: integer
+        status:
+          type: string
+          enum: [vacant, occupied]
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    # ── Tenants ────────────────────────────────────────────────
+    TenantCreate:
+      type: object
+      required: [full_name, phone, move_in_date, initial_rent_amount, agreement_start_date]
+      properties:
+        full_name:
+          type: string
+          maxLength: 255
+        phone:
+          type: string
+          maxLength: 20
+        nid_number:
+          type: string
+          maxLength: 50
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        member_count:
+          type: integer
+          minimum: 1
+          default: 1
+        move_in_date:
+          type: string
+          format: date
+        initial_rent_amount:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+          description: "Rent for the initial agreement"
+        agreement_start_date:
+          type: string
+          format: date
+          description: "Start date for the initial agreement (typically same as move_in_date)"
+
+    TenantUpdate:
+      type: object
+      properties:
+        full_name:
+          type: string
+          maxLength: 255
+        phone:
+          type: string
+          maxLength: 20
+        nid_number:
+          type: string
+          maxLength: 50
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        member_count:
+          type: integer
+          minimum: 1
+
+    TenantMoveOutRequest:
+      type: object
+      required: [move_out_date]
+      properties:
+        move_out_date:
+          type: string
+          format: date
+
+    TenantData:
+      type: object
+      properties:
+        public_id:
+          type: string
+          format: uuid
+        apartment_public_id:
+          type: string
+          format: uuid
+        full_name:
+          type: string
+        phone:
+          type: string
+        nid_number:
+          type: string
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        member_count:
+          type: integer
+        move_in_date:
+          type: string
+          format: date
+        move_out_date:
+          type: string
+          format: date
+          nullable: true
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    # ── Tenant Agreements ──────────────────────────────────────
+    AgreementCreate:
+      type: object
+      required: [rent_amount, start_date]
+      properties:
+        rent_amount:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+          nullable: true
+
+    AgreementData:
+      type: object
+      properties:
+        public_id:
+          type: string
+          format: uuid
+        tenant_public_id:
+          type: string
+          format: uuid
+        rent_amount:
+          type: number
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+          nullable: true
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    # ── Monthly Dues ───────────────────────────────────────────
+    DueGenerateRequest:
+      type: object
+      required: [month, year]
+      properties:
+        month:
+          type: integer
+          minimum: 1
+          maximum: 12
+        year:
+          type: integer
+          minimum: 2000
+          maximum: 2100
+        due_date:
+          type: string
+          format: date
+          nullable: true
+          description: "Custom due date. Defaults to the 1st of the month if omitted."
+
+    DueAdjustRequest:
+      type: object
+      properties:
+        total_due:
+          type: number
+          minimum: 0
+          description: "Override total_due (e.g. to add an extra charge not tracked via due_expense)"
+        due_date:
+          type: string
+          format: date
+          nullable: true
+
+    MonthlyDueData:
+      type: object
+      properties:
+        public_id:
+          type: string
+          format: uuid
+        tenant_public_id:
+          type: string
+          format: uuid
+        agreement_public_id:
+          type: string
+          format: uuid
+        month:
+          type: integer
+          minimum: 1
+          maximum: 12
+        year:
+          type: integer
+        rent_amount:
+          type: number
+        total_due:
+          type: number
+        amount_paid:
+          type: number
+        remaining_balance:
+          type: number
+        status:
+          type: string
+          enum: [unpaid, partial, paid]
+        is_auto_generated:
+          type: boolean
+        due_date:
+          type: string
+          format: date
+          nullable: true
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    # ── Payments ───────────────────────────────────────────────
+    PaymentCreate:
+      type: object
+      required: [amount_paid, paid_on]
+      properties:
+        amount_paid:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+        paid_on:
+          type: string
+          format: date
+        note:
+          type: string
+          nullable: true
+
+    BulkPaymentRequest:
+      type: object
+      required: [tenant_public_id, amount, paid_on]
+      properties:
+        tenant_public_id:
+          type: string
+          format: uuid
+          description: "Target tenant — must belong to the authenticated owner"
+        amount:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+          description: "Total to distribute oldest-first across unpaid and partial dues"
+        paid_on:
+          type: string
+          format: date
+        note:
+          type: string
+          nullable: true
+
+    PaymentRecordData:
+      type: object
+      properties:
+        public_id:
+          type: string
+          format: uuid
+        due_public_id:
+          type: string
+          format: uuid
+        amount_paid:
+          type: number
+        paid_on:
+          type: string
+          format: date
+        note:
+          type: string
+          nullable: true
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    BulkPaymentResult:
+      type: object
+      properties:
+        total_applied:
+          type: number
+        dues_updated:
+          type: array
+          items:
+            type: object
+            properties:
+              due_public_id:
+                type: string
+                format: uuid
+              month:
+                type: integer
+              year:
+                type: integer
+              applied_amount:
+                type: number
+              new_status:
+                type: string
+                enum: [partial, paid]
+
+    # ── Expenses ───────────────────────────────────────────────
+    ExpenseCreate:
+      type: object
+      required: [category_public_id, amount, expense_date, scope]
+      properties:
+        building_public_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: "Required when scope=building or scope=apartment"
+        apartment_public_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: "Required when scope=apartment; building_public_id must also be set"
+        category_public_id:
+          type: string
+          format: uuid
+        description:
+          type: string
+          nullable: true
+        amount:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+        expense_date:
+          type: string
+          format: date
+        scope:
+          type: string
+          enum: [building, apartment]
+        is_tenant_charged:
+          type: boolean
+          default: false
+        due_public_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: "Required when is_tenant_charged=true"
+        charged_amount:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+          nullable: true
+          description: "Required when is_tenant_charged=true; amount charged to the tenant's due"
+
+    ExpenseUpdate:
+      type: object
+      properties:
+        category_public_id:
+          type: string
+          format: uuid
+        description:
+          type: string
+          nullable: true
+        amount:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+        expense_date:
+          type: string
+          format: date
+        is_tenant_charged:
+          type: boolean
+
+    ExpenseData:
+      type: object
+      properties:
+        public_id:
+          type: string
+          format: uuid
+        owner_public_id:
+          type: string
+          format: uuid
+        building_public_id:
+          type: string
+          format: uuid
+          nullable: true
+        apartment_public_id:
+          type: string
+          format: uuid
+          nullable: true
+        category_public_id:
+          type: string
+          format: uuid
+        category_name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        amount:
+          type: number
+        expense_date:
+          type: string
+          format: date
+        scope:
+          type: string
+          enum: [building, apartment]
+        is_tenant_charged:
+          type: boolean
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    # ── Expense Categories ─────────────────────────────────────
+    CategoryCreate:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        is_default:
+          type: boolean
+          default: false
+
+    CategoryUpdate:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          maxLength: 255
+
+    CategoryData:
+      type: object
+      properties:
+        public_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        is_default:
+          type: boolean
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    # ── Dashboard ──────────────────────────────────────────────
+    DashboardSummaryData:
+      type: object
+      properties:
+        month:
+          type: integer
+        year:
+          type: integer
+        total_rent_collected:
+          type: number
+        total_rent_outstanding:
+          type: number
+        total_expenses:
+          type: number
+        net_profit_loss:
+          type: number
+          description: "total_rent_collected - total_expenses"
+        total_apartments:
+          type: integer
+        occupied_apartments:
+          type: integer
+        vacant_apartments:
+          type: integer
+        overdue_tenants_count:
+          type: integer
+
+    OverdueItem:
+      type: object
+      properties:
+        tenant_public_id:
+          type: string
+          format: uuid
+        tenant_name:
+          type: string
+        apartment_unit:
+          type: string
+        building_name:
+          type: string
+        overdue_months:
+          type: array
+          items:
+            type: object
+            properties:
+              due_public_id:
+                type: string
+                format: uuid
+              month:
+                type: integer
+              year:
+                type: integer
+              remaining_balance:
+                type: number
+              status:
+                type: string
+                enum: [unpaid, partial]
+        total_outstanding:
+          type: number
+
+    # ── Reports ────────────────────────────────────────────────
+    PaymentHistoryEntry:
+      type: object
+      properties:
+        due_public_id:
+          type: string
+          format: uuid
+        month:
+          type: integer
+        year:
+          type: integer
+        rent_amount:
+          type: number
+        total_due:
+          type: number
+        amount_paid:
+          type: number
+        remaining_balance:
+          type: number
+        status:
+          type: string
+          enum: [unpaid, partial, paid]
+        due_date:
+          type: string
+          format: date
+          nullable: true
+        payments:
+          type: array
+          items:
+            $ref: '#/components/schemas/PaymentRecordData'
+
+# ================================================================
+# PATHS
+# ================================================================
+paths:
+
+  # ==============================================================
+  # AUTH
+  # ==============================================================
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new owner account
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        "201":
+          description: Account created, JWT returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    $ref: '#/components/schemas/TokenData'
+                  message: { type: string, example: "Account created" }
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Authenticate and receive JWT
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    $ref: '#/components/schemas/TokenData'
+                  message: { type: string, example: "Login successful" }
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  # ==============================================================
+  # BUILDINGS
+  # ==============================================================
+  /buildings:
+    get:
+      tags: [Buildings]
+      summary: List all buildings for the authenticated owner
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/page_size'
+      responses:
+        "200":
+          description: Buildings list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/BuildingData'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+                  message: { type: string, example: "OK" }
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags: [Buildings]
+      summary: Create a new building
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BuildingCreate'
+      responses:
+        "201":
+          description: Building created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    $ref: '#/components/schemas/BuildingData'
+                  message: { type: string, example: "Building created" }
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /buildings/{building_public_id}:
+    parameters:
+      - $ref: '#/components/parameters/building_public_id'
+    get:
+      tags: [Buildings]
+      summary: Get a single building
+      responses:
+        "200":
+          description: Building details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    $ref: '#/components/schemas/BuildingData'
+                  message: { type: string, example: "OK" }
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Buildings]
+      summary: Update building details
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BuildingUpdate'
+      responses:
+        "200":
+          description: Building updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    $ref: '#/components/schemas/BuildingData'
+                  message: { type: string, example: "Building updated" }
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+
+    delete:
+      tags: [Buildings]
+      summary: Soft delete a building
+      description: "Returns 400 if the building has active apartments."
+      responses:
+        "200":
+          description: Building deactivated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data: { nullable: true, example: null }
+                  message: { type: string, example: "Building deactivated" }
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  # ==============================================================
+  # APARTMENTS
+  # ==============================================================
+  /buildings/{building_public_id}/apartments:
+    parameters:
+      - $ref: '#/components/parameters/building_public_id'
+    get:
+      tags: [Apartments]
+      summary: List apartments in a building
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/page_size'
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [vacant, occupied]
+      responses:
+        "200":
+          description: Apartments list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ApartmentData'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+                  message: { type: string, example: "OK" }
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags: [Apartments]
+      summary: Create an apartment in a building
+      description: "unit_number must be unique within the building."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApartmentCreate'
+      responses:
+        "201":
+          description: Apartment created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    $ref: '#/components/schemas/ApartmentData'
+                  message: { type: string, example: "Apartment created" }
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /buildings/{building_public_id}/apartments/{apartment_public_id}:
+    parameters:
+      - $ref: '#/components/parameters/building_public_id'
+      - $ref: '#/components/parameters/apartment_public_id'
+    get:
+      tags: [Apartments]
+      summary: Get a single apartment
+      responses:
+        "200":
+          description: Apartment details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    $ref: '#/components/schemas/ApartmentData'
+                  message: { type: string, example: "OK" }
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Apartments]
+      summary: Update apartment details
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApartmentUpdate'
+      responses:
+        "200":
+          description: Apartment updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    $ref: '#/components/schemas/ApartmentData'
+                  message: { type: string, example: "Apartment updated" }
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+
+    delete:
+      tags: [Apartments]
+      summary: Soft delete an apartment
+      description: "Returns 400 if the apartment has an active tenant."
+      responses:
+        "200":
+          description: Apartment deactivated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data: { nullable: true, example: null }
+                  message: { type: string, example: "Apartment deactivated" }
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  # ==============================================================
+  # TENANTS
+  # ==============================================================
+  /apartments/{apartment_public_id}/tenants:
+    parameters:
+      - $ref: '#/components/parameters/apartment_public_id'
+    post:
+      tags: [Tenants]
+      summary: Add a tenant to an apartment
+      description: |
+        Atomically creates the tenant record and their initial agreement.
+        Sets apartment status to 'occupied'. Returns 400 if the apartment
+        already has an active tenant.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TenantCreate'
+      responses:
+        "201":
+          description: Tenant added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    $ref: '#/components/schemas/TenantData'
+                  message: { type: string, example: "Tenant added" }
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /apartments/{apartment_public_id}/tenants/{tenant_public_id}:
+    parameters:
+      - $ref: '#/components/parameters/apartment_public_id'
+      - $ref: '#/components/parameters/tenant_public_id'
+    get:
+      tags: [Tenants]
+      summary: Get tenant details
+      responses:
+        "200":
+          description: Tenant details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    $ref: '#/components/schemas/TenantData'
+                  message: { type: string, example: "OK" }
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Tenants]
+      summary: Update tenant profile details
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TenantUpdate'
+      responses:
+        "200":
+          description: Tenant updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    $ref: '#/components/schemas/TenantData'
+                  message: { type: string, example: "Tenant updated" }
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+
+    delete:
+      tags: [Tenants]
+      summary: Mark tenant as moved out (soft delete)
+      description: |
+        Sets tenant is_active=false, records move_out_date, closes active agreements
+        (is_active=false), and sets the apartment status to 'vacant'.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TenantMoveOutRequest'
+      responses:
+        "200":
+          description: Tenant moved out
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data: { nullable: true, example: null }
+                  message: { type: string, example: "Tenant moved out" }
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  # ==============================================================
+  # TENANT AGREEMENTS
+  # ==============================================================
+  /tenants/{tenant_public_id}/agreements:
+    parameters:
+      - $ref: '#/components/parameters/tenant_public_id'
+    get:
+      tags: [Agreements]
+      summary: List all agreements for a tenant
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/page_size'
+      responses:
+        "200":
+          description: Agreements list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/AgreementData'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+                  message: { type: string, example: "OK" }
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags: [Agreements]
+      summary: Create a new agreement for a tenant (e.g. rent increase)
+      description: |
+        Creates a new agreement record. The new agreement becomes the active one.
+        Monthly dues generated after this date will use the new rent_amount.
+        Returns 400 if start_date overlaps with an existing active agreement.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgreementCreate'
+      responses:
+        "201":
+          description: Agreement created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    $ref: '#/components/schemas/AgreementData'
+                  message: { type: string, example: "Agreement created" }
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  # ==============================================================
+  # MONTHLY DUES
+  # ==============================================================
+  /tenants/{tenant_public_id}/dues:
+    parameters:
+      - $ref: '#/components/parameters/tenant_public_id'
+    get:
+      tags: [Monthly Dues]
+      summary: List all monthly dues for a tenant
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/page_size'
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [unpaid, partial, paid]
+        - name: year
+          in: query
+          schema:
+            type: integer
+            minimum: 2000
+            maximum: 2100
+      responses:
+        "200":
+          description: Monthly dues list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/MonthlyDueData'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+                  message: { type: string, example: "OK" }
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  /tenants/{tenant_public_id}/dues/generate:
+    parameters:
+      - $ref: '#/components/parameters/tenant_public_id'
+    post:
+      tags: [Monthly Dues]
+      summary: Auto-generate a monthly due from the active agreement
+      description: |
+        Reads the active agreement's rent_amount and creates a MonthlyDue.
+        Returns 400 if a due for (tenant, month, year) already exists or if there
+        is no active agreement.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DueGenerateRequest'
+      responses:
+        "201":
+          description: Monthly due generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    $ref: '#/components/schemas/MonthlyDueData'
+                  message: { type: string, example: "Due generated" }
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /tenants/{tenant_public_id}/dues/{due_public_id}:
+    parameters:
+      - $ref: '#/components/parameters/tenant_public_id'
+      - $ref: '#/components/parameters/due_public_id'
+    put:
+      tags: [Monthly Dues]
+      summary: Adjust a monthly due (override total_due or due_date)
+      description: "Recalculates remaining_balance after total_due change."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DueAdjustRequest'
+      responses:
+        "200":
+          description: Due adjusted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    $ref: '#/components/schemas/MonthlyDueData'
+                  message: { type: string, example: "Due adjusted" }
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  # ==============================================================
+  # PAYMENTS
+  # ==============================================================
+  /dues/{due_public_id}/payments:
+    parameters:
+      - $ref: '#/components/parameters/due_public_id'
+    get:
+      tags: [Payments]
+      summary: List all payment records for a monthly due
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/page_size'
+      responses:
+        "200":
+          description: Payment records
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/PaymentRecordData'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+                  message: { type: string, example: "OK" }
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags: [Payments]
+      summary: Record a payment against a monthly due
+      description: |
+        Inserts a PaymentRecord and recalculates remaining_balance on the MonthlyDue.
+        Status transitions: unpaid → partial → paid (never backwards).
+        Returns 400 if amount_paid would exceed remaining_balance.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentCreate'
+      responses:
+        "201":
+          description: Payment recorded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: object
+                    properties:
+                      payment:
+                        $ref: '#/components/schemas/PaymentRecordData'
+                      due:
+                        $ref: '#/components/schemas/MonthlyDueData'
+                  message: { type: string, example: "Payment recorded" }
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /dues/payments/bulk:
+    post:
+      tags: [Payments]
+      summary: Apply a bulk payment distributed oldest-due-first across a tenant's dues
+      description: |
+        Distributes `amount` across the tenant's unpaid and partial dues, oldest
+        month first. Creates one PaymentRecord per due touched.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkPaymentRequest'
+      responses:
+        "201":
+          description: Bulk payment applied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    $ref: '#/components/schemas/BulkPaymentResult'
+                  message: { type: string, example: "Bulk payment applied" }
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  # ==============================================================
+  # EXPENSES
+  # ==============================================================
+  /expenses:
+    get:
+      tags: [Expenses]
+      summary: List expenses for the authenticated owner
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/page_size'
+        - name: scope
+          in: query
+          schema:
+            type: string
+            enum: [building, apartment]
+        - name: building_public_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: apartment_public_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: category_public_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: is_tenant_charged
+          in: query
+          schema:
+            type: boolean
+        - name: from_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: to_date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Expenses list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ExpenseData'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+                  message: { type: string, example: "OK" }
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags: [Expenses]
+      summary: Create an expense
+      description: |
+        When is_tenant_charged=true, must also provide due_public_id and charged_amount.
+        A due_expense record is created atomically.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExpenseCreate'
+      responses:
+        "201":
+          description: Expense created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    $ref: '#/components/schemas/ExpenseData'
+                  message: { type: string, example: "Expense created" }
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /expenses/{expense_public_id}:
+    parameters:
+      - $ref: '#/components/parameters/expense_public_id'
+    put:
+      tags: [Expenses]
+      summary: Update an expense
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExpenseUpdate'
+      responses:
+        "200":
+          description: Expense updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    $ref: '#/components/schemas/ExpenseData'
+                  message: { type: string, example: "Expense updated" }
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+
+    delete:
+      tags: [Expenses]
+      summary: Soft delete an expense
+      responses:
+        "200":
+          description: Expense deactivated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data: { nullable: true, example: null }
+                  message: { type: string, example: "Expense deactivated" }
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  # ==============================================================
+  # EXPENSE CATEGORIES
+  # ==============================================================
+  /expense-categories:
+    get:
+      tags: [Expense Categories]
+      summary: List expense categories for the authenticated owner
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/page_size'
+      responses:
+        "200":
+          description: Categories list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/CategoryData'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+                  message: { type: string, example: "OK" }
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags: [Expense Categories]
+      summary: Create an expense category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryCreate'
+      responses:
+        "201":
+          description: Category created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    $ref: '#/components/schemas/CategoryData'
+                  message: { type: string, example: "Category created" }
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /expense-categories/{category_public_id}:
+    parameters:
+      - $ref: '#/components/parameters/category_public_id'
+    put:
+      tags: [Expense Categories]
+      summary: Update a category name
+      description: "Only name is editable. is_default cannot be changed after creation."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryUpdate'
+      responses:
+        "200":
+          description: Category updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    $ref: '#/components/schemas/CategoryData'
+                  message: { type: string, example: "Category updated" }
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+
+    delete:
+      tags: [Expense Categories]
+      summary: Soft delete a category
+      description: "Returns 400 if is_default=true or if the category has active expenses."
+      responses:
+        "200":
+          description: Category deactivated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data: { nullable: true, example: null }
+                  message: { type: string, example: "Category deactivated" }
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  # ==============================================================
+  # DASHBOARD
+  # ==============================================================
+  /dashboard/summary:
+    get:
+      tags: [Dashboard]
+      summary: Monthly financial summary for the authenticated owner
+      parameters:
+        - name: month
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 12
+          description: "Defaults to current month"
+        - name: year
+          in: query
+          schema:
+            type: integer
+            minimum: 2000
+            maximum: 2100
+          description: "Defaults to current year"
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    $ref: '#/components/schemas/DashboardSummaryData'
+                  message: { type: string, example: "OK" }
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+
+  /dashboard/overdue:
+    get:
+      tags: [Dashboard]
+      summary: List all tenants with outstanding (unpaid or partial) dues
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/page_size'
+      responses:
+        "200":
+          description: Overdue tenants
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/OverdueItem'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+                  message: { type: string, example: "OK" }
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+
+  # ==============================================================
+  # REPORTS
+  # ==============================================================
+  /reports/payment-history:
+    get:
+      tags: [Reports]
+      summary: Full payment ledger for a tenant (all dues + their payment records)
+      parameters:
+        - name: tenant_public_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/page_size'
+        - name: from_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: to_date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Payment history
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/PaymentHistoryEntry'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+                  message: { type: string, example: "OK" }
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/Forbidden'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "422":
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /reports/overdue-list:
+    get:
+      tags: [Reports]
+      summary: All unpaid and partial dues across all of the owner's tenants
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/page_size'
+        - name: building_public_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: "Filter to a specific building"
+        - name: from_month
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 12
+        - name: from_year
+          in: query
+          schema:
+            type: integer
+            minimum: 2000
+            maximum: 2100
+      responses:
+        "200":
+          description: Overdue dues list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/OverdueItem'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+                  message: { type: string, example: "OK" }
+        "401":
+          $ref: '#/components/responses/Unauthorized'
