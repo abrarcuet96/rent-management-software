@@ -1,0 +1,145 @@
+import { getOverdueList } from "@/api/reports.api";
+import StatusBadge from "@/components/common/StatusBadge";
+import { Button } from "@/components/ui/button";
+import { formatCurrency } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { AlertCircle, CreditCard } from "lucide-react";
+import { useState } from "react";
+import RecordPayment from "@/components/payments/RecordPayment";
+
+interface OverdueItem {
+  due_public_id: string;
+  month: number;
+  year: number;
+  due_date: string;
+  remaining_balance: number;
+  status: string;
+  tenant_public_id: string;
+  tenant_name: string;
+  apartment_unit: string;
+  building_name: string;
+  days_overdue: number;
+}
+
+export default function OverdueTenantList() {
+  const [payingDue, setPayingDue] = useState<OverdueItem | null>(null);
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ["overdue-list"],
+    queryFn: () => getOverdueList(),
+  });
+
+  const items: OverdueItem[] = (data?.data.data as OverdueItem[]) ?? [];
+
+  if (error) {
+    return (
+      <div className="bg-surface rounded-xl p-5 border border-border">
+        <p className="text-sm text-text-secondary text-center">
+          লোড করতে সমস্যা হয়েছে
+        </p>
+        <Button variant="outline" size="sm" onClick={() => refetch()} className="mt-2">
+          আবার চেষ্টা করুন
+        </Button>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="bg-surface rounded-xl p-5 border border-border">
+        <p className="text-sm text-text-secondary text-center">লোড হচ্ছে...</p>
+      </div>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <div className="bg-surface rounded-xl p-5 border border-border">
+        <div className="flex flex-col items-center py-6">
+          <AlertCircle size={32} className="text-success mb-2" />
+          <p className="text-sm text-text-secondary">কোনো বকেয়া নেই</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-surface rounded-xl border border-border overflow-hidden">
+      <div className="p-4 border-b border-border">
+        <h3 className="text-sm font-medium text-text-primary">বকেয়া ভাড়াটেদের তালিকা</h3>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-neutral-bg">
+            <tr>
+              <th className="text-left px-3 py-2 font-medium text-text-secondary">ভাড়াটে</th>
+              <th className="text-left px-3 py-2 font-medium text-text-secondary">বিল্ডিং/ইউনিট</th>
+              <th className="text-left px-3 py-2 font-medium text-text-secondary">মাস/বছর</th>
+              <th className="text-right px-3 py-2 font-medium text-text-secondary">বাকি</th>
+              <th className="text-center px-3 py-2 font-medium text-text-secondary">দিন</th>
+              <th className="text-center px-3 py-2 font-medium text-text-secondary">স্ট্যাটাস</th>
+              <th className="text-right px-3 py-2 font-medium text-text-secondary">অ্যাকশন</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((item) => (
+              <tr key={item.due_public_id} className="border-t border-border hover:bg-neutral-bg">
+                <td className="px-3 py-2 text-text-primary">{item.tenant_name}</td>
+                <td className="px-3 py-2 text-text-secondary">
+                  {item.building_name} • {item.apartment_unit}
+                </td>
+                <td className="px-3 py-2 text-text-primary">
+                  {item.month}/{item.year}
+                </td>
+                <td className="px-3 py-2 text-right font-medium text-danger">
+                  {formatCurrency(item.remaining_balance)}
+                </td>
+                <td className="px-3 py-2 text-center text-text-secondary">
+                  {item.days_overdue}
+                </td>
+                <td className="px-3 py-2 text-center">
+                  <StatusBadge status={item.status as "unpaid" | "partial"} />
+                </td>
+                <td className="px-3 py-2 text-right">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => setPayingDue(item)}
+                  >
+                    <CreditCard size={13} className="mr-1" />
+                    পরিশোধ
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {payingDue && (
+        <RecordPayment
+          open={!!payingDue}
+          onOpenChange={(open) => {
+            if (!open) setPayingDue(null);
+          }}
+          due={{
+            public_id: payingDue.due_public_id,
+            tenant_public_id: payingDue.tenant_public_id,
+            agreement_public_id: "",
+            month: payingDue.month,
+            year: payingDue.year,
+            rent_amount: payingDue.remaining_balance,
+            total_due: payingDue.remaining_balance,
+            amount_paid: 0,
+            remaining_balance: payingDue.remaining_balance,
+            status: payingDue.status as "unpaid" | "partial" | "paid",
+            is_auto_generated: true,
+            due_date: payingDue.due_date,
+            created_at: "",
+          }}
+          tenantId={payingDue.tenant_public_id}
+        />
+      )}
+    </div>
+  );
+}

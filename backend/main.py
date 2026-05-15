@@ -10,7 +10,7 @@ from app.expenses.routes import router as expenses_router
 from app.middleware.error_handler import ErrorHandlerMiddleware
 from app.payments.routes import router as payments_router
 from app.reports.routes import router as reports_router
-from app.tenants.routes import router as tenants_router
+from app.tenants.routes import router as tenants_router, router_portfolio as tenants_portfolio_router
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -88,6 +88,7 @@ app.include_router(auth_router, prefix=API_PREFIX)
 app.include_router(buildings_router, prefix=API_PREFIX)
 app.include_router(apartments_router, prefix=API_PREFIX)
 app.include_router(tenants_router, prefix=API_PREFIX)
+app.include_router(tenants_portfolio_router, prefix=API_PREFIX)
 app.include_router(agreements_router, prefix=API_PREFIX)
 app.include_router(dues_router, prefix=API_PREFIX)
 app.include_router(payments_router, prefix=API_PREFIX)

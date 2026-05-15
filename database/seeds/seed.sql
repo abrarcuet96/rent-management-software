@@ -7,8 +7,8 @@
 -- OWNERS
 -- ============================================================
 INSERT INTO owner (id, public_id, full_name, email, hashed_password) VALUES
-('550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655550001', 'Rahim Uddin', 'rahim@example.com', '$2b$12$placeholderhashedpasswordvalue01'),
-('550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655550002', 'Fatema Khatun', 'fatema@example.com', '$2b$12$placeholderhashedpasswordvalue01');
+('550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655550001', 'Rahim Uddin', 'rahim@example.com', '$2b$12$AORNcZXuoP5IOFPuTInx6edHqbnD8o77motk9CMMa/IlMNbeY4zm6'),
+('550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655550002', 'Fatema Khatun', 'fatema@example.com', '$2b$12$AORNcZXuoP5IOFPuTInx6edHqbnD8o77motk9CMMa/IlMNbeY4zm6');
 
 -- ============================================================
 -- BUILDINGS

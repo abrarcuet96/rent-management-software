@@ -52,28 +52,31 @@ db-create-test:
     @echo "✓ Created test database {{DB_TEST}}"
 
 db-drop:
+    psql -U {{DB_USER}} -h {{DB_HOST}} -p {{DB_PORT}} -d postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '{{DB_NAME}}' AND pid <> pg_backend_pid();" 2>/dev/null || true
     dropdb --if-exists -U {{DB_USER}} -h {{DB_HOST}} -p {{DB_PORT}} {{DB_NAME}}
     @echo "✓ Dropped database {{DB_NAME}}"
 
 db-drop-test:
+    psql -U {{DB_USER}} -h {{DB_HOST}} -p {{DB_PORT}} -d postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '{{DB_TEST}}' AND pid <> pg_backend_pid();" 2>/dev/null || true
     dropdb --if-exists -U {{DB_USER}} -h {{DB_HOST}} -p {{DB_PORT}} {{DB_TEST}}
     @echo "✓ Dropped test database {{DB_TEST}}"
 
-db-reset: db-drop db-create migrate
+db-reset: db-drop db-create schema-apply seed
     @echo "✓ Database reset"
 
 db-reset-test: db-drop-test db-create-test
     @echo "✓ Test database reset"
 
 # ── migrations ────────────────────────────────────────────────────────────────
-migrate:
-    cd backend && {{ALEMBIC}} upgrade head
+schema-apply:
+    psql -U {{DB_USER}} -h {{DB_HOST}} -p {{DB_PORT}} -d {{DB_NAME}} -f database/schema.sql
+    @echo "✓ Schema applied"
 
-migration name:
-    cd backend && {{ALEMBIC}} revision --autogenerate -m "{{name}}"
+seed:
+    psql -U {{DB_USER}} -h {{DB_HOST}} -p {{DB_PORT}} -d {{DB_NAME}} -f database/seeds/seed.sql
+    @echo "✓ Seed data applied"
 
-db-version:
-    cd backend && {{ALEMBIC}} current
+migrate: schema-apply
 
 # ── tests ─────────────────────────────────────────────────────────────────────
 test:
@@ -144,9 +147,25 @@ docker-rebuild:
     docker compose build --no-cache api
     docker compose up -d api
 
+# ── frontend ─────────────────────────────────────────────────────────────────
+frontend-dev:
+    cd frontend && npm run dev
+
+frontend-build:
+    cd frontend && npm run build
+
+frontend-deps:
+    cd frontend && npm install
+
+frontend-check:
+    cd frontend && npx tsc --noEmit
+
 # ── all-in-one ────────────────────────────────────────────────────────────────
 setup: venv deps-dev db-create migrate pre-commit-install
     @echo "✓ Project ready"
+
+check-all: check frontend-check
+    @echo "✓ All checks passed"
 
 ready: check test
     @echo "✓ Ready to commit"

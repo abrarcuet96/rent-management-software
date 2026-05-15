@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from fastapi import HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.apartment import Apartment
@@ -53,6 +53,41 @@ class TenantService:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tenant not found")
         return tenant
 
+    async def list_tenants(
+        self,
+        status_filter: str | None = None,
+        page: int = 1,
+        page_size: int = 20,
+    ) -> tuple[list[Tenant], int]:
+        """List all tenants across the owner's portfolio."""
+        conditions: list = [
+            Building.owner_id == self.owner_id,
+            Building.is_active.is_(True),
+        ]
+        if status_filter == "active":
+            conditions.append(Tenant.is_active.is_(True))
+        elif status_filter == "moved_out":
+            conditions.append(Tenant.is_active.is_(False))
+
+        total = await self.db.scalar(
+            select(func.count())
+            .select_from(Tenant)
+            .join(Apartment, Apartment.id == Tenant.apartment_id)
+            .join(Building, Building.id == Apartment.building_id)
+            .where(*conditions)
+        )
+        offset = (page - 1) * page_size
+        result = await self.db.execute(
+            select(Tenant)
+            .join(Apartment, Apartment.id == Tenant.apartment_id)
+            .join(Building, Building.id == Apartment.building_id)
+            .where(*conditions)
+            .order_by(Tenant.created_at.desc())
+            .offset(offset)
+            .limit(page_size)
+        )
+        return list(result.scalars().all()), total or 0
+
     async def add_tenant(self, apartment_public_id: UUID, data: TenantCreate) -> Tenant:
         apt = await self._get_apartment(apartment_public_id)
         if apt.status != "vacant":
@@ -87,6 +122,42 @@ class TenantService:
 
     async def get_tenant(self, apartment_public_id: UUID, tenant_public_id: UUID) -> Tenant:
         return await self._get_tenant_or_404(apartment_public_id, tenant_public_id)
+
+    async def get_tenant_by_public_id(self, tenant_public_id: UUID) -> Tenant:
+        """Get a tenant by public_id, verifying ownership via building chain."""
+        result = await self.db.execute(
+            select(Tenant)
+            .join(Apartment, Apartment.id == Tenant.apartment_id)
+            .join(Building, Building.id == Apartment.building_id)
+            .where(
+                Tenant.public_id == tenant_public_id,
+                Building.owner_id == self.owner_id,
+                Building.is_active.is_(True),
+            )
+        )
+        tenant = result.scalar_one_or_none()
+        if tenant is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tenant not found")
+        return tenant
+
+    async def get_active_tenant_for_apartment(self, apartment_public_id: UUID) -> Tenant:
+        """Get the active tenant for a specific apartment."""
+        result = await self.db.execute(
+            select(Tenant)
+            .join(Apartment, Apartment.id == Tenant.apartment_id)
+            .join(Building, Building.id == Apartment.building_id)
+            .where(
+                Apartment.public_id == apartment_public_id,
+                Apartment.is_active.is_(True),
+                Tenant.is_active.is_(True),
+                Building.owner_id == self.owner_id,
+                Building.is_active.is_(True),
+            )
+        )
+        tenant = result.scalar_one_or_none()
+        if tenant is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tenant not found")
+        return tenant
 
     async def update_tenant(
         self,

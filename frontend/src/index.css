@@ -1,0 +1,171 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ── Tailwind v4 theme mapping ────────────────────────────── */
+@theme inline {
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Map shadcn tokens to Tailwind utilities */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Brand extras */
+  --color-primary-muted: var(--primary-muted);
+  --color-surface: var(--surface);
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
+  --color-warning: var(--warning);
+  --color-warning-bg: var(--warning-bg);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --color-neutral: var(--neutral);
+  --color-neutral-bg: var(--neutral-bg);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+
+  /* Chart tokens */
+  --color-chart-collected: var(--chart-collected);
+  --color-chart-partial: var(--chart-partial);
+  --color-chart-overdue: var(--chart-overdue);
+  --color-chart-vacant: var(--chart-vacant);
+
+  --radius-sm: calc(var(--radius) * 0.75);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) * 1.5);
+}
+
+/* ── CSS Tokens — Light Mode ──────────────────────────────── */
+:root {
+  /* shadcn required (HSL wrapped) */
+  --background: hsl(45 30% 96%);
+  --foreground: hsl(0 0% 10%);
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(0 0% 10%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(0 0% 10%);
+  --primary: hsl(161 61% 17%);
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(150 60% 92%);
+  --secondary-foreground: hsl(161 61% 17%);
+  --muted: hsl(40 20% 92%);
+  --muted-foreground: hsl(220 9% 46%);
+  --accent: hsl(150 60% 92%);
+  --accent-foreground: hsl(161 61% 17%);
+  --destructive: hsl(4 72% 49%);
+  --destructive-foreground: hsl(0 0% 100%);
+  --border: hsl(35 17% 88%);
+  --input: hsl(35 17% 88%);
+  --ring: hsl(161 61% 17%);
+  --radius: 0.5rem;
+
+  /* Brand semantic tokens */
+  --primary-muted: hsl(154 50% 93%);
+  --surface: hsl(0 0% 100%);
+  --success: hsl(163 63% 28%);
+  --success-bg: hsl(154 50% 93%);
+  --warning: hsl(35 100% 36%);
+  --warning-bg: hsl(37 85% 94%);
+  --danger: hsl(4 72% 49%);
+  --danger-bg: hsl(6 70% 94%);
+  --neutral: hsl(220 13% 46%);
+  --neutral-bg: hsl(42 20% 93%);
+  --text-primary: hsl(0 0% 10%);
+  --text-secondary: hsl(220 13% 46%);
+  --text-muted: hsl(220 13% 69%);
+
+  /* Chart tokens */
+  --chart-collected: hsl(161 61% 17%);
+  --chart-partial: hsl(37 85% 59%);
+  --chart-overdue: hsl(4 72% 49%);
+  --chart-vacant: hsl(49 7% 68%);
+}
+
+/* ── CSS Tokens — Dark Mode ───────────────────────────────── */
+.dark {
+  --background: hsl(155 25% 8%);
+  --foreground: hsl(40 20% 94%);
+  --card: hsl(157 22% 10%);
+  --card-foreground: hsl(40 20% 94%);
+  --popover: hsl(157 22% 10%);
+  --popover-foreground: hsl(40 20% 94%);
+  --primary: hsl(154 38% 51%);
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(157 30% 15%);
+  --secondary-foreground: hsl(40 20% 94%);
+  --muted: hsl(157 20% 14%);
+  --muted-foreground: hsl(220 9% 60%);
+  --accent: hsl(157 30% 15%);
+  --accent-foreground: hsl(40 20% 94%);
+  --destructive: hsl(4 72% 59%);
+  --destructive-foreground: hsl(0 0% 100%);
+  --border: hsl(157 18% 20%);
+  --input: hsl(157 18% 20%);
+  --ring: hsl(154 38% 51%);
+
+  --primary-muted: hsl(157 60% 12%);
+  --surface: hsl(155 20% 10%);
+  --success: hsl(157 40% 48%);
+  --success-bg: hsl(157 50% 10%);
+  --warning: hsl(37 85% 59%);
+  --warning-bg: hsl(38 100% 9%);
+  --danger: hsl(4 80% 65%);
+  --danger-bg: hsl(4 60% 10%);
+  --neutral: hsl(220 13% 60%);
+  --neutral-bg: hsl(155 14% 14%);
+  --text-primary: hsl(40 20% 94%);
+  --text-secondary: hsl(220 13% 60%);
+  --text-muted: hsl(220 9% 46%);
+}
+
+/* ── Base Styles ──────────────────────────────────────────── */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    line-height: 1.5;
+  }
+}
+
+/* ── Scrollbar ────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-neutral); }
+
+/* ── Print styles ─────────────────────────────────────────── */
+@media print {
+  .print\:hidden { display: none !important; }
+  .print\:block { display: block !important; }
+  body { background: white; color: black; font-size: 12px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
+  th { background: #f0f0f0; font-weight: 600; }
+  tr { page-break-inside: avoid; }
+  thead { display: table-header-group; }
+  @page { margin: 1.5cm; }
+}
