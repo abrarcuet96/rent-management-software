@@ -10,13 +10,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { getFallback } from "@/lib/getFallback";
 import { loginSchema, type LoginInput } from "@/lib/validators/auth";
 import { useAuthStore } from "@/stores/authStore";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
-import { Building2, Loader2 } from "lucide-react";
+import { AlertCircle, Building2, Loader2 } from "lucide-react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { Link, useNavigate } from "react-router-dom";
@@ -39,6 +39,16 @@ export default function LoginPage() {
     defaultValues: { email: "", password: "" },
   });
 
+  // Clear server error whenever the user edits any field
+  useEffect(() => {
+    const { unsubscribe } = form.watch(() => {
+      if (form.formState.errors.root) {
+        form.clearErrors("root");
+      }
+    });
+    return unsubscribe;
+  }, [form]);
+
   const { mutate, isPending } = useMutation({
     mutationFn: loginOwner,
     onSuccess: (res) => {
@@ -52,20 +62,19 @@ export default function LoginPage() {
       toast.success(res.data.message || "লগইন সফল");
       navigate("/dashboard", { replace: true });
     },
-    onError: (error: AxiosError<{ message?: string }>) => {
-      getFallback({ error });
+    onError: (error: AxiosError<{ message?: string; detail?: string }>) => {
+      const message =
+        error.response?.data?.message ||
+        error.response?.data?.detail ||
+        "ইমেইল বা পাসওয়ার্ড সঠিক নয়";
+      form.setError("root", { message });
     },
   });
-
-  const onSubmit = (data: LoginInput) => {
-    mutate(data);
-  };
 
   return (
     <div className="flex min-h-screen">
       {/* Left panel */}
       <div className="hidden lg:flex lg:w-1/2 bg-[#0D4A38] flex-col items-center justify-center p-12 relative overflow-hidden">
-        {/* Decorative circles */}
         <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-white/5" />
         <div className="absolute -bottom-32 -right-32 w-[28rem] h-[28rem] rounded-full bg-white/5" />
         <div className="absolute top-1/3 right-0 w-64 h-64 rounded-full bg-white/[0.03]" />
@@ -75,9 +84,7 @@ export default function LoginPage() {
             <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
               <Building2 size={28} className="text-white" />
             </div>
-            <span className="text-4xl font-bold text-white tracking-tight">
-              RentFlow
-            </span>
+            <span className="text-4xl font-bold text-white tracking-tight">RentFlow</span>
           </div>
           <p className="text-white/70 text-xl leading-relaxed max-w-sm">
             আপনার সম্পত্তি পরিচালনা করুন সহজে
@@ -111,10 +118,7 @@ export default function LoginPage() {
             <CardContent>
               <Form {...form}>
                 <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    form.handleSubmit(onSubmit)(e);
-                  }}
+                  onSubmit={form.handleSubmit((data) => mutate(data))}
                   className="space-y-4"
                 >
                   <FormField
@@ -155,6 +159,14 @@ export default function LoginPage() {
                     )}
                   />
 
+                  {/* Server-side error */}
+                  {form.formState.errors.root && (
+                    <div className="flex items-start gap-2.5 rounded-lg border border-danger/25 bg-danger-bg px-3 py-2.5 text-sm text-danger">
+                      <AlertCircle size={15} className="mt-0.5 shrink-0" />
+                      <span>{form.formState.errors.root.message}</span>
+                    </div>
+                  )}
+
                   <Button
                     type="submit"
                     className="w-full bg-primary hover:bg-primary/90 text-primary-foreground mt-2"
@@ -174,10 +186,7 @@ export default function LoginPage() {
 
               <p className="text-center text-sm text-muted-foreground mt-6">
                 অ্যাকাউন্ট নেই?{" "}
-                <Link
-                  to="/register"
-                  className="text-primary font-medium hover:underline"
-                >
+                <Link to="/register" className="text-primary font-medium hover:underline">
                   নিবন্ধন করুন
                 </Link>
               </p>

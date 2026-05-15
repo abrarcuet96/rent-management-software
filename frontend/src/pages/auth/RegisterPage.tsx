@@ -10,13 +10,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { getFallback } from "@/lib/getFallback";
 import { registerSchema, type RegisterInput } from "@/lib/validators/auth";
 import { useAuthStore } from "@/stores/authStore";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
-import { Building2, Loader2 } from "lucide-react";
+import { AlertCircle, Building2, Loader2 } from "lucide-react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -39,6 +39,16 @@ export default function RegisterPage() {
     defaultValues: { full_name: "", email: "", password: "", confirmPassword: "" },
   });
 
+  // Clear server error whenever the user edits any field
+  useEffect(() => {
+    const { unsubscribe } = form.watch(() => {
+      if (form.formState.errors.root) {
+        form.clearErrors("root");
+      }
+    });
+    return unsubscribe;
+  }, [form]);
+
   const { mutate, isPending } = useMutation({
     mutationFn: (data: RegisterInput) =>
       registerOwner({
@@ -57,14 +67,14 @@ export default function RegisterPage() {
       toast.success(res.data.message || "নিবন্ধন সফল");
       navigate("/dashboard", { replace: true });
     },
-    onError: (error: AxiosError<{ message?: string }>) => {
-      getFallback({ error });
+    onError: (error: AxiosError<{ message?: string; detail?: string }>) => {
+      const message =
+        error.response?.data?.message ||
+        error.response?.data?.detail ||
+        "নিবন্ধন ব্যর্থ হয়েছে। আবার চেষ্টা করুন।";
+      form.setError("root", { message });
     },
   });
-
-  const onSubmit = (data: RegisterInput) => {
-    mutate(data);
-  };
 
   return (
     <div className="flex min-h-screen">
@@ -113,10 +123,7 @@ export default function RegisterPage() {
             <CardContent>
               <Form {...form}>
                 <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    form.handleSubmit(onSubmit)(e);
-                  }}
+                  onSubmit={form.handleSubmit((data) => mutate(data))}
                   className="space-y-4"
                 >
                   <FormField
@@ -193,6 +200,14 @@ export default function RegisterPage() {
                       </FormItem>
                     )}
                   />
+
+                  {/* Server-side error */}
+                  {form.formState.errors.root && (
+                    <div className="flex items-start gap-2.5 rounded-lg border border-danger/25 bg-danger-bg px-3 py-2.5 text-sm text-danger">
+                      <AlertCircle size={15} className="mt-0.5 shrink-0" />
+                      <span>{form.formState.errors.root.message}</span>
+                    </div>
+                  )}
 
                   <Button
                     type="submit"
