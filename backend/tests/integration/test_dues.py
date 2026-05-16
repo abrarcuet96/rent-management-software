@@ -240,3 +240,137 @@ async def test_adjust_due_zero_total_due_rejected(
     )
     # Pydantic rejects total_due=0 (gt=0 constraint) → 422
     assert resp.status_code == 422
+
+
+# ── bulk generate ─────────────────────────────────────────────────────────────
+
+
+def _pending_count_url() -> str:
+    return f"{BASE}/dues/pending-count"
+
+
+def _bulk_generate_url() -> str:
+    return f"{BASE}/dues/generate-bulk"
+
+
+async def test_pending_due_count_has_pending(
+    client: AsyncClient, auth_token: str, test_tenant: dict
+):
+    """Pending count shows 1 tenant needing a due for a month with no dues."""
+    resp = await client.get(
+        _pending_count_url(),
+        params={"month": 3, "year": 2024},
+        headers=_auth(auth_token),
+    )
+    assert resp.status_code == 200
+    data = resp.json()["data"]
+    assert data["pending"] >= 1
+    assert data["month"] == 3
+    assert data["year"] == 2024
+
+
+async def test_generate_bulk_success(client: AsyncClient, auth_token: str, test_tenant: dict):
+    """Bulk generate creates dues for all pending tenants."""
+    resp = await client.post(
+        _bulk_generate_url(),
+        json={"month": 3, "year": 2024},
+        headers=_auth(auth_token),
+    )
+    assert resp.status_code == 200
+    data = resp.json()["data"]
+    assert data["created"] >= 1
+    assert "skipped" in data
+    assert "no_agreement" in data
+
+
+async def test_generate_bulk_idempotent(client: AsyncClient, auth_token: str, test_tenant: dict):
+    """Second bulk generate for the same month creates 0 new dues."""
+    # First call
+    await client.post(
+        _bulk_generate_url(),
+        json={"month": 4, "year": 2024},
+        headers=_auth(auth_token),
+    )
+    # Second call — should skip all
+    resp = await client.post(
+        _bulk_generate_url(),
+        json={"month": 4, "year": 2024},
+        headers=_auth(auth_token),
+    )
+    assert resp.status_code == 200
+    data = resp.json()["data"]
+    assert data["created"] == 0
+    assert data["skipped"] >= 1
+
+
+async def test_pending_count_zero_after_generation(
+    client: AsyncClient, auth_token: str, test_tenant: dict
+):
+    """After generating dues for a month, pending count is 0."""
+    await client.post(
+        _bulk_generate_url(),
+        json={"month": 5, "year": 2024},
+        headers=_auth(auth_token),
+    )
+    resp = await client.get(
+        _pending_count_url(),
+        params={"month": 5, "year": 2024},
+        headers=_auth(auth_token),
+    )
+    assert resp.status_code == 200
+    data = resp.json()["data"]
+    assert data["pending"] == 0
+
+
+async def test_generate_bulk_with_due_date(client: AsyncClient, auth_token: str, test_tenant: dict):
+    """Bulk generate with explicit due_date sets it on all created dues."""
+    resp = await client.post(
+        _bulk_generate_url(),
+        json={"month": 6, "year": 2024, "due_date": "2024-06-15"},
+        headers=_auth(auth_token),
+    )
+    assert resp.status_code == 200
+    data = resp.json()["data"]
+    assert data["created"] >= 1
+
+    # Verify the created due has the custom due_date
+    list_resp = await client.get(
+        _list_url(test_tenant["public_id"]),
+        params={"year": 2024, "status": "unpaid"},
+        headers=_auth(auth_token),
+    )
+    dues = list_resp.json()["data"]
+    june_due = next((d for d in dues if d["month"] == 6), None)
+    assert june_due is not None
+    assert june_due["due_date"] == "2024-06-15"
+
+
+async def test_generate_bulk_wrong_owner(client: AsyncClient, auth_token: str, test_tenant: dict):
+    """A second owner's bulk generate does not affect the first owner's tenants."""
+    resp2 = await client.post(
+        f"{BASE}/auth/register",
+        json={
+            "full_name": "Owner Bulk",
+            "email": "ownerbulk@example.com",
+            "password": "password123",
+        },
+    )
+    token2 = resp2.json()["data"]["access_token"]
+
+    # Second owner sees zero pending
+    resp = await client.get(
+        _pending_count_url(),
+        params={"month": 7, "year": 2024},
+        headers=_auth(token2),
+    )
+    assert resp.status_code == 200
+    assert resp.json()["data"]["pending"] == 0
+
+    # Second owner bulk generates — creates nothing
+    resp = await client.post(
+        _bulk_generate_url(),
+        json={"month": 7, "year": 2024},
+        headers=_auth(token2),
+    )
+    assert resp.status_code == 200
+    assert resp.json()["data"]["created"] == 0

@@ -68,8 +68,10 @@ export default function RecordPayment({ open, onOpenChange, due, tenantId }: Rec
         note: data.note || undefined,
       }),
     onSuccess: (res) => {
-      queryClient.invalidateQueries({ queryKey: ["dues", tenantId] });
+      queryClient.invalidateQueries({ queryKey: ["dues"] });
       queryClient.invalidateQueries({ queryKey: ["payments", due.public_id] });
+      queryClient.invalidateQueries({ queryKey: ["overdue-list"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       toast.success(res.data.message || "পেমেন্ট রেকর্ড হয়েছে");
       onOpenChange(false);
     },

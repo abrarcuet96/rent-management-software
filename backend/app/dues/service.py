@@ -3,12 +3,21 @@ from decimal import Decimal
 from uuid import UUID
 
 from fastapi import HTTPException, status
-from sqlalchemy import func, select
+from sqlalchemy import and_, exists, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.dues.schemas import DueAdjustRequest, DueGenerateRequest
+from app.dues.schemas import (
+    BulkDueGenerateRequest,
+    BulkDueGenerateResult,
+    DueAdjustRequest,
+    DueGenerateRequest,
+    PendingDueCountResult,
+)
+from app.models.apartment import Apartment
+from app.models.building import Building
 from app.models.monthly_due import MonthlyDue
+from app.models.tenant import Tenant
 from app.models.tenant_agreement import TenantAgreement
 from app.shared.ownership import resolve_due, resolve_tenant_id
 
@@ -140,3 +149,185 @@ class DueService:
         await self.db.commit()
         await self.db.refresh(due)
         return due
+
+    async def get_pending_due_count(self, month: int, year: int) -> PendingDueCountResult:
+        """Count how many active tenants still need dues for (month, year).
+
+        Returns counts broken down as:
+          - pending: tenants with active agreements but no due for this period
+          - already_has_due: tenants that already have a due for this period
+          - no_agreement: active tenants without an active agreement
+        """
+        # Subquery: which tenants already have a due for (month, year)
+        due_subq = select(MonthlyDue.id).where(
+            MonthlyDue.tenant_id == Tenant.id,
+            MonthlyDue.month == month,
+            MonthlyDue.year == year,
+            MonthlyDue.is_active.is_(True),
+        )
+
+        base_conditions = [
+            Tenant.is_active.is_(True),
+            Building.owner_id == self.owner_id,
+            Building.is_active.is_(True),
+        ]
+
+        # Total active tenants (ownership-scoped)
+        total_active = (
+            await self.db.scalar(
+                select(func.count())
+                .select_from(Tenant)
+                .join(Apartment, Apartment.id == Tenant.apartment_id)
+                .join(Building, Building.id == Apartment.building_id)
+                .where(*base_conditions)
+            )
+            or 0
+        )
+
+        # Tenants with active agreements
+        eligible = (
+            await self.db.scalar(
+                select(func.count())
+                .select_from(Tenant)
+                .join(Apartment, Apartment.id == Tenant.apartment_id)
+                .join(Building, Building.id == Apartment.building_id)
+                .join(
+                    TenantAgreement,
+                    and_(
+                        TenantAgreement.tenant_id == Tenant.id,
+                        TenantAgreement.is_active.is_(True),
+                        TenantAgreement.end_date.is_(None),
+                    ),
+                )
+                .where(*base_conditions)
+            )
+            or 0
+        )
+
+        # Eligible tenants that already have a due for (month, year)
+        already_has_due = (
+            await self.db.scalar(
+                select(func.count())
+                .select_from(Tenant)
+                .join(Apartment, Apartment.id == Tenant.apartment_id)
+                .join(Building, Building.id == Apartment.building_id)
+                .join(
+                    TenantAgreement,
+                    and_(
+                        TenantAgreement.tenant_id == Tenant.id,
+                        TenantAgreement.is_active.is_(True),
+                        TenantAgreement.end_date.is_(None),
+                    ),
+                )
+                .where(*base_conditions, exists(due_subq))
+            )
+            or 0
+        )
+
+        return PendingDueCountResult(
+            pending=eligible - already_has_due,
+            already_has_due=already_has_due,
+            no_agreement=total_active - eligible,
+            month=month,
+            year=year,
+        )
+
+    async def generate_bulk_dues(self, data: BulkDueGenerateRequest) -> BulkDueGenerateResult:
+        """Generate dues for all active tenants that don't already have one.
+
+        Ownership-scoped: only tenants owned by self.owner_id are affected.
+        Idempotent by construction — the NOT EXISTS subquery skips tenants
+        that already have a due for (month, year).
+        """
+        due_date = data.due_date if data.due_date is not None else date(data.year, data.month, 1)
+
+        # Count eligible tenants before generation (for the response summary)
+        due_subq = select(MonthlyDue.id).where(
+            MonthlyDue.tenant_id == Tenant.id,
+            MonthlyDue.month == data.month,
+            MonthlyDue.year == data.year,
+            MonthlyDue.is_active.is_(True),
+        )
+
+        base_conditions = [
+            Tenant.is_active.is_(True),
+            Building.owner_id == self.owner_id,
+            Building.is_active.is_(True),
+        ]
+
+        total_active = (
+            await self.db.scalar(
+                select(func.count())
+                .select_from(Tenant)
+                .join(Apartment, Apartment.id == Tenant.apartment_id)
+                .join(Building, Building.id == Apartment.building_id)
+                .where(*base_conditions)
+            )
+            or 0
+        )
+
+        already_has_due = (
+            await self.db.scalar(
+                select(func.count())
+                .select_from(Tenant)
+                .join(Apartment, Apartment.id == Tenant.apartment_id)
+                .join(Building, Building.id == Apartment.building_id)
+                .join(
+                    TenantAgreement,
+                    and_(
+                        TenantAgreement.tenant_id == Tenant.id,
+                        TenantAgreement.is_active.is_(True),
+                        TenantAgreement.end_date.is_(None),
+                    ),
+                )
+                .where(*base_conditions, exists(due_subq))
+            )
+            or 0
+        )
+
+        # Find tenants needing dues: active, with active agreement, without existing due
+        result = await self.db.execute(
+            select(Tenant.id, TenantAgreement.id, TenantAgreement.rent_amount)
+            .join(Apartment, Apartment.id == Tenant.apartment_id)
+            .join(Building, Building.id == Apartment.building_id)
+            .join(
+                TenantAgreement,
+                and_(
+                    TenantAgreement.tenant_id == Tenant.id,
+                    TenantAgreement.is_active.is_(True),
+                    TenantAgreement.end_date.is_(None),
+                ),
+            )
+            .where(*base_conditions, ~exists(due_subq))
+        )
+        rows = result.all()
+
+        created = 0
+        for tenant_id, agreement_id, rent_amount in rows:
+            due = MonthlyDue(
+                tenant_id=tenant_id,
+                agreement_id=agreement_id,
+                month=data.month,
+                year=data.year,
+                rent_amount=rent_amount,
+                total_due=rent_amount,
+                amount_paid=Decimal("0"),
+                remaining_balance=rent_amount,
+                status="unpaid",
+                is_auto_generated=True,
+                due_date=due_date,
+            )
+            self.db.add(due)
+            created += 1
+
+        if created > 0:
+            await self.db.commit()
+
+        eligible = created + already_has_due
+        no_agreement = total_active - eligible
+
+        return BulkDueGenerateResult(
+            created=created,
+            skipped=already_has_due,
+            no_agreement=no_agreement,
+        )

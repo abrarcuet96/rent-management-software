@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.models.apartment import Apartment
+from app.models.building import Building
 from app.models.tenant import Tenant
 from app.shared.dependencies import get_current_owner
 from app.shared.schemas import PaginatedResponse, PaginationMeta, StandardResponse
@@ -24,20 +25,25 @@ router_portfolio = APIRouter(
 )
 
 
-async def _apartment_public_id(apt: Apartment, db: AsyncSession, tenant: Tenant) -> UUID:
-    """Resolve the apartment's public_id for response building."""
-    from sqlalchemy import select
-
+async def _resolve_apt_info(db: AsyncSession, apartment_public_id: UUID) -> tuple[str, str]:
+    """Return (building_name, apartment_unit_number) for a given apartment_public_id."""
     result = await db.execute(
-        select(Apartment.public_id).where(Apartment.id == tenant.apartment_id)
+        select(Building.name, Apartment.unit_number)
+        .select_from(Apartment)
+        .join(Building, Building.id == Apartment.building_id)
+        .where(Apartment.public_id == apartment_public_id)
     )
-    return result.scalar_one()
+    return result.one()
 
 
-def _to_response(tenant: Tenant, apartment_public_id: UUID) -> TenantResponse:
+def _to_response(
+    tenant: Tenant, apartment_public_id: UUID, building_name: str, apartment_unit_number: str
+) -> TenantResponse:
     return TenantResponse(
         public_id=tenant.public_id,
         apartment_public_id=apartment_public_id,
+        building_name=building_name,
+        apartment_unit_number=apartment_unit_number,
         full_name=tenant.full_name,
         phone=tenant.phone,
         nid_number=tenant.nid_number,
@@ -63,10 +69,16 @@ async def list_tenants_portfolio(
     items: list[TenantResponse] = []
     for tenant in tenants:
         result = await db.execute(
-            select(Apartment.public_id).where(Apartment.id == tenant.apartment_id)
+            select(
+                Apartment.public_id,
+                Apartment.unit_number,
+                Building.name,
+            )
+            .join(Building, Building.id == Apartment.building_id)
+            .where(Apartment.id == tenant.apartment_id)
         )
-        apt_pid = result.scalar_one()
-        items.append(_to_response(tenant, apt_pid))
+        apt_pid, apt_unit, bld_name = result.one()
+        items.append(_to_response(tenant, apt_pid, bld_name, apt_unit))
     return PaginatedResponse(
         success=True,
         data=items,
@@ -83,10 +95,13 @@ async def get_tenant_portfolio(
     service = TenantService(db, owner_id)
     tenant = await service.get_tenant_by_public_id(tenant_public_id)
     result = await db.execute(
-        select(Apartment.public_id).where(Apartment.id == tenant.apartment_id)
+        select(Apartment.public_id, Apartment.unit_number, Building.name)
+        .select_from(Apartment)
+        .join(Building, Building.id == Apartment.building_id)
+        .where(Apartment.id == tenant.apartment_id)
     )
-    apt_pid = result.scalar_one()
-    return StandardResponse(success=True, data=_to_response(tenant, apt_pid))
+    apt_pid, apt_unit, bld_name = result.one()
+    return StandardResponse(success=True, data=_to_response(tenant, apt_pid, bld_name, apt_unit))
 
 
 @router.post("", response_model=StandardResponse, status_code=http_status.HTTP_201_CREATED)
@@ -98,9 +113,10 @@ async def add_tenant(
 ) -> StandardResponse:
     service = TenantService(db, owner_id)
     tenant = await service.add_tenant(apartment_public_id, body)
+    bld_name, apt_unit = await _resolve_apt_info(db, apartment_public_id)
     return StandardResponse(
         success=True,
-        data=_to_response(tenant, apartment_public_id),
+        data=_to_response(tenant, apartment_public_id, bld_name, apt_unit),
         message="Tenant added",
     )
 
@@ -113,7 +129,10 @@ async def get_active_tenant(
 ) -> StandardResponse:
     service = TenantService(db, owner_id)
     tenant = await service.get_active_tenant_for_apartment(apartment_public_id)
-    return StandardResponse(success=True, data=_to_response(tenant, apartment_public_id))
+    bld_name, apt_unit = await _resolve_apt_info(db, apartment_public_id)
+    return StandardResponse(
+        success=True, data=_to_response(tenant, apartment_public_id, bld_name, apt_unit)
+    )
 
 
 @router.get("/{tenant_public_id}", response_model=StandardResponse)
@@ -125,7 +144,10 @@ async def get_tenant(
 ) -> StandardResponse:
     service = TenantService(db, owner_id)
     tenant = await service.get_tenant(apartment_public_id, tenant_public_id)
-    return StandardResponse(success=True, data=_to_response(tenant, apartment_public_id))
+    bld_name, apt_unit = await _resolve_apt_info(db, apartment_public_id)
+    return StandardResponse(
+        success=True, data=_to_response(tenant, apartment_public_id, bld_name, apt_unit)
+    )
 
 
 @router.put("/{tenant_public_id}", response_model=StandardResponse)
@@ -138,9 +160,10 @@ async def update_tenant(
 ) -> StandardResponse:
     service = TenantService(db, owner_id)
     tenant = await service.update_tenant(apartment_public_id, tenant_public_id, body)
+    bld_name, apt_unit = await _resolve_apt_info(db, apartment_public_id)
     return StandardResponse(
         success=True,
-        data=_to_response(tenant, apartment_public_id),
+        data=_to_response(tenant, apartment_public_id, bld_name, apt_unit),
         message="Tenant updated",
     )
 

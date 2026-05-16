@@ -6,7 +6,12 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.dues.schemas import DueAdjustRequest, DueGenerateRequest, MonthlyDueResponse
+from app.dues.schemas import (
+    BulkDueGenerateRequest,
+    DueAdjustRequest,
+    DueGenerateRequest,
+    MonthlyDueResponse,
+)
 from app.dues.service import DueService
 from app.models.monthly_due import MonthlyDue
 from app.models.tenant import Tenant
@@ -100,4 +105,31 @@ async def adjust_due(
         success=True,
         data=await _due_response(due, db),
         message="Due adjusted",
+    )
+
+
+@router.get("/dues/pending-count", response_model=StandardResponse)
+async def get_pending_due_count(
+    month: int = Query(ge=1, le=12),
+    year: int = Query(ge=2000, le=2100),
+    db: AsyncSession = Depends(get_db),
+    owner_id: UUID = Depends(get_current_owner),
+) -> StandardResponse:
+    service = DueService(db, owner_id)
+    result = await service.get_pending_due_count(month, year)
+    return StandardResponse(success=True, data=result)
+
+
+@router.post("/dues/generate-bulk", response_model=StandardResponse)
+async def generate_bulk_dues(
+    body: BulkDueGenerateRequest,
+    db: AsyncSession = Depends(get_db),
+    owner_id: UUID = Depends(get_current_owner),
+) -> StandardResponse:
+    service = DueService(db, owner_id)
+    result = await service.generate_bulk_dues(body)
+    return StandardResponse(
+        success=True,
+        data=result,
+        message=f"{result.created} dues generated, {result.skipped} already existed",
     )

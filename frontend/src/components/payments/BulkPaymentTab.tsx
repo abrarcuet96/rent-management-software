@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getFallback } from "@/lib/getFallback";
+import { formatCurrency, getMonthName } from "@/lib/utils";
 import { bulkPaymentSchema, type BulkPaymentInput } from "@/lib/validators/payment";
 import type { MonthlyDue, Tenant } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -70,6 +71,9 @@ export default function BulkPaymentTab() {
 
   const previewAmount = Number(totalAmount) > 0 ? Number(totalAmount) : 0;
 
+  const totalOutstanding = openDues.reduce((s, d) => s + Number(d.remaining_balance), 0);
+  const isOverpaying = previewAmount > 0 && totalOutstanding > 0 && previewAmount > totalOutstanding;
+
   const { mutate, isPending } = useMutation({
     mutationFn: (data: BulkPaymentInput) =>
       recordBulkPayment({
@@ -82,6 +86,7 @@ export default function BulkPaymentTab() {
       queryClient.invalidateQueries({ queryKey: ["dues"] });
       queryClient.invalidateQueries({ queryKey: ["payments"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["overdue-list"] });
       toast.success(res.data.message || "বাল্ক পেমেন্ট সফল হয়েছে");
       form.reset();
       setSelectedTenantId("");
@@ -91,7 +96,7 @@ export default function BulkPaymentTab() {
     },
   });
 
-  const canSubmit = selectedTenantId && previewAmount > 0 && openDues.length > 0;
+  const canSubmit = selectedTenantId && previewAmount > 0 && openDues.length > 0 && !isOverpaying;
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -111,7 +116,7 @@ export default function BulkPaymentTab() {
             <SelectContent>
               {tenants.map((t) => (
                 <SelectItem key={t.public_id} value={t.public_id}>
-                  {t.full_name}
+                  {t.full_name} - {t.building_name} - {t.apartment_unit_number}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -135,6 +140,16 @@ export default function BulkPaymentTab() {
                     <Input type="number" placeholder="0" {...field} />
                   </FormControl>
                   <FormMessage />
+                  {isOverpaying && (
+                    <p className="text-xs text-danger mt-1">
+                      সর্বোচ্চ {formatCurrency(totalOutstanding)} পর্যন্ত দেওয়া সম্ভব — মোট বকেয়া এর বেশি গ্রহণযোগ্য নয়
+                    </p>
+                  )}
+                  {!isOverpaying && previewAmount > 0 && totalOutstanding > 0 && (
+                    <p className="text-xs text-text-secondary mt-1">
+                      মোট বকেয়া: {formatCurrency(totalOutstanding)}
+                    </p>
+                  )}
                 </FormItem>
               )}
             />
@@ -169,6 +184,59 @@ export default function BulkPaymentTab() {
               )}
             />
 
+            {/* Show as soon as a tenant is selected */}
+            {selectedTenantId && openDues.length === 0 && (
+              <p className="text-sm text-text-secondary text-center py-4">
+                এই ভাড়াটের কোনো বকেয়া ডিউ নেই
+              </p>
+            )}
+
+            {selectedTenantId && openDues.length > 0 && previewAmount === 0 && (
+              <div>
+                <p className="text-sm font-medium text-text-secondary mb-2">
+                  বকেয়া ডিউ ({openDues.length}টি)
+                </p>
+                <div className="border border-border rounded-lg overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead className="bg-neutral-bg">
+                      <tr>
+                        <th className="text-left px-3 py-2 font-medium text-text-secondary">মাস/বছর</th>
+                        <th className="text-right px-3 py-2 font-medium text-text-secondary">মোট দেয়</th>
+                        <th className="text-right px-3 py-2 font-medium text-text-secondary">পরিশোধিত</th>
+                        <th className="text-right px-3 py-2 font-medium text-text-secondary">বাকি</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {openDues.map((due) => (
+                        <tr key={due.public_id} className="border-t border-border">
+                          <td className="px-3 py-2 text-text-primary">
+                            {getMonthName(due.month)} {due.year}
+                          </td>
+                          <td className="px-3 py-2 text-right text-text-primary">
+                            {formatCurrency(due.total_due)}
+                          </td>
+                          <td className="px-3 py-2 text-right text-success">
+                            {formatCurrency(due.amount_paid)}
+                          </td>
+                          <td className="px-3 py-2 text-right font-medium text-danger">
+                            {formatCurrency(due.remaining_balance)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot className="bg-neutral-bg">
+                      <tr>
+                        <td colSpan={3} className="px-3 py-2 font-medium text-text-primary">মোট বাকি</td>
+                        <td className="px-3 py-2 text-right font-medium text-danger">
+                          {formatCurrency(openDues.reduce((s, d) => s + Number(d.remaining_balance), 0))}
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+            )}
+
             {selectedTenantId && openDues.length > 0 && previewAmount > 0 && (
               <div>
                 <p className="text-sm font-medium text-text-secondary mb-2">
@@ -179,12 +247,6 @@ export default function BulkPaymentTab() {
                   totalAmount={previewAmount}
                 />
               </div>
-            )}
-
-            {selectedTenantId && openDues.length === 0 && (
-              <p className="text-sm text-text-secondary text-center py-4">
-                এই ভাড়াটের কোনো বকেয়া ডিউ নেই
-              </p>
             )}
 
             <div className="flex justify-end pt-2">

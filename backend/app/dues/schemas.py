@@ -30,6 +30,36 @@ class DueAdjustRequest(BaseModel):
     due_date: date | None = None
 
 
+class BulkDueGenerateRequest(BaseModel):
+    """Generate monthly dues for ALL active tenants for a given month/year.
+
+    due_date defaults to the 1st of (month, year). Skips tenants that
+    already have a due for this period (idempotent).
+    """
+
+    month: int = Field(ge=1, le=12)
+    year: int = Field(ge=2000, le=2100)
+    due_date: date | None = None
+
+
+class BulkDueGenerateResult(BaseModel):
+    """Summary after a bulk due generation run."""
+
+    created: int
+    skipped: int
+    no_agreement: int
+
+
+class PendingDueCountResult(BaseModel):
+    """How many tenants are waiting for dues to be generated."""
+
+    pending: int
+    already_has_due: int
+    no_agreement: int
+    month: int
+    year: int
+
+
 class MonthlyDueResponse(BaseModel):
     public_id: UUID
     tenant_public_id: UUID

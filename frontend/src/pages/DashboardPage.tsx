@@ -1,25 +1,41 @@
 import { getDashboardSummary } from "@/api/dashboard.api";
+import { getPendingDueCount } from "@/api/dues.api";
 import CollectionBarChart from "@/components/dashboard/CollectionBarChart";
 import OverdueTenantList from "@/components/dashboard/OverdueTenantList";
 import PaymentStatusDonut from "@/components/dashboard/PaymentStatusDonut";
+import BulkGenerateDueDialog from "@/components/payments/BulkGenerateDueDialog";
 import StatCard from "@/components/common/StatCard";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency } from "@/lib/utils";
+import type { PendingDueCount } from "@/types";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowDown, ArrowUp, Building, Users } from "lucide-react";
+import { AlertTriangle, ArrowDown, ArrowUp, Building, Users } from "lucide-react";
 import { useState } from "react";
+
+const MONTHS_BANGLA = [
+  "জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন",
+  "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর",
+];
 
 export default function DashboardPage() {
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [year, setYear] = useState(now.getFullYear());
+  const [generateDueOpen, setGenerateDueOpen] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["dashboard", month, year],
     queryFn: () => getDashboardSummary({ month, year }),
   });
 
+  const { data: countData } = useQuery({
+    queryKey: ["pending-due-count", month, year],
+    queryFn: () => getPendingDueCount(month, year),
+  });
+
   const summary = data?.data.data;
+  const pendingCount: PendingDueCount | undefined = countData?.data.data;
 
   return (
     <div className="space-y-6">
@@ -32,7 +48,7 @@ export default function DashboardPage() {
         >
           {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
             <option key={m} value={m}>
-              {["জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন", "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর"][m - 1]}
+              {MONTHS_BANGLA[m - 1]}
             </option>
           ))}
         </select>
@@ -99,6 +115,29 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* Pending dues banner */}
+      {pendingCount && pendingCount.pending > 0 && (
+        <div className="bg-warning-bg border border-warning/20 rounded-xl p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <AlertTriangle size={20} className="text-warning shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-text-primary">
+                {pendingCount.pending} জন ভাড়াটের ডিউ তৈরি করা বাকি
+              </p>
+              <p className="text-xs text-text-secondary">
+                {MONTHS_BANGLA[month - 1]} {year} মাসের ডিউ তৈরি করতে নিচের বাটনে ক্লিক করুন
+              </p>
+            </div>
+          </div>
+          <Button
+            onClick={() => setGenerateDueOpen(true)}
+            className="bg-warning hover:bg-warning/90 text-black shrink-0"
+          >
+            ডিউ তৈরি করুন
+          </Button>
+        </div>
+      )}
+
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {isLoading ? (
@@ -122,6 +161,11 @@ export default function DashboardPage() {
 
       {/* Overdue list */}
       <OverdueTenantList />
+
+      <BulkGenerateDueDialog
+        open={generateDueOpen}
+        onOpenChange={setGenerateDueOpen}
+      />
     </div>
   );
 }

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-RentFlow is a multi-tenant Rent Management SaaS backed by PostgreSQL. The repository is in early stages — currently only the database schema exists.
+RentFlow is a multi-tenant Rent Management SaaS backed by PostgreSQL.
 
 ## Database
 
@@ -116,6 +116,17 @@ Key design patterns enforced:
 - HTTP status codes: 200 success, 201 created, 400 bad input,
   401 unauthenticated, 403 unauthorized, 404 not found, 422 validation error
 
+## Testing
+
+- **Every new API, feature, or functionality must include corresponding tests.**
+- Backend tests live in `backend/tests/` (integration tests in `backend/tests/integration/`)
+- Follow existing test patterns:
+  - Use the `db`, `client`, `auth_token` fixtures from `backend/tests/conftest.py`
+  - Integration tests use httpx `AsyncClient` against the FastAPI app via test database
+  - Assert against JSON response fields, not internal ORM objects
+  - Write tests alongside the feature implementation — never defer tests
+- Run with `just test`, `just test-k <keyword>`, or `just test-file <path>`
+
 ## Stack
 
 - Backend: Python, FastAPI, SQLAlchemy (async), Alembic, PostgreSQL
@@ -132,5 +143,3 @@ just dev               # Start FastAPI dev server (port 8000)
 just test              # Run pytest suite
 just db-reset          # Reset database (drop + create + seed schema)
 ```
-
-Alembic lives in `backend/alembic/`. Database models in `backend/app/models/`.

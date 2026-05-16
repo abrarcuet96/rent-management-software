@@ -76,7 +76,9 @@ export default function AdjustDueDialog({
       return adjustDue(due.public_id, payload);
     },
     onSuccess: (res) => {
-      queryClient.invalidateQueries({ queryKey: ["dues", tenantId] });
+      queryClient.invalidateQueries({ queryKey: ["dues"] });
+      queryClient.invalidateQueries({ queryKey: ["overdue-list"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       toast.success(res.data.message || "ডিউ আপডেট হয়েছে");
       onOpenChange(false);
     },

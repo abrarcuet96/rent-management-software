@@ -47,6 +47,8 @@ export default function PaymentHistoryReport() {
 
   const tenants: Tenant[] = (tenantsData?.data.data ?? []) as Tenant[];
 
+  const selectedTenant = tenants.find((t) => t.public_id === selectedTenantId);
+
   const { data, isLoading } = useQuery({
     queryKey: ["payment-history", selectedTenantId],
     queryFn: () => getPaymentHistory({ tenant_public_id: selectedTenantId, page: 1, page_size: 100 }),
@@ -57,27 +59,36 @@ export default function PaymentHistoryReport() {
 
   return (
     <div ref={contentRef}>
-      <PrintHeader title="পেমেন্ট ইতিহাস" />
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <h3 className="text-sm font-medium text-text-primary">পেমেন্ট ইতিহাস</h3>
+      <PrintHeader
+        title="পেমেন্ট ইতিহাস"
+        subtitle={
+          selectedTenant
+            ? `${selectedTenant.full_name} — ${selectedTenant.building_name}, ইউনিট ${selectedTenant.apartment_unit_number}`
+            : undefined
+        }
+      />
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+          <h3 className="text-sm font-medium text-text-primary whitespace-nowrap">পেমেন্ট ইতিহাস</h3>
           <Select value={selectedTenantId} onValueChange={setSelectedTenantId}>
-            <SelectTrigger className="w-56">
+            <SelectTrigger className="w-full sm:w-56">
               <SelectValue placeholder="ভাড়াটে বেছে নিন" />
             </SelectTrigger>
             <SelectContent>
               {tenants.map((t) => (
                 <SelectItem key={t.public_id} value={t.public_id}>
-                  {t.full_name}
+                  {t.full_name} - {t.building_name} - {t.apartment_unit_number}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
-        <PrintButton
-          contentRef={contentRef}
-          documentTitle="পেমেন্ট ইতিহাস"
-        />
+        <div className="self-end sm:self-auto print:hidden">
+          <PrintButton
+            contentRef={contentRef}
+            documentTitle="পেমেন্ট ইতিহাস"
+          />
+        </div>
       </div>
 
       {!selectedTenantId ? (
@@ -101,14 +112,14 @@ export default function PaymentHistoryReport() {
               key={item.due_public_id}
               className="bg-surface rounded-lg border border-border overflow-hidden"
             >
-              <div className="flex items-center justify-between px-4 py-3 bg-neutral-bg">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between px-4 py-3 bg-neutral-bg gap-2">
                 <div className="flex items-center gap-3">
                   <span className="text-sm font-medium text-text-primary">
                     {getMonthName(item.month)} {item.year}
                   </span>
                   <StatusBadge status={item.status as "paid" | "partial" | "unpaid"} />
                 </div>
-                <div className="flex items-center gap-4 text-sm">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
                   <span className="text-text-secondary">
                     মোট দেয়:{" "}
                     <span className="text-text-primary font-medium">

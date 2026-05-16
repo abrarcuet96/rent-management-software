@@ -31,6 +31,8 @@ class TenantMoveOutRequest(BaseModel):
 class TenantResponse(BaseModel):
     public_id: UUID
     apartment_public_id: UUID
+    building_name: str
+    apartment_unit_number: str
     full_name: str
     phone: str
     nid_number: str | None

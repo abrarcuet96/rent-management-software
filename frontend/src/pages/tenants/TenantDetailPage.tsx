@@ -134,8 +134,10 @@ export default function TenantDetailPage() {
           <p className="text-xl font-semibold text-danger mt-1 truncate">{formatCurrency(totalOutstanding)}</p>
         </div>
         <div className="bg-surface rounded-xl p-4 border border-border min-w-0">
-          <p className="text-sm text-text-secondary">মোট ডিউ</p>
-          <p className="text-xl font-semibold text-text-primary mt-1">{dues.length}</p>
+          <p className="text-sm text-text-secondary">বকেয়া ডিউ</p>
+          <p className="text-xl font-semibold text-text-primary mt-1">
+            {dues.filter((d) => d.status === "unpaid" || d.status === "partial").length}
+          </p>
         </div>
       </div>
 

@@ -50,7 +50,9 @@ export default function GenerateMonthlyDue({ open, onOpenChange, tenantId }: Gen
         due_date: data.due_date || undefined,
       }),
     onSuccess: (res) => {
-      queryClient.invalidateQueries({ queryKey: ["dues", tenantId] });
+      queryClient.invalidateQueries({ queryKey: ["dues"] });
+      queryClient.invalidateQueries({ queryKey: ["overdue-list"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       toast.success(res.data.message || "ডিউ তৈরি হয়েছে");
       onOpenChange(false);
     },

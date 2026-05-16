@@ -26,6 +26,8 @@ export interface Apartment {
 export interface Tenant {
   public_id: string;
   apartment_public_id: string;
+  building_name: string;
+  apartment_unit_number: string;
   full_name: string;
   phone: string;
   nid_number?: string;
@@ -139,6 +141,20 @@ export interface BulkHistoryDueDetail {
   year: number;
   amount_applied: number;
   new_status: string;
+}
+
+export interface BulkDueGenerateResult {
+  created: number;
+  skipped: number;
+  no_agreement: number;
+}
+
+export interface PendingDueCount {
+  pending: number;
+  already_has_due: number;
+  no_agreement: number;
+  month: number;
+  year: number;
 }
 
 export interface StandardResponse<T> {

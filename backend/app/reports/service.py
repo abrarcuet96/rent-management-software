@@ -145,11 +145,13 @@ class ReportService:
         }
 
     async def overdue_list(self) -> list[dict]:
-        """Every unpaid/partial due past its due_date, across every tenant of this owner.
+        """Every unpaid/partial due for this owner, ordered oldest first.
 
-        One row per overdue due (not per tenant) so the UI can render a flat
-        actionable list. Includes tenant name + apartment unit + building name
-        so the table is meaningful without follow-up lookups.
+        Includes dues whose due_date is in the future — "বকেয়া" means any
+        outstanding balance, not just past-due. This ensures the dashboard list
+        stays consistent with the total_outstanding summary card.
+        days_overdue is positive when past due, negative when still upcoming,
+        and 0 when due_date is not set.
         """
         today = date.today()
         result = await self.db.execute(
@@ -176,12 +178,14 @@ class ReportService:
             .where(
                 MonthlyDue.is_active.is_(True),
                 MonthlyDue.status.in_(("unpaid", "partial")),
-                MonthlyDue.due_date.isnot(None),
-                MonthlyDue.due_date < today,
                 Building.owner_id == self.owner_id,
                 Building.is_active.is_(True),
             )
-            .order_by(MonthlyDue.due_date.asc())
+            .order_by(
+                MonthlyDue.due_date.asc().nulls_last(),
+                MonthlyDue.year.asc(),
+                MonthlyDue.month.asc(),
+            )
         )
 
         return [
@@ -200,7 +204,8 @@ class ReportService:
                 "apartment_unit": unit,
                 "building_name": bname,
                 "agreement_public_id": agr_pid,
-                "days_overdue": (today - dd).days,
+                # positive = days past due, negative = days until due, 0 = no due_date
+                "days_overdue": (today - dd).days if dd is not None else 0,
             }
             for (
                 due_pid,

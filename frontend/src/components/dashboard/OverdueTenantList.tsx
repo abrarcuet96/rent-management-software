@@ -71,7 +71,7 @@ export default function OverdueTenantList() {
               <th className="text-left px-3 py-2 font-medium text-text-secondary">বিল্ডিং/ইউনিট</th>
               <th className="text-left px-3 py-2 font-medium text-text-secondary">মাস/বছর</th>
               <th className="text-right px-3 py-2 font-medium text-text-secondary">বাকি</th>
-              <th className="text-center px-3 py-2 font-medium text-text-secondary">দিন</th>
+              <th className="text-center px-3 py-2 font-medium text-text-secondary">বকেয়া দিন</th>
               <th className="text-center px-3 py-2 font-medium text-text-secondary">স্ট্যাটাস</th>
               <th className="text-right px-3 py-2 font-medium text-text-secondary">অ্যাকশন</th>
             </tr>
@@ -90,7 +90,13 @@ export default function OverdueTenantList() {
                   {formatCurrency(item.remaining_balance)}
                 </td>
                 <td className="px-3 py-2 text-center text-text-secondary">
-                  {item.days_overdue}
+                  {item.days_overdue > 0 ? (
+                    <span className="text-danger font-medium">{item.days_overdue}</span>
+                  ) : item.days_overdue < 0 ? (
+                    <span className="text-text-muted text-xs">আসছে</span>
+                  ) : (
+                    "—"
+                  )}
                 </td>
                 <td className="px-3 py-2 text-center">
                   <StatusBadge status={item.status as "unpaid" | "partial"} />
