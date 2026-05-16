@@ -4,7 +4,9 @@ import { getDues } from "@/api/dues.api";
 import { getActiveTenant } from "@/api/tenants.api";
 import EmptyState from "@/components/common/EmptyState";
 import ErrorState from "@/components/common/ErrorState";
+import ExpandCollapseButton from "@/components/common/ExpandCollapseButton";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
+import TableSkeleton from "@/components/common/TableSkeleton";
 import PrintButton from "@/components/common/PrintButton";
 import StatusBadge from "@/components/common/StatusBadge";
 import AssignTenant from "@/components/tenants/AssignTenant";
@@ -13,6 +15,7 @@ import MoveOutTenant from "@/components/tenants/MoveOutTenant";
 import GenerateMonthlyDue from "@/components/payments/GenerateMonthlyDue";
 import MonthlyDueRow from "@/components/payments/MonthlyDueRow";
 import RecordPayment from "@/components/payments/RecordPayment";
+import AdjustDueDialog from "@/components/dues/AdjustDueDialog";
 import { Button } from "@/components/ui/button";
 import { useNavigationStore } from "@/stores/navigationStore";
 import type { MonthlyDue, Tenant } from "@/types";
@@ -28,6 +31,9 @@ export default function ApartmentDetailPage() {
   const [moveOutOpen, setMoveOutOpen] = useState(false);
   const [generateDueOpen, setGenerateDueOpen] = useState(false);
   const [payingDue, setPayingDue] = useState<MonthlyDue | null>(null);
+  const [adjustingDue, setAdjustingDue] = useState<MonthlyDue | null>(null);
+  const [expandedDues, setExpandedDues] = useState<Set<string>>(new Set());
+  const duesInitialized = useRef(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const { setActiveBuilding, setActiveApartment } = useNavigationStore();
 
@@ -65,6 +71,26 @@ export default function ApartmentDetailPage() {
 
   const dues: MonthlyDue[] = duesData?.data.data ?? [];
 
+  // Expand all rows by default on first load
+  useEffect(() => {
+    if (dues.length > 0 && !duesInitialized.current) {
+      setExpandedDues(new Set(dues.map((d) => d.public_id)));
+      duesInitialized.current = true;
+    }
+  }, [dues]);
+
+  const allDuesExpanded = dues.length > 0 && dues.every((d) => expandedDues.has(d.public_id));
+
+  const toggleDue = (id: string) =>
+    setExpandedDues((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+
+  const expandAllDues = () => setExpandedDues(new Set(dues.map((d) => d.public_id)));
+  const collapseAllDues = () => setExpandedDues(new Set());
+
   useEffect(() => {
     if (building) setActiveBuilding(buildingId ?? null, building.name);
     if (apartment) setActiveApartment(apartmentId ?? null, `ইউনিট ${apartment.unit_number}`);
@@ -83,11 +109,13 @@ export default function ApartmentDetailPage() {
   }
 
   return (
-    <div ref={contentRef}>
-      <PrintButton contentRef={contentRef} documentTitle={`ইউনিট ${apartment.unit_number}`} />
+    <div ref={contentRef} className="space-y-4">
+      <div className="flex print:hidden">
+        <PrintButton contentRef={contentRef} documentTitle={`ইউনিট ${apartment.unit_number}`} />
+      </div>
 
       {/* Apartment info */}
-      <div className="bg-surface rounded-xl p-5 border border-border mb-6">
+      <div className="bg-surface rounded-xl p-5 border border-border">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-success-bg flex items-center justify-center">
@@ -125,17 +153,17 @@ export default function ApartmentDetailPage() {
         <div className="space-y-6">
           {/* Tenant info card */}
           <div className="bg-surface rounded-xl p-5 border border-border">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-success-bg flex items-center justify-center">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-full bg-success-bg flex items-center justify-center shrink-0">
                   <User size={20} className="text-success" />
                 </div>
-                <div>
-                  <h3 className="font-medium text-text-primary">{tenant.full_name}</h3>
+                <div className="min-w-0">
+                  <h3 className="font-medium text-text-primary truncate">{tenant.full_name}</h3>
                   <p className="text-sm text-text-secondary">{tenant.phone}</p>
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 shrink-0">
                 <Button
                   variant="outline"
                   size="sm"
@@ -169,7 +197,16 @@ export default function ApartmentDetailPage() {
           {/* Dues table */}
           <div className="bg-surface rounded-xl border border-border overflow-hidden">
             <div className="flex items-center justify-between p-4 border-b border-border">
-              <h3 className="text-sm font-medium text-text-primary">মাসিক ডিউ</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-medium text-text-primary">মাসিক ডিউ</h3>
+                {dues.length > 0 && (
+                  <ExpandCollapseButton
+                    allExpanded={allDuesExpanded}
+                    onExpandAll={expandAllDues}
+                    onCollapseAll={collapseAllDues}
+                  />
+                )}
+              </div>
               <Button
                 variant="outline"
                 size="sm"
@@ -180,20 +217,23 @@ export default function ApartmentDetailPage() {
               </Button>
             </div>
             {duesLoading ? (
-              <div className="p-4 text-center text-sm text-text-secondary">লোড হচ্ছে...</div>
+              <TableSkeleton rows={4} cols={6} />
             ) : dues.length === 0 ? (
-              <div className="p-4 text-center text-sm text-text-secondary">কোনো ডিউ নেই</div>
+              <EmptyState
+                title="কোনো ডিউ নেই"
+                description="ডিউ তৈরি করতে উপরের বাটনে ক্লিক করুন"
+              />
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+              <div className="overflow-x-auto print:overflow-visible">
+                <table className="w-full min-w-[560px] print:min-w-0 text-sm">
                   <thead className="bg-neutral-bg">
                     <tr>
-                      <th className="text-left px-3 py-2 font-medium text-text-secondary">মাস/বছর</th>
-                      <th className="text-right px-3 py-2 font-medium text-text-secondary">মোট দেয়</th>
-                      <th className="text-right px-3 py-2 font-medium text-text-secondary">পরিশোধিত</th>
-                      <th className="text-right px-3 py-2 font-medium text-text-secondary">বাকি</th>
-                      <th className="text-center px-3 py-2 font-medium text-text-secondary">স্ট্যাটাস</th>
-                      <th className="text-right px-3 py-2 font-medium text-text-secondary">অ্যাকশন</th>
+                      <th className="text-left px-3 py-2 font-medium text-text-secondary whitespace-nowrap">মাস/বছর</th>
+                      <th className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap">মোট দেয়</th>
+                      <th className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap">পরিশোধিত</th>
+                      <th className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap">বাকি</th>
+                      <th className="text-center px-3 py-2 font-medium text-text-secondary whitespace-nowrap">স্ট্যাটাস</th>
+                      <th className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap print:hidden">অ্যাকশন</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -202,6 +242,9 @@ export default function ApartmentDetailPage() {
                         key={due.public_id}
                         due={due}
                         onPay={() => setPayingDue(due)}
+                        onAdjust={() => setAdjustingDue(due)}
+                        expanded={expandedDues.has(due.public_id)}
+                        onToggle={() => toggleDue(due.public_id)}
                       />
                     ))}
                   </tbody>
@@ -247,6 +290,16 @@ export default function ApartmentDetailPage() {
             if (!open) setPayingDue(null);
           }}
           due={payingDue}
+          tenantId={tenant?.public_id ?? ""}
+        />
+      )}
+      {adjustingDue && (
+        <AdjustDueDialog
+          open={!!adjustingDue}
+          onOpenChange={(open) => {
+            if (!open) setAdjustingDue(null);
+          }}
+          due={adjustingDue}
           tenantId={tenant?.public_id ?? ""}
         />
       )}

@@ -33,5 +33,6 @@ class PaymentRecord(Base):
     amount_paid: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     paid_on: Mapped[date] = mapped_column(Date, nullable=False)
     note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    is_bulk: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     monthly_due: Mapped["MonthlyDue"] = relationship(back_populates="payment_records")  # type: ignore[name-defined]

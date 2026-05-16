@@ -1,8 +1,11 @@
-import { getDashboardSummary } from "@/api/dashboard.api";
+import { getAnnualSummary } from "@/api/reports.api";
+import EmptyState from "@/components/common/EmptyState";
 import PrintButton from "@/components/common/PrintButton";
 import PrintHeader from "@/components/common/PrintHeader";
+import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
+import { BarChart3 } from "lucide-react";
 import { useRef, useState } from "react";
 
 export default function AnnualSummaryTable() {
@@ -11,10 +14,15 @@ export default function AnnualSummaryTable() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["annual-summary", year],
-    queryFn: () => getDashboardSummary({ year }),
+    queryFn: () => getAnnualSummary(year),
   });
 
-  const summary = data?.data.data;
+  const summary = data?.data.data as {
+    total_collected: number;
+    total_expenses: number;
+    net_profit: number;
+    total_outstanding: number;
+  } | undefined;
 
   return (
     <div ref={contentRef}>
@@ -37,7 +45,14 @@ export default function AnnualSummaryTable() {
         </div>
       </div>
       {isLoading ? (
-        <p className="text-sm text-text-secondary text-center py-8">লোড হচ্ছে...</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="bg-surface rounded-xl p-4 border border-border space-y-3">
+              <Skeleton className="h-4 w-2/3 rounded" />
+              <Skeleton className="h-7 w-1/2 rounded" />
+            </div>
+          ))}
+        </div>
       ) : summary ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-surface rounded-xl p-4 border border-border">
@@ -66,7 +81,11 @@ export default function AnnualSummaryTable() {
           </div>
         </div>
       ) : (
-        <p className="text-sm text-text-secondary text-center py-8">কোনো ডেটা নেই</p>
+        <EmptyState
+          title="কোনো ডেটা নেই"
+          description="এই বছরের জন্য কোনো তথ্য পাওয়া যায়নি"
+          icon={<BarChart3 size={40} />}
+        />
       )}
     </div>
   );

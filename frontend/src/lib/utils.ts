@@ -5,8 +5,13 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatCurrency(amount: number): string {
-  return `৳${amount.toLocaleString("bn-BD")}`;
+export function formatCurrency(amount: number | string): string {
+  const num = typeof amount === "string" ? parseFloat(amount) : amount;
+  if (isNaN(num)) return "৳0";
+  return `৳${num.toLocaleString("en-BD", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 }
 
 export function formatDate(dateStr: string): string {

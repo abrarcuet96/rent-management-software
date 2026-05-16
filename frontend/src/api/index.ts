@@ -7,3 +7,4 @@ export * from "./payments.api";
 export * from "./agreements.api";
 export * from "./dashboard.api";
 export * from "./reports.api";
+export * from "./expenses.api";

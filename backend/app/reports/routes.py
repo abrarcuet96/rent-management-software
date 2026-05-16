@@ -28,6 +28,17 @@ async def payment_history(
     )
 
 
+@router.get("/annual-summary", response_model=StandardResponse)
+async def annual_summary(
+    year: int = Query(..., ge=2000, le=2100),
+    db: AsyncSession = Depends(get_db),
+    owner_id: UUID = Depends(get_current_owner),
+) -> StandardResponse:
+    service = ReportService(db, owner_id)
+    data = await service.annual_summary(year)
+    return StandardResponse(success=True, data=data)
+
+
 @router.get("/overdue-list", response_model=StandardResponse)
 async def overdue_list(
     db: AsyncSession = Depends(get_db),

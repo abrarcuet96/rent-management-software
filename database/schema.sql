@@ -116,7 +116,8 @@ CREATE TABLE payment_record (
     due_id      UUID NOT NULL REFERENCES monthly_due(id) ON DELETE RESTRICT,
     amount_paid NUMERIC(10,2) NOT NULL CHECK (amount_paid > 0),
     paid_on     DATE NOT NULL,
-    note        TEXT
+    note        TEXT,
+    is_bulk     BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 -- ------------------------------------------------------------

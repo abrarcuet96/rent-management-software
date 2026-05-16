@@ -8,6 +8,7 @@ interface BulkDistributionPreviewProps {
 
 export default function BulkDistributionPreview({ dues, totalAmount }: BulkDistributionPreviewProps) {
   let remaining = totalAmount;
+  let sumAfterRemaining = 0;
 
   return (
     <div className="border border-border rounded-lg overflow-hidden">
@@ -15,7 +16,7 @@ export default function BulkDistributionPreview({ dues, totalAmount }: BulkDistr
         <thead className="bg-neutral-bg">
           <tr>
             <th className="text-left px-3 py-2 font-medium text-text-secondary">মাস/বছর</th>
-            <th className="text-right px-3 py-2 font-medium text-text-secondary">মোট দেয়</th>
+            <th className="text-right px-3 py-2 font-medium text-text-secondary">বকেয়া</th>
             <th className="text-right px-3 py-2 font-medium text-text-secondary">প্রযোজ্য</th>
             <th className="text-right px-3 py-2 font-medium text-text-secondary">বাকি</th>
           </tr>
@@ -24,6 +25,7 @@ export default function BulkDistributionPreview({ dues, totalAmount }: BulkDistr
           {dues.map((due) => {
             const apply = Math.min(due.remaining_balance, remaining);
             const afterRemaining = due.remaining_balance - apply;
+            sumAfterRemaining += afterRemaining;
             remaining -= apply;
             return (
               <tr key={due.public_id} className="border-t border-border">
@@ -52,9 +54,20 @@ export default function BulkDistributionPreview({ dues, totalAmount }: BulkDistr
               {formatCurrency(totalAmount - remaining)}
             </td>
             <td className="px-3 py-2 text-right font-medium text-text-secondary">
-              {remaining > 0 ? formatCurrency(remaining) : "৳০"}
+              {sumAfterRemaining > 0 ? formatCurrency(sumAfterRemaining) : "৳০"}
             </td>
           </tr>
+          {remaining > 0 && (
+          <tr>
+            <td colSpan={2} className="px-3 py-2 font-medium text-text-secondary">
+              অব্যবহৃত
+            </td>
+            <td className="px-3 py-2 text-right text-text-secondary">
+              {formatCurrency(remaining)}
+            </td>
+            <td></td>
+          </tr>
+          )}
         </tfoot>
       </table>
     </div>

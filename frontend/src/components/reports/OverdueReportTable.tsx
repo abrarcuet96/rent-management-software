@@ -1,9 +1,12 @@
 import { getOverdueList } from "@/api/reports.api";
+import EmptyState from "@/components/common/EmptyState";
+import TableSkeleton from "@/components/common/TableSkeleton";
 import StatusBadge from "@/components/common/StatusBadge";
 import PrintButton from "@/components/common/PrintButton";
 import PrintHeader from "@/components/common/PrintHeader";
 import { formatCurrency } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
+import { CheckCircle2 } from "lucide-react";
 import { useRef } from "react";
 
 interface OverdueItem {
@@ -11,12 +14,16 @@ interface OverdueItem {
   month: number;
   year: number;
   due_date: string;
+  rent_amount: number;
+  total_due: number;
+  amount_paid: number;
   remaining_balance: number;
   status: string;
   tenant_public_id: string;
   tenant_name: string;
   apartment_unit: string;
   building_name: string;
+  agreement_public_id: string;
   days_overdue: number;
 }
 
@@ -37,9 +44,13 @@ export default function OverdueReportTable() {
         <PrintButton contentRef={contentRef} documentTitle="বকেয়া রিপোর্ট" />
       </div>
       {isLoading ? (
-        <p className="text-sm text-text-secondary text-center py-8">লোড হচ্ছে...</p>
+        <TableSkeleton rows={5} cols={7} />
       ) : items.length === 0 ? (
-        <p className="text-sm text-text-secondary text-center py-8">কোনো বকেয়া নেই</p>
+        <EmptyState
+          title="কোনো বকেয়া নেই"
+          description="সকল পেমেন্ট সময়মতো পরিশোধিত হয়েছে"
+          icon={<CheckCircle2 size={40} className="text-success" />}
+        />
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -48,7 +59,7 @@ export default function OverdueReportTable() {
                 <th className="text-left px-3 py-2 font-medium text-text-secondary">ভাড়াটে</th>
                 <th className="text-left px-3 py-2 font-medium text-text-secondary">বিল্ডিং/ইউনিট</th>
                 <th className="text-left px-3 py-2 font-medium text-text-secondary">মাস/বছর</th>
-                <th className="text-right px-3 py-2 font-medium text-text-secondary">মোট দেয়</th>
+                <th className="text-right px-3 py-2 font-medium text-text-secondary">প্রদান</th>
                 <th className="text-right px-3 py-2 font-medium text-text-secondary">বাকি</th>
                 <th className="text-center px-3 py-2 font-medium text-text-secondary">দিন</th>
                 <th className="text-center px-3 py-2 font-medium text-text-secondary">স্ট্যাটাস</th>
@@ -65,7 +76,7 @@ export default function OverdueReportTable() {
                     {item.month}/{item.year}
                   </td>
                   <td className="px-3 py-2 text-right text-text-primary">
-                    {formatCurrency(item.remaining_balance)}
+                    {formatCurrency(item.amount_paid)}
                   </td>
                   <td className="px-3 py-2 text-right font-medium text-danger">
                     {formatCurrency(item.remaining_balance)}

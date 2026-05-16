@@ -100,6 +100,8 @@ export default function BuildingDetailPage() {
             error={apartmentsError}
             onRetry={() => refetchApartments()}
             onEdit={setEditApartment}
+            emptyTitle="কোনো অ্যাপার্টমেন্ট নেই"
+            emptyDescription="এই বিল্ডিংয়ে অ্যাপার্টমেন্ট যোগ করুন"
           />
         </TabsContent>
         <TabsContent value="vacant">
@@ -110,6 +112,8 @@ export default function BuildingDetailPage() {
             error={apartmentsError}
             onRetry={() => refetchApartments()}
             onEdit={setEditApartment}
+            emptyTitle="কোনো খালি অ্যাপার্টমেন্ট নেই"
+            emptyDescription="সব অ্যাপার্টমেন্ট বর্তমানে ভাড়া দেওয়া আছে"
           />
         </TabsContent>
         <TabsContent value="occupied">
@@ -120,6 +124,8 @@ export default function BuildingDetailPage() {
             error={apartmentsError}
             onRetry={() => refetchApartments()}
             onEdit={setEditApartment}
+            emptyTitle="কোনো ভর্তি অ্যাপার্টমেন্ট নেই"
+            emptyDescription="কোনো অ্যাপার্টমেন্টে এখনো ভাড়াটে নেই"
           />
         </TabsContent>
       </Tabs>
@@ -150,9 +156,11 @@ interface ApartmentGridProps {
   error: Error | null;
   onRetry: () => void;
   onEdit: (apt: Apartment) => void;
+  emptyTitle: string;
+  emptyDescription: string;
 }
 
-function ApartmentGrid({ apartments, buildingId, loading, error, onRetry, onEdit }: ApartmentGridProps) {
+function ApartmentGrid({ apartments, buildingId, loading, error, onRetry, onEdit, emptyTitle, emptyDescription }: ApartmentGridProps) {
   if (error) {
     return <ErrorState onRetry={onRetry} />;
   }
@@ -170,8 +178,8 @@ function ApartmentGrid({ apartments, buildingId, loading, error, onRetry, onEdit
   if (apartments.length === 0) {
     return (
       <EmptyState
-        title="কোনো অ্যাপার্টমেন্ট নেই"
-        description="এই বিল্ডিংয়ে অ্যাপার্টমেন্ট যোগ করুন"
+        title={emptyTitle}
+        description={emptyDescription}
         icon={<DoorOpen size={48} />}
       />
     );

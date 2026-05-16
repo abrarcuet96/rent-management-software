@@ -37,6 +37,7 @@ class PaymentRecordResponse(BaseModel):
     paid_on: date
     note: str | None
     is_active: bool
+    is_bulk: bool
     created_at: datetime
 
 
@@ -55,3 +56,31 @@ class BulkPaymentResult(BaseModel):
     dues_partially_paid: int
     dues_updated: list[BulkPaymentDueUpdate]
     payment_records: list[PaymentRecordResponse]
+
+
+class RefundResponse(BaseModel):
+    refunded_payment: PaymentRecordResponse
+    due_public_id: UUID
+    new_status: str
+    new_amount_paid: Decimal
+    new_remaining_balance: Decimal
+
+
+class BulkPaymentHistoryItem(BaseModel):
+    paid_on: date
+    note: str | None
+    tenant_public_id: UUID
+    tenant_name: str
+    total_amount: Decimal
+    dues: list["BulkHistoryDueDetail"]
+
+
+class BulkHistoryDueDetail(BaseModel):
+    due_public_id: UUID
+    month: int
+    year: int
+    amount_applied: Decimal
+    new_status: str
+
+
+BulkPaymentHistoryItem.model_rebuild()

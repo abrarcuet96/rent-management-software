@@ -244,3 +244,161 @@ async def test_list_payments_success(client: AsyncClient, auth_token: str, test_
     assert "2000.00" in amounts
     # Newest paid_on first
     assert body["data"][0]["paid_on"] == "2024-01-20"
+
+
+# ── refund ────────────────────────────────────────────────────────────────────
+
+
+async def test_refund_payment_full_reverts_to_unpaid(
+    client: AsyncClient, auth_token: str, test_due: dict
+):
+    """Refunding the only payment on a due reverts it to unpaid with full balance."""
+    due_pid = test_due["public_id"]
+    pay_resp = await client.post(
+        _payments_url(due_pid),
+        json={"amount": "10000.00", "paid_on": "2024-01-15"},
+        headers=_auth(auth_token),
+    )
+    assert pay_resp.status_code == 201
+    payment_pid = pay_resp.json()["data"]["payment"]["public_id"]
+
+    refund_resp = await client.delete(
+        f"{BASE}/payments/{payment_pid}",
+        headers=_auth(auth_token),
+    )
+    assert refund_resp.status_code == 200
+    result = refund_resp.json()["data"]
+    assert result["new_status"] == "unpaid"
+    assert result["new_amount_paid"] == "0.00"
+    assert result["new_remaining_balance"] == "10000.00"
+
+
+async def test_refund_payment_partial_stays_partial(
+    client: AsyncClient, auth_token: str, test_due: dict
+):
+    """Refunding one of two partial payments leaves due in 'partial' status."""
+    due_pid = test_due["public_id"]
+    r1 = await client.post(
+        _payments_url(due_pid),
+        json={"amount": "4000.00", "paid_on": "2024-01-10"},
+        headers=_auth(auth_token),
+    )
+    r2 = await client.post(
+        _payments_url(due_pid),
+        json={"amount": "3000.00", "paid_on": "2024-01-15"},
+        headers=_auth(auth_token),
+    )
+    assert r1.status_code == 201
+    assert r2.status_code == 201
+
+    payment_pid = r1.json()["data"]["payment"]["public_id"]
+    refund_resp = await client.delete(
+        f"{BASE}/payments/{payment_pid}",
+        headers=_auth(auth_token),
+    )
+    assert refund_resp.status_code == 200
+    result = refund_resp.json()["data"]
+    assert result["new_status"] == "partial"
+    assert result["new_amount_paid"] == "3000.00"
+    assert result["new_remaining_balance"] == "7000.00"
+
+
+async def test_refund_payment_already_refunded_returns_404(
+    client: AsyncClient, auth_token: str, test_due: dict
+):
+    """Attempting to refund an already-refunded payment returns 404."""
+    due_pid = test_due["public_id"]
+    pay_resp = await client.post(
+        _payments_url(due_pid),
+        json={"amount": "5000.00", "paid_on": "2024-01-15"},
+        headers=_auth(auth_token),
+    )
+    payment_pid = pay_resp.json()["data"]["payment"]["public_id"]
+
+    await client.delete(f"{BASE}/payments/{payment_pid}", headers=_auth(auth_token))
+    resp = await client.delete(f"{BASE}/payments/{payment_pid}", headers=_auth(auth_token))
+    assert resp.status_code == 404
+
+
+async def test_refund_payment_wrong_owner_returns_404(
+    client: AsyncClient, auth_token: str, test_due: dict
+):
+    """A second owner cannot refund a payment they do not own."""
+    due_pid = test_due["public_id"]
+    pay_resp = await client.post(
+        _payments_url(due_pid),
+        json={"amount": "5000.00", "paid_on": "2024-01-15"},
+        headers=_auth(auth_token),
+    )
+    payment_pid = pay_resp.json()["data"]["payment"]["public_id"]
+
+    resp2 = await client.post(
+        f"{BASE}/auth/register",
+        json={"full_name": "Owner 2", "email": "owner2refund@example.com", "password": "pass1234"},
+    )
+    token2 = resp2.json()["data"]["access_token"]
+    resp = await client.delete(f"{BASE}/payments/{payment_pid}", headers=_auth(token2))
+    assert resp.status_code == 404
+
+
+# ── bulk payment history ───────────────────────────────────────────────────────
+
+
+async def test_bulk_payment_history_empty(client: AsyncClient, auth_token: str):
+    """Owner with no bulk payments gets an empty list."""
+    resp = await client.get(f"{BASE}/payments/bulk-history", headers=_auth(auth_token))
+    assert resp.status_code == 200
+    assert resp.json()["data"] == []
+    assert resp.json()["pagination"]["total"] == 0
+
+
+async def test_bulk_payment_history_shows_transactions(
+    client: AsyncClient, auth_token: str, test_tenant: dict
+):
+    """After a bulk payment, the history shows the transaction with all affected dues."""
+    t_pid = test_tenant["public_id"]
+    for month in [1, 2, 3]:
+        await _generate_due(client, auth_token, t_pid, month, 2024)
+
+    await client.post(
+        f"{BASE}/payments/bulk",
+        json={
+            "tenant_public_id": t_pid,
+            "total_amount": "20000.00",
+            "paid_on": "2024-03-01",
+            "note": "3-month advance",
+        },
+        headers=_auth(auth_token),
+    )
+
+    resp = await client.get(
+        f"{BASE}/payments/bulk-history?page=1&page_size=10", headers=_auth(auth_token)
+    )
+    assert resp.status_code == 200
+    items = resp.json()["data"]
+    assert len(items) == 1
+    tx = items[0]
+    assert tx["tenant_name"] is not None
+    assert tx["total_amount"] == "20000.00"
+    assert tx["note"] == "3-month advance"
+    assert len(tx["dues"]) == 2  # cleared 2 dues (month 1 and 2)
+    due_months = {d["month"] for d in tx["dues"]}
+    assert due_months == {1, 2}
+
+
+async def test_bulk_payment_history_excludes_single_payments(
+    client: AsyncClient, auth_token: str, test_due: dict
+):
+    """Single payments (is_bulk=False) do not appear in bulk payment history."""
+    due_pid = test_due["public_id"]
+    await client.post(
+        f"{BASE}/dues/{due_pid}/payments",
+        json={"amount": "10000.00", "paid_on": "2024-01-15"},
+        headers=_auth(auth_token),
+    )
+
+    resp = await client.get(f"{BASE}/payments/bulk-history", headers=_auth(auth_token))
+    assert resp.status_code == 200
+    # Single payment should not appear in bulk history
+    items = resp.json()["data"]
+    assert all(not any(d["due_public_id"] == due_pid for d in tx["dues"]) for tx in items)

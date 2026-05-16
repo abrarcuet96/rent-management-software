@@ -29,7 +29,13 @@ async def register(
             detail="Email already registered",
         )
 
-    token = create_access_token({"sub": str(owner.id)})
+    token = create_access_token(
+        {
+            "sub": str(owner.id),
+            "full_name": owner.full_name,
+            "email": owner.email,
+        }
+    )
     return StandardResponse(
         success=True,
         data=TokenData(access_token=token),
@@ -51,7 +57,13 @@ async def login(
             detail="Invalid email or password",
         )
 
-    token = create_access_token({"sub": str(owner.id)})
+    token = create_access_token(
+        {
+            "sub": str(owner.id),
+            "full_name": owner.full_name,
+            "email": owner.email,
+        }
+    )
     return StandardResponse(
         success=True,
         data=TokenData(access_token=token),

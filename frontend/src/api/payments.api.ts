@@ -1,4 +1,4 @@
-import type { BulkPaymentResult, PaginatedResponse, PaymentRecord, StandardResponse } from "@/types";
+import type { BulkPaymentHistoryItem, BulkPaymentResult, PaginatedResponse, PaymentRecord, StandardResponse } from "@/types";
 import apiClient from "./client";
 
 export const recordPayment = (
@@ -13,5 +13,11 @@ export const recordBulkPayment = (data: {
   note?: string;
 }) => apiClient.post<StandardResponse<BulkPaymentResult>>("/payments/bulk", data);
 
+export const getBulkPaymentHistory = (params?: Record<string, unknown>) =>
+  apiClient.get<PaginatedResponse<BulkPaymentHistoryItem>>("/payments/bulk-history", { params });
+
 export const getPayments = (dueId: string) =>
   apiClient.get<PaginatedResponse<PaymentRecord>>(`/dues/${dueId}/payments`);
+
+export const refundPayment = (paymentId: string) =>
+  apiClient.delete<StandardResponse<unknown>>(`/payments/${paymentId}`);

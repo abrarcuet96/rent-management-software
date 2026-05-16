@@ -14,7 +14,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.apartment import Apartment
 from app.models.building import Building
+from app.models.expense_category import ExpenseCategory
 from app.models.monthly_due import MonthlyDue
+from app.models.payment_record import PaymentRecord
 from app.models.tenant import Tenant
 
 
@@ -95,3 +97,78 @@ async def resolve_building_id(
     if building_id is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Building not found")
     return building_id
+
+
+async def resolve_apartment_id(
+    db: AsyncSession,
+    owner_id: UUID,
+    apartment_public_id: UUID,
+    building_id: UUID | None = None,
+) -> UUID:
+    """Return the internal Apartment.id for an apartment owned (via building) by owner_id.
+
+    If building_id is provided, also verifies the apartment belongs to that building.
+    """
+    conditions = [
+        Apartment.public_id == apartment_public_id,
+        Apartment.is_active.is_(True),
+        Building.owner_id == owner_id,
+        Building.is_active.is_(True),
+    ]
+    if building_id is not None:
+        conditions.append(Apartment.building_id == building_id)
+
+    apt_id = await db.scalar(
+        select(Apartment.id).join(Building, Building.id == Apartment.building_id).where(*conditions)
+    )
+    if apt_id is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Apartment not found")
+    return apt_id
+
+
+async def resolve_payment(
+    db: AsyncSession,
+    owner_id: UUID,
+    payment_public_id: UUID,
+) -> tuple[PaymentRecord, MonthlyDue]:
+    """Return (PaymentRecord, MonthlyDue) for a payment owned via due→tenant→apt→building.
+
+    Raises 404 if the payment doesn't exist or isn't owned by this owner.
+    Returns both objects so the caller can mutate the due for ledger reversal.
+    """
+    result = await db.execute(
+        select(PaymentRecord, MonthlyDue)
+        .join(MonthlyDue, MonthlyDue.id == PaymentRecord.due_id)
+        .join(Tenant, Tenant.id == MonthlyDue.tenant_id)
+        .join(Apartment, Apartment.id == Tenant.apartment_id)
+        .join(Building, Building.id == Apartment.building_id)
+        .where(
+            PaymentRecord.public_id == payment_public_id,
+            PaymentRecord.is_active.is_(True),
+            MonthlyDue.is_active.is_(True),
+            Building.owner_id == owner_id,
+            Building.is_active.is_(True),
+        )
+    )
+    row = result.one_or_none()
+    if row is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Payment not found")
+    return row[0], row[1]
+
+
+async def resolve_category_id(
+    db: AsyncSession,
+    owner_id: UUID,
+    category_public_id: UUID,
+) -> UUID:
+    """Return the internal ExpenseCategory.id for a category owned by owner_id."""
+    cat_id = await db.scalar(
+        select(ExpenseCategory.id).where(
+            ExpenseCategory.public_id == category_public_id,
+            ExpenseCategory.owner_id == owner_id,
+            ExpenseCategory.is_active.is_(True),
+        )
+    )
+    if cat_id is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
+    return cat_id

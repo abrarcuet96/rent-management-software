@@ -1,14 +1,17 @@
 from datetime import date
+from decimal import Decimal
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import extract, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.apartment import Apartment
 from app.models.building import Building
+from app.models.expense import Expense
 from app.models.monthly_due import MonthlyDue
 from app.models.payment_record import PaymentRecord
 from app.models.tenant import Tenant
+from app.models.tenant_agreement import TenantAgreement
 from app.shared.ownership import resolve_tenant_id
 
 
@@ -88,6 +91,59 @@ class ReportService:
 
         return items, int(total or 0)
 
+    async def annual_summary(self, year: int) -> dict:
+        """Aggregate collection, expenses, and outstanding for an entire calendar year.
+
+        Unlike the dashboard summary (which is always one month), this sums all
+        PaymentRecords and Expenses whose dates fall within the requested year.
+        total_outstanding is the live total across all open dues (not year-scoped)
+        because outstanding balance doesn't belong to a calendar year.
+        """
+        collected_q = (
+            select(func.coalesce(func.sum(PaymentRecord.amount_paid), 0))
+            .select_from(PaymentRecord)
+            .join(MonthlyDue, MonthlyDue.id == PaymentRecord.due_id)
+            .join(Tenant, Tenant.id == MonthlyDue.tenant_id)
+            .join(Apartment, Apartment.id == Tenant.apartment_id)
+            .join(Building, Building.id == Apartment.building_id)
+            .where(
+                PaymentRecord.is_active.is_(True),
+                Building.owner_id == self.owner_id,
+                extract("year", PaymentRecord.paid_on) == year,
+            )
+        )
+        total_collected: Decimal = await self.db.scalar(collected_q) or Decimal("0")
+
+        expenses_q = select(func.coalesce(func.sum(Expense.amount), 0)).where(
+            Expense.owner_id == self.owner_id,
+            Expense.is_active.is_(True),
+            Expense.is_tenant_charged.is_(False),
+            extract("year", Expense.expense_date) == year,
+        )
+        total_expenses: Decimal = await self.db.scalar(expenses_q) or Decimal("0")
+
+        outstanding_q = (
+            select(func.coalesce(func.sum(MonthlyDue.remaining_balance), 0))
+            .select_from(MonthlyDue)
+            .join(Tenant, Tenant.id == MonthlyDue.tenant_id)
+            .join(Apartment, Apartment.id == Tenant.apartment_id)
+            .join(Building, Building.id == Apartment.building_id)
+            .where(
+                MonthlyDue.is_active.is_(True),
+                MonthlyDue.status.in_(("unpaid", "partial")),
+                Building.owner_id == self.owner_id,
+            )
+        )
+        total_outstanding: Decimal = await self.db.scalar(outstanding_q) or Decimal("0")
+
+        return {
+            "year": year,
+            "total_collected": total_collected,
+            "total_expenses": total_expenses,
+            "net_profit": total_collected - total_expenses,
+            "total_outstanding": total_outstanding,
+        }
+
     async def overdue_list(self) -> list[dict]:
         """Every unpaid/partial due past its due_date, across every tenant of this owner.
 
@@ -102,16 +158,21 @@ class ReportService:
                 MonthlyDue.month,
                 MonthlyDue.year,
                 MonthlyDue.due_date,
+                MonthlyDue.rent_amount,
+                MonthlyDue.total_due,
+                MonthlyDue.amount_paid,
                 MonthlyDue.remaining_balance,
                 MonthlyDue.status,
                 Tenant.public_id,
                 Tenant.full_name,
                 Apartment.unit_number,
                 Building.name,
+                TenantAgreement.public_id,
             )
             .join(Tenant, Tenant.id == MonthlyDue.tenant_id)
             .join(Apartment, Apartment.id == Tenant.apartment_id)
             .join(Building, Building.id == Apartment.building_id)
+            .join(TenantAgreement, TenantAgreement.id == MonthlyDue.agreement_id)
             .where(
                 MonthlyDue.is_active.is_(True),
                 MonthlyDue.status.in_(("unpaid", "partial")),
@@ -129,13 +190,32 @@ class ReportService:
                 "month": m,
                 "year": y,
                 "due_date": dd,
+                "rent_amount": ra,
+                "total_due": td,
+                "amount_paid": ap,
                 "remaining_balance": rb,
                 "status": st,
                 "tenant_public_id": t_pid,
                 "tenant_name": t_name,
                 "apartment_unit": unit,
                 "building_name": bname,
+                "agreement_public_id": agr_pid,
                 "days_overdue": (today - dd).days,
             }
-            for (due_pid, m, y, dd, rb, st, t_pid, t_name, unit, bname) in result.all()
+            for (
+                due_pid,
+                m,
+                y,
+                dd,
+                ra,
+                td,
+                ap,
+                rb,
+                st,
+                t_pid,
+                t_name,
+                unit,
+                bname,
+                agr_pid,
+            ) in result.all()
         ]

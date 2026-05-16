@@ -13,6 +13,7 @@ from app.payments.schemas import (
     BulkPaymentResult,
     PaymentCreate,
     PaymentRecordResponse,
+    RefundResponse,
 )
 from app.payments.service import PaymentService
 from app.shared.dependencies import get_current_owner
@@ -29,6 +30,7 @@ def _payment_response(payment: PaymentRecord, due_public_id: UUID) -> PaymentRec
         paid_on=payment.paid_on,
         note=payment.note,
         is_active=payment.is_active,
+        is_bulk=payment.is_bulk,
         created_at=payment.created_at,
     )
 
@@ -54,6 +56,28 @@ async def record_payment(
         },
         message="Payment recorded",
     )
+
+
+@router.delete(
+    "/payments/{payment_public_id}",
+    response_model=StandardResponse,
+    status_code=http_status.HTTP_200_OK,
+)
+async def refund_payment(
+    payment_public_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    owner_id: UUID = Depends(get_current_owner),
+) -> StandardResponse:
+    service = PaymentService(db, owner_id)
+    payment, due = await service.refund_payment(payment_public_id)
+    result = RefundResponse(
+        refunded_payment=_payment_response(payment, due.public_id),
+        due_public_id=due.public_id,
+        new_status=due.status,
+        new_amount_paid=due.amount_paid,
+        new_remaining_balance=due.remaining_balance,
+    )
+    return StandardResponse(success=True, data=result, message="Payment refunded")
 
 
 @router.get("/dues/{due_public_id}/payments", response_model=PaginatedResponse)
@@ -111,3 +135,19 @@ async def record_bulk_payment(
         payment_records=payment_records,
     )
     return StandardResponse(success=True, data=result, message="Bulk payment applied")
+
+
+@router.get("/payments/bulk-history", response_model=PaginatedResponse)
+async def bulk_payment_history(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    db: AsyncSession = Depends(get_db),
+    owner_id: UUID = Depends(get_current_owner),
+) -> PaginatedResponse:
+    service = PaymentService(db, owner_id)
+    items, total = await service.bulk_payment_history(page, page_size)
+    return PaginatedResponse(
+        success=True,
+        data=items,
+        pagination=PaginationMeta(page=page, page_size=page_size, total=total),
+    )

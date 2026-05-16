@@ -11,8 +11,11 @@ const PAGE_TITLES: Record<string, string> = {
   "/dashboard": "ড্যাশবোর্ড",
   "/buildings": "বিল্ডিং",
   "/tenants": "ভাড়াটেদের তালিকা",
+  "/payments": "পেমেন্ট",
+  "/expenses": "খরচ",
   "/reports": "রিপোর্ট",
   "/settings": "সেটিংস",
+  "/user-manual": "ব্যবহার গাইড",
 };
 
 function useCrumbs(pathname: string): Crumb[] | null {

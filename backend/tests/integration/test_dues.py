@@ -226,3 +226,17 @@ async def test_adjust_due_due_date(client: AsyncClient, auth_token: str, test_du
     assert due["due_date"] == "2024-01-20"
     assert due["total_due"] == "10000.00"
     assert due["remaining_balance"] == "10000.00"
+
+
+async def test_adjust_due_zero_total_due_rejected(
+    client: AsyncClient, auth_token: str, test_due: dict
+):
+    """Setting total_due to 0 is rejected with a validation error."""
+    due_pid = test_due["public_id"]
+    resp = await client.put(
+        _due_url(due_pid),
+        json={"total_due": "0"},
+        headers=_auth(auth_token),
+    )
+    # Pydantic rejects total_due=0 (gt=0 constraint) → 422
+    assert resp.status_code == 422

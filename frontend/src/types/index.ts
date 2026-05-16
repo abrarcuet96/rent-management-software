@@ -69,24 +69,25 @@ export interface PaymentRecord {
   amount_paid: number;
   paid_on: string;
   note?: string;
+  is_active: boolean;
+  is_bulk: boolean;
   created_at: string;
 }
 
 export interface ExpenseCategory {
   public_id: string;
-  owner_id: string;
   name: string;
   is_default: boolean;
-  is_active: boolean;
 }
 
 export interface Expense {
   public_id: string;
-  category_id: string;
-  description?: string;
+  category_public_id: string;
+  building_public_id?: string;
+  apartment_public_id?: string;
+  description: string;
   amount: number;
   expense_date: string;
-  scope: "building" | "apartment";
   is_tenant_charged: boolean;
 }
 
@@ -103,9 +104,41 @@ export interface DashboardSummary {
 
 export interface BulkPaymentResult {
   total_applied: number;
+  unapplied: number;
   dues_cleared: number;
   dues_partially_paid: number;
+  dues_updated: BulkPaymentDueUpdate[];
   payment_records: PaymentRecord[];
+}
+
+export interface BulkPaymentDueUpdate {
+  due_public_id: string;
+  month: number;
+  year: number;
+  applied_amount: number;
+  new_status: "partial" | "paid";
+}
+
+export interface BulkRentAdjustResult {
+  tenants_adjusted: number;
+  new_agreements: TenantAgreement[];
+}
+
+export interface BulkPaymentHistoryItem {
+  paid_on: string;
+  note: string | null;
+  tenant_public_id: string;
+  tenant_name: string;
+  total_amount: number;
+  dues: BulkHistoryDueDetail[];
+}
+
+export interface BulkHistoryDueDetail {
+  due_public_id: string;
+  month: number;
+  year: number;
+  amount_applied: number;
+  new_status: string;
 }
 
 export interface StandardResponse<T> {

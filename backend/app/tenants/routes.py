@@ -7,7 +7,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.models.apartment import Apartment
-from app.models.building import Building
 from app.models.tenant import Tenant
 from app.shared.dependencies import get_current_owner
 from app.shared.schemas import PaginatedResponse, PaginationMeta, StandardResponse

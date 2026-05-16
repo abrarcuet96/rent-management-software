@@ -3,6 +3,7 @@ import CollectionBarChart from "@/components/dashboard/CollectionBarChart";
 import OverdueTenantList from "@/components/dashboard/OverdueTenantList";
 import PaymentStatusDonut from "@/components/dashboard/PaymentStatusDonut";
 import StatCard from "@/components/common/StatCard";
+import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowDown, ArrowUp, Building, Users } from "lucide-react";
@@ -13,7 +14,7 @@ export default function DashboardPage() {
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [year, setYear] = useState(now.getFullYear());
 
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["dashboard", month, year],
     queryFn: () => getDashboardSummary({ month, year }),
   });
@@ -49,41 +50,74 @@ export default function DashboardPage() {
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          title="এই মাসে সংগৃহীত"
-          value={summary ? formatCurrency(summary.total_collected) : "..."}
-          subtitle="পেমেন্ট সংগ্রহ"
-          icon={<ArrowUp size={20} />}
-          colorClass="bg-success"
-        />
-        <StatCard
-          title="মোট বাকি"
-          value={summary ? formatCurrency(summary.total_outstanding) : "..."}
-          subtitle="সকল বকেয়া"
-          icon={<ArrowDown size={20} />}
-          colorClass="bg-destructive"
-        />
-        <StatCard
-          title="খালি অ্যাপার্টমেন্ট"
-          value={summary?.vacant_apartments ?? "..."}
-          subtitle="মোট অ্যাপার্টমেন্ট"
-          icon={<Building size={20} />}
-          colorClass="bg-neutral"
-        />
-        <StatCard
-          title="ভাড়াটে সংখ্যা"
-          value={summary?.occupied_apartments ?? "..."}
-          subtitle="সক্রিয় ভাড়াটে"
-          icon={<Users size={20} />}
-          colorClass="bg-warning"
-        />
-      </div>
+      {isLoading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="bg-surface rounded-xl p-5 border border-border relative overflow-hidden"
+            >
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-neutral-bg" />
+              <div className="pl-2 space-y-2">
+                <Skeleton className="h-4 w-2/3 rounded" />
+                <Skeleton className="h-8 w-1/2 rounded" />
+                <Skeleton className="h-3 w-1/3 rounded" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard
+            title="এই মাসে সংগৃহীত"
+            value={summary ? formatCurrency(summary.total_collected) : "৳0"}
+            subtitle="পেমেন্ট সংগ্রহ"
+            icon={<ArrowUp size={20} />}
+            colorClass="bg-success"
+          />
+          <StatCard
+            title="মোট বাকি"
+            value={summary ? formatCurrency(summary.total_outstanding) : "৳0"}
+            subtitle="সকল বকেয়া"
+            icon={<ArrowDown size={20} />}
+            colorClass="bg-destructive"
+          />
+          <StatCard
+            title="খালি অ্যাপার্টমেন্ট"
+            value={summary?.vacant_apartments ?? 0}
+            subtitle="মোট অ্যাপার্টমেন্ট"
+            icon={<Building size={20} />}
+            colorClass="bg-neutral"
+          />
+          <StatCard
+            title="ভাড়াটে সংখ্যা"
+            value={summary?.occupied_apartments ?? 0}
+            subtitle="সক্রিয় ভাড়াটে"
+            icon={<Users size={20} />}
+            colorClass="bg-warning"
+          />
+        </div>
+      )}
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {summary && <CollectionBarChart summary={summary} />}
-        <PaymentStatusDonut paid={0} partial={0} unpaid={0} />
+        {isLoading ? (
+          <>
+            <div className="bg-surface rounded-xl p-5 border border-border space-y-3">
+              <Skeleton className="h-4 w-1/3 rounded" />
+              <Skeleton className="h-48 w-full rounded" />
+            </div>
+            <div className="bg-surface rounded-xl p-5 border border-border space-y-3">
+              <Skeleton className="h-4 w-1/3 rounded" />
+              <Skeleton className="h-48 w-full rounded" />
+            </div>
+          </>
+        ) : (
+          <>
+            {summary && <CollectionBarChart summary={summary} />}
+            <PaymentStatusDonut paid={0} partial={0} unpaid={0} />
+          </>
+        )}
       </div>
 
       {/* Overdue list */}

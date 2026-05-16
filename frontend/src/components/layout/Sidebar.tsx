@@ -11,12 +11,15 @@ import { useAuthStore } from "@/stores/authStore";
 import { useUiStore } from "@/stores/uiStore";
 import {
   BarChart3,
+  BookOpen,
   Building2,
   ChevronLeft,
   ChevronRight,
+  CreditCard,
   LayoutDashboard,
   Monitor,
   Moon,
+  Receipt,
   Settings,
   Sun,
   Users,
@@ -28,10 +31,15 @@ const NAV_ITEMS = [
   { label: "ড্যাশবোর্ড", icon: LayoutDashboard, path: "/dashboard" },
   { label: "বিল্ডিং", icon: Building2, path: "/buildings" },
   { label: "ভাড়াটেদের তালিকা", icon: Users, path: "/tenants" },
+  { label: "পেমেন্ট", icon: CreditCard, path: "/payments" },
+  { label: "খরচ", icon: Receipt, path: "/expenses" },
   { label: "রিপোর্ট", icon: BarChart3, path: "/reports" },
 ] as const;
 
-const BOTTOM_ITEM = { label: "সেটিংস", icon: Settings, path: "/settings" } as const;
+const BOTTOM_ITEMS = [
+  { label: "ব্যবহার গাইড", icon: BookOpen, path: "/user-manual" },
+  { label: "সেটিংস", icon: Settings, path: "/settings" },
+] as const;
 
 const THEME_OPTIONS = [
   { value: "light" as const, label: "লাইট", icon: Sun },
@@ -116,7 +124,9 @@ function SidebarContent({ collapsed, onClose }: { collapsed: boolean; onClose?: 
 
         {/* Bottom */}
         <div className="px-2 pb-3 space-y-0.5 border-t border-white/10 pt-2">
-          <NavItem item={BOTTOM_ITEM} collapsed={collapsed} />
+          {BOTTOM_ITEMS.map((item) => (
+            <NavItem key={item.path} item={item} collapsed={collapsed} />
+          ))}
 
           {/* Theme toggle */}
           <DropdownMenu>

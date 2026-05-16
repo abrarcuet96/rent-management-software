@@ -34,8 +34,20 @@ export default function BuildingMutationForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormInput form={form} name="name" label="নাম" isRequired placeholder="বিল্ডিং এর নাম" />
-        <FormInput form={form} name="address" label="ঠিকানা" isRequired placeholder="সম্পূর্ণ ঠিকানা" />
+        <FormInput
+          form={form}
+          name="name"
+          label="নাম"
+          isRequired
+          placeholder="বিল্ডিং এর নাম"
+        />
+        <FormInput
+          form={form}
+          name="address"
+          label="ঠিকানা"
+          isRequired
+          placeholder="সম্পূর্ণ ঠিকানা"
+        />
         <FormInput
           form={form}
           name="total_floors"
@@ -45,7 +57,11 @@ export default function BuildingMutationForm({
           placeholder="তলার সংখ্যা"
         />
         <div className="flex justify-end pt-2">
-          <Button type="submit" disabled={isPending} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+          <Button
+            type="submit"
+            disabled={isPending}
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
+          >
             {isPending && <Loader2 size={16} className="animate-spin mr-1.5" />}
             {mode === "edit" ? "আপডেট করুন" : "তৈরি করুন"}
           </Button>

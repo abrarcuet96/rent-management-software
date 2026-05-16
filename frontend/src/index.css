@@ -159,13 +159,98 @@
 
 /* ── Print styles ─────────────────────────────────────────── */
 @media print {
+  /* ── Page setup ── */
+  @page { margin: 1.8cm 1.5cm; }
+
+  /* ── Tailwind print variants ── */
   .print\:hidden { display: none !important; }
-  .print\:block { display: block !important; }
-  body { background: white; color: black; font-size: 12px; }
-  table { width: 100%; border-collapse: collapse; }
-  th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
-  th { background: #f0f0f0; font-weight: 600; }
-  tr { page-break-inside: avoid; }
+  .print\:block  { display: block  !important; }
+
+  /* ── Hide all icons and interactive controls ── */
+  svg    { display: none !important; }
+  button { display: none !important; }
+
+  /* ── Hide icon wrapper divs (rounded pill/square containers holding only a single SVG) ── */
+  /* Scoped to rounded-full / rounded-lg so the month-cell flex div (gap-1.5, no rounding)  */
+  /* is never matched — CSS :only-child counts element children, not text nodes.             */
+  div.rounded-full:has(> svg:only-child),
+  div.rounded-lg:has(> svg:only-child) { display: none !important; }
+
+  /* ── Clean white canvas ── */
+  html, body {
+    background: white !important;
+    color: black !important;
+    font-size: 11pt !important;
+    font-family: 'Inter', Arial, sans-serif !important;
+    line-height: 1.5 !important;
+  }
+
+  /* ── Strip all decorative backgrounds and shadows ── */
+  *, *::before, *::after {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    background-image: none !important;
+  }
+
+  /* ── Cards: white background, subtle border ── */
+  .bg-surface,
+  .bg-neutral-bg,
+  .bg-neutral-bg\/50,
+  .bg-neutral-bg\/60 {
+    background-color: white !important;
+  }
+
+  /* ── Preserve semantic text colours (success = paid, danger = overdue) ── */
+  .text-success { color: #1a6b4a !important; }
+  .text-danger  { color: #b91c1c !important; }
+  .text-warning { color: #92400e !important; }
+
+  /* ── Tables ── */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    page-break-inside: auto;
+  }
   thead { display: table-header-group; }
-  @page { margin: 1.5cm; }
+  tr    { page-break-inside: avoid; }
+
+  th, td {
+    border: 1px solid #d1d5db !important;
+    padding: 5px 8px !important;
+    font-size: 10pt !important;
+    /* preserve original text-right / text-center / text-left Tailwind classes */
+  }
+  th {
+    background-color: #f3f4f6 !important;
+    color: black !important;
+    font-weight: 600 !important;
+    /* do NOT force text-align — let component classes control per-column alignment */
+  }
+
+  /* ── Overflow containers: never clip in print ── */
+  .overflow-x-auto,
+  .overflow-hidden {
+    overflow: visible !important;
+  }
+
+  /* ── Remove min-width constraints that cause clipping ── */
+  table[class*="min-w"] { min-width: 0 !important; }
+
+  /* ── Borders: keep structural, soften colour ── */
+  .border, .border-border, [class*="border-"] {
+    border-color: #e5e7eb !important;
+  }
+
+  /* ── Status badges: text only, no coloured pill background ── */
+  [class*="rounded-full"],
+  [class*="rounded-lg"] {
+    background-color: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    font-weight: 600 !important;
+  }
+
+  /* ── Hide non-content UI chrome ── */
+  nav, aside, header,
+  [class*="print:hidden"] { display: none !important; }
 }

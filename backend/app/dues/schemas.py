@@ -26,7 +26,7 @@ class DueAdjustRequest(BaseModel):
     """
 
     rent_amount: Decimal | None = Field(None, gt=0)
-    total_due: Decimal | None = Field(None, ge=0)
+    total_due: Decimal | None = Field(None, gt=0)
     due_date: date | None = None
 
 

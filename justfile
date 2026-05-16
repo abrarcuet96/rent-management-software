@@ -76,6 +76,10 @@ seed:
     psql -U {{DB_USER}} -h {{DB_HOST}} -p {{DB_PORT}} -d {{DB_NAME}} -f database/seeds/seed.sql
     @echo "✓ Seed data applied"
 
+seed-demo:
+    {{PYTHON}} backend/scripts/seed_demo_data.py
+    @echo "✓ Demo data seeded (2025 + 2026)"
+
 migrate: schema-apply
 
 # ── tests ─────────────────────────────────────────────────────────────────────
@@ -159,6 +163,24 @@ frontend-deps:
 
 frontend-check:
     cd frontend && npx tsc --noEmit
+
+frontend-test:
+    cd frontend && npm run test:unit
+
+frontend-test-watch:
+    cd frontend && npm run test:unit:watch
+
+frontend-test-integration:
+    cd frontend && npm run test:integration
+
+frontend-test-e2e:
+    cd frontend && npm run test:e2e
+
+frontend-test-e2e-ui:
+    cd frontend && npm run test:e2e:ui
+
+frontend-test-all:
+    cd frontend && npm run test:unit && npm run test:integration
 
 # ── all-in-one ────────────────────────────────────────────────────────────────
 setup: venv deps-dev db-create migrate pre-commit-install

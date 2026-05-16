@@ -6,3 +6,6 @@ export const getPaymentHistory = (params: Record<string, unknown>) =>
 
 export const getOverdueList = () =>
   apiClient.get<StandardResponse<unknown[]>>("/reports/overdue-list");
+
+export const getAnnualSummary = (year: number) =>
+  apiClient.get<StandardResponse<unknown>>("/reports/annual-summary", { params: { year } });

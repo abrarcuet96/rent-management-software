@@ -18,8 +18,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { getFallback } from "@/lib/getFallback";
 import { formatCurrency } from "@/lib/utils";
-import { paymentSchema, type PaymentInput } from "@/lib/validators/payment";
 import type { MonthlyDue } from "@/types";
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
@@ -34,8 +34,22 @@ interface RecordPaymentProps {
   tenantId: string;
 }
 
+type PaymentInput = { amount: number; paid_on: string; note?: string };
+
 export default function RecordPayment({ open, onOpenChange, due, tenantId }: RecordPaymentProps) {
   const queryClient = useQueryClient();
+
+  const paymentSchema = z.object({
+    amount: z.preprocess(
+      (v) => Number(v),
+      z
+        .number()
+        .min(0.01, "পরিমাণ প্রয়োজন")
+        .max(due.remaining_balance, `সর্বোচ্চ ${formatCurrency(due.remaining_balance)} পর্যন্ত`),
+    ),
+    paid_on: z.string().min(1, "তারিখ প্রয়োজন"),
+    note: z.string().optional(),
+  });
 
   const form = useForm<PaymentInput>({
     resolver: zodResolver(paymentSchema),

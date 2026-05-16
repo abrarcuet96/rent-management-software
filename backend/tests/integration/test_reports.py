@@ -159,3 +159,103 @@ async def test_overdue_list_isolation(client: AsyncClient, auth_token: str, test
     resp = await client.get(f"{BASE}/reports/overdue-list", headers=_auth(token2))
     assert resp.status_code == 200
     assert resp.json()["data"] == []
+
+
+# ── annual summary ────────────────────────────────────────────────────────────
+
+
+async def test_annual_summary_fields(client: AsyncClient, auth_token: str):
+    """Annual summary endpoint returns the expected fields."""
+    resp = await client.get(
+        f"{BASE}/reports/annual-summary",
+        params={"year": 2024},
+        headers=_auth(auth_token),
+    )
+    assert resp.status_code == 200
+    data = resp.json()["data"]
+    assert "year" in data
+    assert "total_collected" in data
+    assert "total_expenses" in data
+    assert "net_profit" in data
+    assert "total_outstanding" in data
+    assert data["year"] == 2024
+
+
+async def test_annual_summary_aggregates_all_months(
+    client: AsyncClient, auth_token: str, test_tenant: dict
+):
+    """Annual summary sums payments across all months of the requested year."""
+    t_pid = test_tenant["public_id"]
+
+    # Generate dues for Jan and Feb 2024 and pay both
+    r1 = await client.post(
+        f"{BASE}/tenants/{t_pid}/dues/generate",
+        json={"month": 1, "year": 2024},
+        headers=_auth(auth_token),
+    )
+    due1_pid = r1.json()["data"]["public_id"]
+
+    r2 = await client.post(
+        f"{BASE}/tenants/{t_pid}/dues/generate",
+        json={"month": 2, "year": 2024},
+        headers=_auth(auth_token),
+    )
+    due2_pid = r2.json()["data"]["public_id"]
+
+    await client.post(
+        f"{BASE}/dues/{due1_pid}/payments",
+        json={"amount": "6000.00", "paid_on": "2024-01-15"},
+        headers=_auth(auth_token),
+    )
+    await client.post(
+        f"{BASE}/dues/{due2_pid}/payments",
+        json={"amount": "4000.00", "paid_on": "2024-02-10"},
+        headers=_auth(auth_token),
+    )
+
+    resp = await client.get(
+        f"{BASE}/reports/annual-summary",
+        params={"year": 2024},
+        headers=_auth(auth_token),
+    )
+    assert resp.status_code == 200
+    data = resp.json()["data"]
+    assert data["total_collected"] == "10000.00"
+
+
+async def test_annual_summary_excludes_other_year(
+    client: AsyncClient, auth_token: str, test_tenant: dict
+):
+    """Annual summary for year X does not count payments made in year Y."""
+    t_pid = test_tenant["public_id"]
+    r = await client.post(
+        f"{BASE}/tenants/{t_pid}/dues/generate",
+        json={"month": 6, "year": 2023},
+        headers=_auth(auth_token),
+    )
+    due_pid = r.json()["data"]["public_id"]
+    await client.post(
+        f"{BASE}/dues/{due_pid}/payments",
+        json={"amount": "5000.00", "paid_on": "2023-06-01"},
+        headers=_auth(auth_token),
+    )
+
+    resp = await client.get(
+        f"{BASE}/reports/annual-summary",
+        params={"year": 2024},
+        headers=_auth(auth_token),
+    )
+    assert resp.status_code == 200
+    from decimal import Decimal
+
+    assert Decimal(str(resp.json()["data"]["total_collected"])) == Decimal("0")
+
+
+async def test_annual_summary_invalid_year(client: AsyncClient, auth_token: str):
+    """Requesting an out-of-range year returns a validation error."""
+    resp = await client.get(
+        f"{BASE}/reports/annual-summary",
+        params={"year": 1999},
+        headers=_auth(auth_token),
+    )
+    assert resp.status_code == 422

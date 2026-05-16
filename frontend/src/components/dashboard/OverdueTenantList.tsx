@@ -1,9 +1,12 @@
 import { getOverdueList } from "@/api/reports.api";
+import EmptyState from "@/components/common/EmptyState";
+import ErrorState from "@/components/common/ErrorState";
+import TableSkeleton from "@/components/common/TableSkeleton";
 import StatusBadge from "@/components/common/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import { AlertCircle, CreditCard } from "lucide-react";
+import { CheckCircle2, CreditCard } from "lucide-react";
 import { useState } from "react";
 import RecordPayment from "@/components/payments/RecordPayment";
 
@@ -12,12 +15,16 @@ interface OverdueItem {
   month: number;
   year: number;
   due_date: string;
+  rent_amount: number;
+  total_due: number;
+  amount_paid: number;
   remaining_balance: number;
   status: string;
   tenant_public_id: string;
   tenant_name: string;
   apartment_unit: string;
   building_name: string;
+  agreement_public_id: string;
   days_overdue: number;
 }
 
@@ -32,32 +39,11 @@ export default function OverdueTenantList() {
 
   if (error) {
     return (
-      <div className="bg-surface rounded-xl p-5 border border-border">
-        <p className="text-sm text-text-secondary text-center">
-          লোড করতে সমস্যা হয়েছে
-        </p>
-        <Button variant="outline" size="sm" onClick={() => refetch()} className="mt-2">
-          আবার চেষ্টা করুন
-        </Button>
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="bg-surface rounded-xl p-5 border border-border">
-        <p className="text-sm text-text-secondary text-center">লোড হচ্ছে...</p>
-      </div>
-    );
-  }
-
-  if (items.length === 0) {
-    return (
-      <div className="bg-surface rounded-xl p-5 border border-border">
-        <div className="flex flex-col items-center py-6">
-          <AlertCircle size={32} className="text-success mb-2" />
-          <p className="text-sm text-text-secondary">কোনো বকেয়া নেই</p>
+      <div className="bg-surface rounded-xl border border-border overflow-hidden">
+        <div className="p-4 border-b border-border">
+          <h3 className="text-sm font-medium text-text-primary">বকেয়া ভাড়াটেদের তালিকা</h3>
         </div>
+        <ErrorState onRetry={() => refetch()} />
       </div>
     );
   }
@@ -67,6 +53,16 @@ export default function OverdueTenantList() {
       <div className="p-4 border-b border-border">
         <h3 className="text-sm font-medium text-text-primary">বকেয়া ভাড়াটেদের তালিকা</h3>
       </div>
+
+      {isLoading ? (
+        <TableSkeleton rows={4} cols={7} />
+      ) : items.length === 0 ? (
+        <EmptyState
+          title="কোনো বকেয়া নেই"
+          description="সকল পেমেন্ট সময়মতো পরিশোধিত হয়েছে"
+          icon={<CheckCircle2 size={40} className="text-success" />}
+        />
+      ) : (
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-neutral-bg">
@@ -115,6 +111,7 @@ export default function OverdueTenantList() {
           </tbody>
         </table>
       </div>
+      )}
 
       {payingDue && (
         <RecordPayment
@@ -125,12 +122,12 @@ export default function OverdueTenantList() {
           due={{
             public_id: payingDue.due_public_id,
             tenant_public_id: payingDue.tenant_public_id,
-            agreement_public_id: "",
+            agreement_public_id: payingDue.agreement_public_id,
             month: payingDue.month,
             year: payingDue.year,
-            rent_amount: payingDue.remaining_balance,
-            total_due: payingDue.remaining_balance,
-            amount_paid: 0,
+            rent_amount: payingDue.rent_amount,
+            total_due: payingDue.total_due,
+            amount_paid: payingDue.amount_paid,
             remaining_balance: payingDue.remaining_balance,
             status: payingDue.status as "unpaid" | "partial" | "paid",
             is_auto_generated: true,
