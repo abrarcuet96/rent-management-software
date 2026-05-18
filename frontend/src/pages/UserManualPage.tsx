@@ -282,11 +282,26 @@ const FEATURES: FeatureSection[] = [
 ];
 
 const QUICK_TIPS = [
-  { icon: Zap, text: "ভাড়াটের প্রোফাইলে গিয়ে 'বাল্ক ভাড়া' বাটনে ক্লিক করলে একসাথে সব পুরাতন বকেয়া ডিউ পরিশোধ করা যায়।" },
-  { icon: Lightbulb, text: "ড্যাশবোর্ডের বকেয়া তালিকা থেকেই সরাসরি পেমেন্ট নিতে পারবেন — আলাদা পেজে যেতে হবে না।" },
-  { icon: Lightbulb, text: "সাইডবারে থিম বাটনে ক্লিক করে লাইট/ডার্ক/সিস্টেম থিম পরিবর্তন করুন।" },
-  { icon: Zap, text: "ভাড়াটের লেজারে কোনো মাসের সারিতে ক্লিক করলে সেই মাসের পেমেন্ট বিস্তারিত দেখা যায়।" },
-  { icon: Lightbulb, text: "বিল্ডিং পৃষ্ঠায় ফিল্টার ট্যাব ব্যবহার করে খালি বা ভর্তি অ্যাপার্টমেন্ট আলাদা দেখুন।" },
+  {
+    icon: Zap,
+    text: "ভাড়াটের প্রোফাইলে গিয়ে 'বাল্ক ভাড়া' বাটনে ক্লিক করলে একসাথে সব পুরাতন বকেয়া পরিশোধ করা যায়।",
+  },
+  {
+    icon: Lightbulb,
+    text: "ড্যাশবোর্ডের বকেয়া তালিকা থেকেই সরাসরি পেমেন্ট নিতে পারবেন — আলাদা পেজে যেতে হবে না।",
+  },
+  {
+    icon: Lightbulb,
+    text: "সাইডবারে থিম বাটনে ক্লিক করে লাইট/ডার্ক/সিস্টেম থিম পরিবর্তন করুন।",
+  },
+  {
+    icon: Zap,
+    text: "ভাড়াটের লেজারে কোনো মাসের সারিতে ক্লিক করলে সেই মাসের পেমেন্ট বিস্তারিত দেখা যায়।",
+  },
+  {
+    icon: Lightbulb,
+    text: "বিল্ডিং পৃষ্ঠায় ফিল্টার ট্যাব ব্যবহার করে খালি বা ভর্তি অ্যাপার্টমেন্ট আলাদা দেখুন।",
+  },
 ];
 
 /* ─────────────────────────────────── sub-components ── */
@@ -313,31 +328,46 @@ function FlowChart({
                   "w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left",
                   active
                     ? `${step.bgColor} ${step.borderColor} shadow-md`
-                    : "bg-surface border-border hover:border-primary/30"
+                    : "bg-surface border-border hover:border-primary/30",
                 )}
               >
-                <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center shrink-0", step.bgColor)}>
+                <div
+                  className={cn(
+                    "w-9 h-9 rounded-lg flex items-center justify-center shrink-0",
+                    step.bgColor,
+                  )}
+                >
                   <Icon size={18} className={step.color} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-text-primary">
-                    <span className={cn("mr-1.5 text-xs font-bold", step.color)}>
+                    <span
+                      className={cn("mr-1.5 text-xs font-bold", step.color)}
+                    >
                       {step.id}.
                     </span>
                     {step.label}
                   </p>
-                  <p className="text-xs text-text-secondary truncate">{step.sublabel}</p>
+                  <p className="text-xs text-text-secondary truncate">
+                    {step.sublabel}
+                  </p>
                 </div>
                 <ChevronDown
                   size={16}
                   className={cn(
                     "shrink-0 text-text-muted transition-transform",
-                    active && "rotate-180"
+                    active && "rotate-180",
                   )}
                 />
               </button>
               {active && (
-                <div className={cn("ml-4 mt-1 mb-1 p-3 rounded-lg border", step.bgColor, step.borderColor)}>
+                <div
+                  className={cn(
+                    "ml-4 mt-1 mb-1 p-3 rounded-lg border",
+                    step.bgColor,
+                    step.borderColor,
+                  )}
+                >
                   <StepDetail step={step} />
                 </div>
               )}
@@ -367,20 +397,29 @@ function FlowChart({
                       "flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all w-[6.5rem] shrink-0 group",
                       active
                         ? `${step.bgColor} ${step.borderColor} shadow-md ring-2 ring-offset-2 ring-offset-background`
-                        : "bg-surface border-border hover:border-primary/40 hover:shadow-md"
+                        : "bg-surface border-border hover:border-primary/40 hover:shadow-md",
                     )}
-                    style={active ? { ["--tw-ring-color" as string]: "var(--color-primary, #0D4A38)" } : undefined}
+                    style={
+                      active
+                        ? {
+                            ["--tw-ring-color" as string]:
+                              "var(--color-primary, #0D4A38)",
+                          }
+                        : undefined
+                    }
                   >
                     <div
                       className={cn(
                         "w-11 h-11 rounded-xl flex items-center justify-center transition-all",
-                        active ? "bg-white/60" : "bg-neutral-bg"
+                        active ? "bg-white/60" : "bg-neutral-bg",
                       )}
                     >
                       <Icon size={20} className={step.color} />
                     </div>
                     <div className="text-center">
-                      <p className={cn("text-xs font-bold mb-0.5", step.color)}>{step.id}</p>
+                      <p className={cn("text-xs font-bold mb-0.5", step.color)}>
+                        {step.id}
+                      </p>
                       <p className="text-xs font-semibold text-text-primary leading-tight">
                         {step.label}
                       </p>
@@ -411,7 +450,7 @@ function FlowChart({
                 className={cn(
                   "p-5 rounded-2xl border-2",
                   step.bgColor,
-                  step.borderColor
+                  step.borderColor,
                 )}
               >
                 <StepDetail step={step} />
@@ -425,7 +464,10 @@ function FlowChart({
 }
 
 function StepDetail({ step }: { step: FlowStep }) {
-  const details: Record<number, { what: string; how: string[]; next?: string }> = {
+  const details: Record<
+    number,
+    { what: string; how: string[]; next?: string }
+  > = {
     1: {
       what: "RentFlow ব্যবহার শুরু করতে প্রথমে একটি অ্যাকাউন্ট তৈরি করুন।",
       how: [
@@ -509,8 +551,16 @@ function StepDetail({ step }: { step: FlowStep }) {
         </p>
         <ol className="space-y-1">
           {detail.how.map((h, i) => (
-            <li key={i} className="flex items-start gap-2 text-sm text-text-primary">
-              <span className={cn("shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5", step.color.replace("text-", "bg-"))}>
+            <li
+              key={i}
+              className="flex items-start gap-2 text-sm text-text-primary"
+            >
+              <span
+                className={cn(
+                  "shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5",
+                  step.color.replace("text-", "bg-"),
+                )}
+              >
                 {i + 1}
               </span>
               {h}
@@ -539,18 +589,24 @@ function FeatureCard({ feature }: { feature: FeatureSection }) {
         onClick={() => setOpen(!open)}
         className="w-full flex items-center gap-4 p-5 text-left hover:bg-neutral-bg transition-colors"
       >
-        <div className={cn("w-11 h-11 rounded-xl flex items-center justify-center shrink-0 bg-neutral-bg")}>
+        <div
+          className={cn(
+            "w-11 h-11 rounded-xl flex items-center justify-center shrink-0 bg-neutral-bg",
+          )}
+        >
           <Icon size={22} className={feature.color} />
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-text-primary">{feature.title}</h3>
-          <p className="text-sm text-text-secondary mt-0.5 truncate">{feature.subtitle}</p>
+          <p className="text-sm text-text-secondary mt-0.5 truncate">
+            {feature.subtitle}
+          </p>
         </div>
         <ChevronDown
           size={18}
           className={cn(
             "shrink-0 text-text-muted transition-transform duration-200",
-            open && "rotate-180"
+            open && "rotate-180",
           )}
         />
       </button>
@@ -561,12 +617,21 @@ function FeatureCard({ feature }: { feature: FeatureSection }) {
           <div className="space-y-3">
             {feature.steps.map((step, i) => (
               <div key={i} className="flex gap-3">
-                <div className={cn("shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5", feature.color.replace("text-", "bg-"))}>
+                <div
+                  className={cn(
+                    "shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5",
+                    feature.color.replace("text-", "bg-"),
+                  )}
+                >
                   {i + 1}
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-text-primary">{step.title}</p>
-                  <p className="text-sm text-text-secondary mt-0.5">{step.desc}</p>
+                  <p className="text-sm font-medium text-text-primary">
+                    {step.title}
+                  </p>
+                  <p className="text-sm text-text-secondary mt-0.5">
+                    {step.desc}
+                  </p>
                 </div>
               </div>
             ))}
@@ -580,8 +645,14 @@ function FeatureCard({ feature }: { feature: FeatureSection }) {
                 দরকারী টিপস
               </p>
               {feature.tips.map((tip, i) => (
-                <p key={i} className="text-sm text-amber-800 dark:text-amber-300 flex items-start gap-2">
-                  <CheckCircle2 size={14} className="shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+                <p
+                  key={i}
+                  className="text-sm text-amber-800 dark:text-amber-300 flex items-start gap-2"
+                >
+                  <CheckCircle2
+                    size={14}
+                    className="shrink-0 mt-0.5 text-amber-600 dark:text-amber-400"
+                  />
                   {tip}
                 </p>
               ))}
@@ -600,7 +671,6 @@ export default function UserManualPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-10 pb-12">
-
       {/* ── Hero ── */}
       <div className="relative overflow-hidden rounded-3xl bg-[#0D4A38] px-8 py-10 text-white">
         <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full bg-white/5" />
@@ -618,8 +688,9 @@ export default function UserManualPage() {
             RentFlow শিখুন সহজে
           </h1>
           <p className="text-white/70 text-base max-w-xl leading-relaxed">
-            বিল্ডিং যোগ থেকে শুরু করে পেমেন্ট রেকর্ড পর্যন্ত — এই গাইডে সব কিছু ধাপে ধাপে দেখানো হয়েছে।
-            নিচের প্রবাহ চিত্রের যেকোনো ধাপে ক্লিক করুন বিস্তারিত জানতে।
+            বিল্ডিং যোগ থেকে শুরু করে পেমেন্ট রেকর্ড পর্যন্ত — এই গাইডে সব কিছু
+            ধাপে ধাপে দেখানো হয়েছে। নিচের প্রবাহ চিত্রের যেকোনো ধাপে ক্লিক করুন
+            বিস্তারিত জানতে।
           </p>
 
           {/* Quick stats */}
@@ -629,7 +700,10 @@ export default function UserManualPage() {
               { label: "ধাপে ধাপে গাইড", value: "৬টি বিভাগ" },
               { label: "দরকারী টিপস", value: "১০+" },
             ].map((s) => (
-              <div key={s.label} className="bg-white/10 rounded-xl px-4 py-2 text-center">
+              <div
+                key={s.label}
+                className="bg-white/10 rounded-xl px-4 py-2 text-center"
+              >
                 <p className="text-xl font-bold">{s.value}</p>
                 <p className="text-xs text-white/60 mt-0.5">{s.label}</p>
               </div>
@@ -642,11 +716,14 @@ export default function UserManualPage() {
       <section>
         <div className="mb-5">
           <h2 className="text-xl font-bold text-text-primary flex items-center gap-2">
-            <span className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold">১</span>
+            <span className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold">
+              ১
+            </span>
             শুরু করার প্রবাহ
           </h2>
           <p className="text-sm text-text-secondary mt-1.5">
-            প্রথমবার ব্যবহার করলে এই ৭টি ধাপ অনুসরণ করুন। যেকোনো ধাপে ক্লিক করুন বিস্তারিত দেখতে।
+            প্রথমবার ব্যবহার করলে এই ৭টি ধাপ অনুসরণ করুন। যেকোনো ধাপে ক্লিক করুন
+            বিস্তারিত দেখতে।
           </p>
         </div>
         <FlowChart activeStep={activeStep} setActiveStep={setActiveStep} />
@@ -656,7 +733,9 @@ export default function UserManualPage() {
       <section>
         <div className="mb-5">
           <h2 className="text-xl font-bold text-text-primary flex items-center gap-2">
-            <span className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold">২</span>
+            <span className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold">
+              ২
+            </span>
             তথ্যের কাঠামো
           </h2>
           <p className="text-sm text-text-secondary mt-1.5">
@@ -667,29 +746,77 @@ export default function UserManualPage() {
         <div className="bg-surface rounded-2xl border border-border p-6 overflow-x-auto">
           <div className="flex flex-col items-center gap-0 min-w-[280px]">
             {[
-              { icon: Building2, label: "বিল্ডিং", desc: "সর্বোচ্চ স্তর", color: "bg-blue-500", relation: "একটিতে অনেক অ্যাপার্টমেন্ট" },
-              { icon: DoorOpen, label: "অ্যাপার্টমেন্ট", desc: "ইউনিট / ফ্ল্যাট", color: "bg-cyan-500", relation: "একটিতে একজন সক্রিয় ভাড়াটে" },
-              { icon: Users, label: "ভাড়াটে", desc: "বাসিন্দার তথ্য", color: "bg-emerald-500", relation: "একটিতে অনেক চুক্তি" },
-              { icon: FileText, label: "চুক্তি", desc: "ভাড়ার পরিমাণ ও মেয়াদ", color: "bg-amber-500", relation: "একটিতে অনেক মাসিক ডিউ" },
-              { icon: Receipt, label: "মাসিক ডিউ", desc: "প্রতি মাসের দেয় পরিমাণ", color: "bg-orange-500", relation: "একটিতে অনেক পেমেন্ট রেকর্ড" },
-              { icon: CreditCard, label: "পেমেন্ট রেকর্ড", desc: "সংগৃহীত অর্থের হিসাব", color: "bg-rose-500", relation: "" },
+              {
+                icon: Building2,
+                label: "বিল্ডিং",
+                desc: "সর্বোচ্চ স্তর",
+                color: "bg-blue-500",
+                relation: "একটিতে অনেক অ্যাপার্টমেন্ট",
+              },
+              {
+                icon: DoorOpen,
+                label: "অ্যাপার্টমেন্ট",
+                desc: "ইউনিট / ফ্ল্যাট",
+                color: "bg-cyan-500",
+                relation: "একটিতে একজন সক্রিয় ভাড়াটে",
+              },
+              {
+                icon: Users,
+                label: "ভাড়াটে",
+                desc: "বাসিন্দার তথ্য",
+                color: "bg-emerald-500",
+                relation: "একটিতে অনেক চুক্তি",
+              },
+              {
+                icon: FileText,
+                label: "চুক্তি",
+                desc: "ভাড়ার পরিমাণ ও মেয়াদ",
+                color: "bg-amber-500",
+                relation: "একটিতে অনেক মাসিক ডিউ",
+              },
+              {
+                icon: Receipt,
+                label: "মাসিক ডিউ",
+                desc: "প্রতি মাসের দেয় পরিমাণ",
+                color: "bg-orange-500",
+                relation: "একটিতে অনেক পেমেন্ট রেকর্ড",
+              },
+              {
+                icon: CreditCard,
+                label: "পেমেন্ট রেকর্ড",
+                desc: "সংগৃহীত অর্থের হিসাব",
+                color: "bg-rose-500",
+                relation: "",
+              },
             ].map((item, i, arr) => {
               const Icon = item.icon;
               return (
-                <div key={item.label} className="flex flex-col items-center w-full">
+                <div
+                  key={item.label}
+                  className="flex flex-col items-center w-full"
+                >
                   <div className="flex items-center gap-4 w-full max-w-sm">
-                    <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", item.color)}>
+                    <div
+                      className={cn(
+                        "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
+                        item.color,
+                      )}
+                    >
                       <Icon size={18} className="text-white" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-semibold text-text-primary">{item.label}</p>
+                      <p className="text-sm font-semibold text-text-primary">
+                        {item.label}
+                      </p>
                       <p className="text-xs text-text-secondary">{item.desc}</p>
                     </div>
                   </div>
                   {i < arr.length - 1 && (
                     <div className="flex flex-col items-center my-1 ml-5">
                       <div className="w-px h-4 bg-border" />
-                      <p className="text-[10px] text-text-muted italic">{item.relation}</p>
+                      <p className="text-[10px] text-text-muted italic">
+                        {item.relation}
+                      </p>
                       <div className="w-px h-2 bg-border" />
                       <ChevronDown size={12} className="text-text-muted" />
                     </div>
@@ -705,7 +832,9 @@ export default function UserManualPage() {
       <section>
         <div className="mb-5">
           <h2 className="text-xl font-bold text-text-primary flex items-center gap-2">
-            <span className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold">৩</span>
+            <span className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold">
+              ৩
+            </span>
             ফিচার ভিত্তিক গাইড
           </h2>
           <p className="text-sm text-text-secondary mt-1.5">
@@ -723,7 +852,9 @@ export default function UserManualPage() {
       <section>
         <div className="mb-5">
           <h2 className="text-xl font-bold text-text-primary flex items-center gap-2">
-            <span className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold">৪</span>
+            <span className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold">
+              ৪
+            </span>
             দ্রুত টিপস
           </h2>
           <p className="text-sm text-text-secondary mt-1.5">
@@ -739,9 +870,14 @@ export default function UserManualPage() {
                 className="bg-surface rounded-xl border border-border p-4 flex items-start gap-3"
               >
                 <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-950/30 flex items-center justify-center shrink-0 mt-0.5">
-                  <Icon size={15} className="text-amber-600 dark:text-amber-400" />
+                  <Icon
+                    size={15}
+                    className="text-amber-600 dark:text-amber-400"
+                  />
                 </div>
-                <p className="text-sm text-text-primary leading-relaxed">{tip.text}</p>
+                <p className="text-sm text-text-primary leading-relaxed">
+                  {tip.text}
+                </p>
               </div>
             );
           })}
@@ -752,7 +888,9 @@ export default function UserManualPage() {
       <section>
         <div className="mb-5">
           <h2 className="text-xl font-bold text-text-primary flex items-center gap-2">
-            <span className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold">৫</span>
+            <span className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold">
+              ৫
+            </span>
             স্ট্যাটাস বোঝার গাইড
           </h2>
         </div>
@@ -764,11 +902,24 @@ export default function UserManualPage() {
             </p>
             <div className="space-y-2.5">
               {[
-                { label: "খালি", color: "bg-success text-white", desc: "কোনো ভাড়াটে নেই — যোগ করা যাবে" },
-                { label: "ভর্তি", color: "bg-warning text-white", desc: "সক্রিয় ভাড়াটে আছে" },
+                {
+                  label: "খালি",
+                  color: "bg-success text-white",
+                  desc: "কোনো ভাড়াটে নেই — যোগ করা যাবে",
+                },
+                {
+                  label: "ভর্তি",
+                  color: "bg-warning text-white",
+                  desc: "সক্রিয় ভাড়াটে আছে",
+                },
               ].map((s) => (
                 <div key={s.label} className="flex items-center gap-3">
-                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium shrink-0", s.color)}>
+                  <span
+                    className={cn(
+                      "text-xs px-2 py-0.5 rounded-full font-medium shrink-0",
+                      s.color,
+                    )}
+                  >
                     {s.label}
                   </span>
                   <span className="text-sm text-text-secondary">{s.desc}</span>
@@ -783,12 +934,29 @@ export default function UserManualPage() {
             </p>
             <div className="space-y-2.5">
               {[
-                { label: "বেকায়া", color: "bg-danger text-white", desc: "কোনো পেমেন্ট হয়নি" },
-                { label: "আংশিক", color: "bg-warning text-white", desc: "আংশিক পেমেন্ট হয়েছে" },
-                { label: "পরিশোধিত", color: "bg-success text-white", desc: "সম্পূর্ণ পেমেন্ট হয়েছে" },
+                {
+                  label: "বেকায়া",
+                  color: "bg-danger text-white",
+                  desc: "কোনো পেমেন্ট হয়নি",
+                },
+                {
+                  label: "আংশিক",
+                  color: "bg-warning text-white",
+                  desc: "আংশিক পেমেন্ট হয়েছে",
+                },
+                {
+                  label: "পরিশোধিত",
+                  color: "bg-success text-white",
+                  desc: "সম্পূর্ণ পেমেন্ট হয়েছে",
+                },
               ].map((s) => (
                 <div key={s.label} className="flex items-center gap-3">
-                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium shrink-0", s.color)}>
+                  <span
+                    className={cn(
+                      "text-xs px-2 py-0.5 rounded-full font-medium shrink-0",
+                      s.color,
+                    )}
+                  >
                     {s.label}
                   </span>
                   <span className="text-sm text-text-secondary">{s.desc}</span>
@@ -807,8 +975,9 @@ export default function UserManualPage() {
         <div>
           <p className="font-semibold text-text-primary">আরও সাহায্য দরকার?</p>
           <p className="text-sm text-text-secondary mt-1">
-            কোনো ফিচার নিয়ে প্রশ্ন থাকলে প্রথমে সংশ্লিষ্ট পৃষ্ঠায় যান। প্রতিটি খালি অবস্থায়
-            বর্ণনামূলক বার্তা দেখাবে। পেমেন্টে সমস্যা হলে 'বাল্ক পেমেন্ট' প্রিভিউ দেখে নিশ্চিত হন।
+            কোনো ফিচার নিয়ে প্রশ্ন থাকলে প্রথমে সংশ্লিষ্ট পৃষ্ঠায় যান। প্রতিটি
+            খালি অবস্থায় বর্ণনামূলক বার্তা দেখাবে। পেমেন্টে সমস্যা হলে 'বাল্ক
+            পেমেন্ট' প্রিভিউ দেখে নিশ্চিত হন।
           </p>
         </div>
       </div>

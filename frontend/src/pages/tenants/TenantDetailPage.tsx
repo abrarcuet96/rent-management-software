@@ -67,10 +67,19 @@ export default function TenantDetailPage() {
     enabled: !!tenantId,
   });
 
-  const dues = useMemo<MonthlyDue[]>(() => duesData?.data.data ?? [], [duesData]);
+  const dues = useMemo<MonthlyDue[]>(
+    () => duesData?.data.data ?? [],
+    [duesData],
+  );
 
-  const totalPaid = dues.reduce((sum, d) => sum + parseFloat(d.amount_paid || "0"), 0);
-  const totalOutstanding = dues.reduce((sum, d) => sum + parseFloat(d.remaining_balance || "0"), 0);
+  const totalPaid = dues.reduce(
+    (sum, d) => sum + parseFloat(d.amount_paid || "0"),
+    0,
+  );
+  const totalOutstanding = dues.reduce(
+    (sum, d) => sum + parseFloat(d.remaining_balance || "0"),
+    0,
+  );
 
   // Expand all by default on first load
   useEffect(() => {
@@ -80,20 +89,27 @@ export default function TenantDetailPage() {
     }
   }, [dues]);
 
-  const allDuesExpanded = dues.length > 0 && dues.every((d) => expandedDues.has(d.public_id));
+  const allDuesExpanded =
+    dues.length > 0 && dues.every((d) => expandedDues.has(d.public_id));
 
   const toggleDue = (id: string) =>
     setExpandedDues((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
       return next;
     });
 
-  const expandAllDues = () => setExpandedDues(new Set(dues.map((d) => d.public_id)));
+  const expandAllDues = () =>
+    setExpandedDues(new Set(dues.map((d) => d.public_id)));
   const collapseAllDues = () => setExpandedDues(new Set());
 
   if (tenantLoading) return <LoadingSpinner />;
-  if (tenantError || !tenant) return <ErrorState onRetry={() => refetchTenant()} />;
+  if (tenantError || !tenant)
+    return <ErrorState onRetry={() => refetchTenant()} />;
 
   return (
     <div ref={contentRef} className="space-y-6">
@@ -109,7 +125,9 @@ export default function TenantDetailPage() {
               <User size={24} className="text-success" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-text-primary">{tenant.full_name}</h2>
+              <h2 className="text-xl font-semibold text-text-primary">
+                {tenant.full_name}
+              </h2>
               <div className="flex items-center gap-1 text-sm text-text-secondary mt-0.5">
                 <Phone size={14} />
                 {tenant.phone}
@@ -125,7 +143,11 @@ export default function TenantDetailPage() {
             <StatusBadge status={tenant.is_active ? "active" : "moved_out"} />
             {tenant.is_active && (
               <>
-                <Button variant="outline" size="sm" onClick={() => setEditTenantOpen(true)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setEditTenantOpen(true)}
+                >
                   <Edit2 size={14} className="mr-1" />
                   সম্পাদনা
                 </Button>
@@ -146,19 +168,27 @@ export default function TenantDetailPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 pt-4 border-t border-border">
           <div>
             <p className="text-xs text-text-secondary">এনআইডি</p>
-            <p className="text-sm text-text-primary mt-0.5">{tenant.nid_number ?? "—"}</p>
+            <p className="text-sm text-text-primary mt-0.5">
+              {tenant.nid_number ?? "—"}
+            </p>
           </div>
           <div>
             <p className="text-xs text-text-secondary">ঠিকানা</p>
-            <p className="text-sm text-text-primary mt-0.5">{tenant.address ?? "—"}</p>
+            <p className="text-sm text-text-primary mt-0.5">
+              {tenant.address ?? "—"}
+            </p>
           </div>
           <div>
             <p className="text-xs text-text-secondary">পরিবার</p>
-            <p className="text-sm text-text-primary mt-0.5">{tenant.member_count} জন</p>
+            <p className="text-sm text-text-primary mt-0.5">
+              {tenant.member_count} জন
+            </p>
           </div>
           <div>
             <p className="text-xs text-text-secondary">প্রবেশের তারিখ</p>
-            <p className="text-sm text-text-primary mt-0.5">{tenant.move_in_date}</p>
+            <p className="text-sm text-text-primary mt-0.5">
+              {tenant.move_in_date}
+            </p>
           </div>
         </div>
       </div>
@@ -178,9 +208,13 @@ export default function TenantDetailPage() {
           </p>
         </div>
         <div className="bg-surface rounded-xl p-4 border border-border min-w-0">
-          <p className="text-sm text-text-secondary">বকেয়া ডিউ</p>
+          <p className="text-sm text-text-secondary">ডিউ সংখ্যা</p>
           <p className="text-xl font-semibold text-text-primary mt-1">
-            {dues.filter((d) => d.status === "unpaid" || d.status === "partial").length}
+            {
+              dues.filter(
+                (d) => d.status === "unpaid" || d.status === "partial",
+              ).length
+            }
           </p>
         </div>
       </div>
@@ -193,10 +227,18 @@ export default function TenantDetailPage() {
             চুক্তিসমূহ
           </h3>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => setBulkRentOpen(true)}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setBulkRentOpen(true)}
+            >
               বাল্ক ভাড়া
             </Button>
-            <Button variant="outline" size="sm" onClick={() => setAgreementOpen(true)}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setAgreementOpen(true)}
+            >
               <Plus size={14} className="mr-1" />
               নতুন চুক্তি
             </Button>
@@ -218,7 +260,11 @@ export default function TenantDetailPage() {
               />
             )}
           </div>
-          <Button variant="outline" size="sm" onClick={() => setGenerateDueOpen(true)}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setGenerateDueOpen(true)}
+          >
             <Plus size={14} className="mr-1" />
             ডিউ তৈরি
           </Button>
@@ -236,12 +282,24 @@ export default function TenantDetailPage() {
             <table className="w-full min-w-[560px] print:min-w-0 text-sm">
               <thead className="bg-neutral-bg">
                 <tr>
-                  <th className="text-left px-3 py-2 font-medium text-text-secondary whitespace-nowrap">মাস/বছর</th>
-                  <th className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap">মোট দেয়</th>
-                  <th className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap">পরিশোধিত</th>
-                  <th className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap">বাকি</th>
-                  <th className="text-center px-3 py-2 font-medium text-text-secondary whitespace-nowrap">স্ট্যাটাস</th>
-                  <th className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap print:hidden">অ্যাকশন</th>
+                  <th className="text-left px-3 py-2 font-medium text-text-secondary whitespace-nowrap">
+                    মাস/বছর
+                  </th>
+                  <th className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap">
+                    মোট দেয়
+                  </th>
+                  <th className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap">
+                    পরিশোধিত
+                  </th>
+                  <th className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap">
+                    বাকি
+                  </th>
+                  <th className="text-center px-3 py-2 font-medium text-text-secondary whitespace-nowrap">
+                    স্ট্যাটাস
+                  </th>
+                  <th className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap print:hidden">
+                    অ্যাকশন
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -295,7 +353,9 @@ export default function TenantDetailPage() {
       {payingDue && (
         <RecordPayment
           open={!!payingDue}
-          onOpenChange={(open) => { if (!open) setPayingDue(null); }}
+          onOpenChange={(open) => {
+            if (!open) setPayingDue(null);
+          }}
           due={payingDue}
           tenantId={tenantId!}
         />
@@ -303,7 +363,9 @@ export default function TenantDetailPage() {
       {adjustingDue && (
         <AdjustDueDialog
           open={!!adjustingDue}
-          onOpenChange={(open) => { if (!open) setAdjustingDue(null); }}
+          onOpenChange={(open) => {
+            if (!open) setAdjustingDue(null);
+          }}
           due={adjustingDue}
           tenantId={tenantId!}
         />
