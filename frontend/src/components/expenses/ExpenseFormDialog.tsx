@@ -10,7 +10,6 @@ import {
 import { Form } from "@/components/ui/form";
 import FormInput from "@/components/custom-ui/form/FormInput";
 import FormSearchSelect from "@/components/custom-ui/form/FormSearchSelect";
-import FormStaticSelect from "@/components/custom-ui/form/FormStaticSelect";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   FormControl,
@@ -32,7 +31,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import toast from "react-hot-toast";
 
 interface ExpenseFormDialogProps {
@@ -50,13 +49,13 @@ export default function ExpenseFormDialog({
   const isEdit = !!expense;
 
   const form = useForm<ExpenseInput>({
-    resolver: zodResolver(expenseSchema),
+    resolver: zodResolver(expenseSchema) as Resolver<ExpenseInput>,
     defaultValues: {
       category_public_id: expense?.category_public_id ?? "",
       building_public_id: expense?.building_public_id ?? "",
       apartment_public_id: expense?.apartment_public_id ?? "",
       description: expense?.description ?? "",
-      amount: expense?.amount ?? ("" as unknown as number),
+      amount: expense?.amount,
       expense_date: expense?.expense_date ?? new Date().toISOString().split("T")[0],
       is_tenant_charged: expense?.is_tenant_charged ?? false,
     },
@@ -118,6 +117,7 @@ export default function ExpenseFormDialog({
               name="category_public_id"
               label="ক্যাটাগরি"
               isRequired
+              emptyMessage="কোনো ক্যাটাগরি নেই — খরচ → ক্যাটাগরি ট্যাবে গিয়ে তৈরি করুন।"
               fetcher={async () => {
                 const res = await getExpenseCategories({ page: 1, page_size: 100 });
                 return (res.data.data ?? []).map((c: { public_id: string; name: string }) => ({

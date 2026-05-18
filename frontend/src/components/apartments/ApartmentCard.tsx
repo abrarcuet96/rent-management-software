@@ -1,25 +1,76 @@
+import { getActiveTenant } from "@/api/tenants.api";
 import ConfirmDialog from "@/components/common/ConfirmDialog";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
 import StatusBadge from "@/components/common/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { getFallback } from "@/lib/getFallback";
-import type { Apartment } from "@/types";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { Apartment, Tenant } from "@/types";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
-import { ChevronRight, DoorOpen, Pencil, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, DoorOpen, Pencil, Phone, Plus, Trash2, User } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { deleteApartment } from "@/api/apartments.api";
+import { Link } from "react-router-dom";
 
 interface ApartmentCardProps {
   apartment: Apartment;
   buildingId: string;
   onEdit: () => void;
+  onAssignTenant?: () => void;
 }
 
-export default function ApartmentCard({ apartment, buildingId, onEdit }: ApartmentCardProps) {
+function OccupiedTenantPanel({ apartmentId }: { apartmentId: string }) {
+  const { data, isLoading } = useQuery({
+    queryKey: ["tenants", "active", apartmentId],
+    queryFn: () => getActiveTenant(apartmentId),
+  });
+
+  const tenant: Tenant | undefined = data?.data.data;
+
+  if (isLoading) {
+    return (
+      <div className="px-4 py-3 border-t border-border">
+        <LoadingSpinner size="sm" />
+      </div>
+    );
+  }
+
+  if (!tenant) {
+    return (
+      <div className="px-4 py-3 border-t border-border">
+        <p className="text-xs text-text-secondary">তথ্য পাওয়া যায়নি</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="px-4 py-3 border-t border-border bg-neutral-bg/60 space-y-1.5">
+      <div className="flex items-center gap-2">
+        <User size={13} className="text-text-secondary shrink-0" />
+        <Link
+          to={`/tenants/${tenant.public_id}`}
+          className="text-sm font-medium text-primary hover:text-primary/80 transition-colors truncate"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {tenant.full_name}
+        </Link>
+      </div>
+      <div className="flex items-center gap-2">
+        <Phone size={13} className="text-text-secondary shrink-0" />
+        <span className="text-xs text-text-secondary">{tenant.phone}</span>
+      </div>
+      <p className="text-xs text-text-secondary">
+        প্রবেশ: {tenant.move_in_date}
+      </p>
+    </div>
+  );
+}
+
+export default function ApartmentCard({ apartment, buildingId, onEdit, onAssignTenant }: ApartmentCardProps) {
   const queryClient = useQueryClient();
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [tenantPanelOpen, setTenantPanelOpen] = useState(false);
 
   const { mutate, isPending } = useMutation({
     mutationFn: () => deleteApartment(buildingId, apartment.public_id),
@@ -33,6 +84,8 @@ export default function ApartmentCard({ apartment, buildingId, onEdit }: Apartme
       setConfirmOpen(false);
     },
   });
+
+  const isOccupied = apartment.status === "occupied";
 
   return (
     <>
@@ -61,13 +114,33 @@ export default function ApartmentCard({ apartment, buildingId, onEdit }: Apartme
 
         {/* Card footer */}
         <div className="border-t border-border px-4 py-2.5 flex items-center justify-between bg-neutral-bg/40">
-          <Link
-            to={`/buildings/${buildingId}/apartments/${apartment.public_id}`}
-            className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
-          >
-            বিস্তারিত
-            <ChevronRight size={13} />
-          </Link>
+          {/* Left action: vacant → assign, occupied → toggle tenant info */}
+          {isOccupied ? (
+            <button
+              className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+              onClick={() => setTenantPanelOpen((v) => !v)}
+            >
+              {tenantPanelOpen ? (
+                <>
+                  <ChevronUp size={13} />
+                  লুকান
+                </>
+              ) : (
+                <>
+                  <ChevronDown size={13} />
+                  ভাড়াটে দেখুন
+                </>
+              )}
+            </button>
+          ) : (
+            <button
+              className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+              onClick={onAssignTenant}
+            >
+              <Plus size={13} />
+              ভাড়াটে যোগ করুন
+            </button>
+          )}
 
           <div className="flex items-center gap-1">
             <Button
@@ -88,6 +161,11 @@ export default function ApartmentCard({ apartment, buildingId, onEdit }: Apartme
             </Button>
           </div>
         </div>
+
+        {/* Expandable occupied tenant panel */}
+        {isOccupied && tenantPanelOpen && (
+          <OccupiedTenantPanel apartmentId={apartment.public_id} />
+        )}
       </div>
 
       <ConfirmDialog

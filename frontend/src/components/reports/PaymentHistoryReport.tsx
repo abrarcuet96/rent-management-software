@@ -5,6 +5,7 @@ import LoadingSpinner from "@/components/common/LoadingSpinner";
 import StatusBadge from "@/components/common/StatusBadge";
 import PrintButton from "@/components/common/PrintButton";
 import PrintHeader from "@/components/common/PrintHeader";
+import PrintFooter from "@/components/common/PrintFooter";
 import { formatCurrency, getMonthName } from "@/lib/utils";
 import type { Tenant } from "@/types";
 import { useQuery } from "@tanstack/react-query";
@@ -58,30 +59,39 @@ export default function PaymentHistoryReport() {
   const items: PaymentHistoryItem[] = (data?.data.data ?? []) as PaymentHistoryItem[];
 
   return (
-    <div ref={contentRef}>
+    <div ref={contentRef} data-print-document>
       <PrintHeader
-        title="পেমেন্ট ইতিহাস"
-        subtitle={
-          selectedTenant
-            ? `${selectedTenant.full_name} — ${selectedTenant.building_name}, ইউনিট ${selectedTenant.apartment_unit_number}`
-            : undefined
-        }
+        title="পেমেন্ট ইতিহাস রিপোর্ট"
+        meta={selectedTenant ? [
+          { label: "ভাড়াটে", value: selectedTenant.full_name },
+          { label: "ফোন", value: selectedTenant.phone },
+          { label: "বিল্ডিং", value: selectedTenant.building_name },
+          { label: "ইউনিট", value: `ইউনিট ${selectedTenant.apartment_unit_number}` },
+        ] : []}
       />
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
           <h3 className="text-sm font-medium text-text-primary whitespace-nowrap">পেমেন্ট ইতিহাস</h3>
-          <Select value={selectedTenantId} onValueChange={setSelectedTenantId}>
-            <SelectTrigger className="w-full sm:w-56">
-              <SelectValue placeholder="ভাড়াটে বেছে নিন" />
-            </SelectTrigger>
-            <SelectContent>
-              {tenants.map((t) => (
-                <SelectItem key={t.public_id} value={t.public_id}>
-                  {t.full_name} - {t.building_name} - {t.apartment_unit_number}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex flex-col gap-1 w-full sm:w-56">
+            <Select value={selectedTenantId} onValueChange={setSelectedTenantId}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="ভাড়াটে বেছে নিন" />
+              </SelectTrigger>
+              <SelectContent>
+                {tenants.length === 0 ? (
+                  <div className="px-3 py-4 text-center text-xs text-text-secondary">
+                    কোনো সক্রিয় ভাড়াটে নেই — ভাড়াটে পেজে গিয়ে যোগ করুন
+                  </div>
+                ) : (
+                  tenants.map((t) => (
+                    <SelectItem key={t.public_id} value={t.public_id}>
+                      {t.full_name} - {t.building_name} - {t.apartment_unit_number}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <div className="self-end sm:self-auto print:hidden">
           <PrintButton
@@ -183,6 +193,7 @@ export default function PaymentHistoryReport() {
           ))}
         </div>
       )}
+      <PrintFooter />
     </div>
   );
 }

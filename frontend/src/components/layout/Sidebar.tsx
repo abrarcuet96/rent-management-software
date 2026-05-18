@@ -16,6 +16,8 @@ import {
   ChevronLeft,
   ChevronRight,
   CreditCard,
+  DoorOpen,
+  History,
   LayoutDashboard,
   Monitor,
   Moon,
@@ -27,14 +29,23 @@ import {
 import { useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 
-const NAV_ITEMS = [
+type NavLink = { type?: "link"; label: string; icon: React.ElementType; path: string };
+type NavSection = { type: "section"; label: string };
+type NavEntry = NavLink | NavSection;
+
+const NAV_ITEMS: NavEntry[] = [
   { label: "ড্যাশবোর্ড", icon: LayoutDashboard, path: "/dashboard" },
+  { type: "section", label: "সম্পত্তি" },
   { label: "বিল্ডিং", icon: Building2, path: "/buildings" },
-  { label: "ভাড়াটেদের তালিকা", icon: Users, path: "/tenants" },
-  { label: "পেমেন্ট", icon: CreditCard, path: "/payments" },
+  { label: "অ্যাপার্টমেন্ট", icon: DoorOpen, path: "/apartments" },
+  { label: "ভাড়াটে", icon: Users, path: "/tenants" },
+  { type: "section", label: "পেমেন্ট" },
+  { label: "বাল্ক পেমেন্ট", icon: CreditCard, path: "/payments" },
+  { label: "পেমেন্ট ইতিহাস", icon: History, path: "/payment-history" },
+  { type: "section", label: "আর্থিক" },
   { label: "খরচ", icon: Receipt, path: "/expenses" },
   { label: "রিপোর্ট", icon: BarChart3, path: "/reports" },
-] as const;
+];
 
 const BOTTOM_ITEMS = [
   { label: "ব্যবহার গাইড", icon: BookOpen, path: "/user-manual" },
@@ -55,7 +66,7 @@ function NavItem({
   collapsed: boolean;
 }) {
   const location = useLocation();
-  const exactPaths = ["/dashboard", "/settings"];
+  const exactPaths = ["/dashboard", "/buildings", "/apartments", "/tenants", "/payments", "/payment-history", "/expenses", "/reports", "/settings", "/user-manual"];
   const isActive = exactPaths.includes(item.path)
     ? location.pathname === item.path
     : location.pathname.startsWith(item.path);
@@ -116,10 +127,23 @@ function SidebarContent({ collapsed, onClose }: { collapsed: boolean; onClose?: 
 
       {/* Nav */}
       <TooltipProvider delayDuration={0}>
-        <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
-          {NAV_ITEMS.map((item) => (
-            <NavItem key={item.path} item={item} collapsed={collapsed} />
-          ))}
+        <nav className="flex-1 px-2 py-3 overflow-y-auto space-y-0.5">
+          {NAV_ITEMS.map((item, i) =>
+            item.type === "section" ? (
+              !collapsed ? (
+                <p
+                  key={`section-${i}`}
+                  className="px-3 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-widest text-white/40 select-none"
+                >
+                  {item.label}
+                </p>
+              ) : (
+                <div key={`section-${i}`} className="border-t border-white/10 my-1" />
+              )
+            ) : (
+              <NavItem key={(item as NavLink).path} item={item as NavLink} collapsed={collapsed} />
+            )
+          )}
         </nav>
 
         {/* Bottom */}

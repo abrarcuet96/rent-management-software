@@ -1,22 +1,16 @@
 import { z } from "zod";
 
 export const agreementSchema = z.object({
-  rent_amount: z.preprocess(
-    (v) => Number(v),
-    z.number().min(0.01, "ভাড়ার পরিমাণ প্রয়োজন"),
-  ),
+  rent_amount: z.coerce.number().min(0.01, "ভাড়ার পরিমাণ প্রয়োজন"),
   start_date: z.string().min(1, "শুরুর তারিখ প্রয়োজন"),
 });
 
 export const bulkRentAdjustSchema = z
   .object({
     adjustment_type: z.enum(["fixed", "percentage"]),
-    amount: z.preprocess(
-      (v) => Number(v),
-      z.number().refine((v) => v !== 0, {
-        message: "পরিমাণ ০ হতে পারে না",
-      }),
-    ),
+    amount: z.coerce.number().refine((v) => v !== 0, {
+      message: "পরিমাণ ০ হতে পারে না",
+    }),
     scope: z.enum(["all", "building"]),
     building_public_id: z.string().optional(),
     effective_date: z.string().min(1, "কার্যকর তারিখ প্রয়োজন"),

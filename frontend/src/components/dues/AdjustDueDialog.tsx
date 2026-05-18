@@ -22,19 +22,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import { Loader2 } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import toast from "react-hot-toast";
 import { z } from "zod";
 
 const adjustDueSchema = z.object({
-  total_due: z.preprocess(
-    (v) => (v === "" ? undefined : Number(v)),
-    z.number().min(0, "পরিমাণ ০ বা তার বেশি হতে হবে").optional(),
-  ),
-  rent_amount: z.preprocess(
-    (v) => (v === "" ? undefined : Number(v)),
-    z.number().min(0.01, "ভাড়ার পরিমাণ প্রয়োজন").optional(),
-  ),
+  total_due: z.coerce.number().min(0, "পরিমাণ ০ বা তার বেশি হতে হবে").optional(),
+  rent_amount: z.coerce.number().min(0.01, "ভাড়ার পরিমাণ প্রয়োজন").optional(),
   due_date: z.string().optional(),
 });
 
@@ -51,15 +45,14 @@ export default function AdjustDueDialog({
   open,
   onOpenChange,
   due,
-  tenantId,
 }: AdjustDueDialogProps) {
   const queryClient = useQueryClient();
 
   const form = useForm<AdjustDueInput>({
-    resolver: zodResolver(adjustDueSchema),
+    resolver: zodResolver(adjustDueSchema) as Resolver<AdjustDueInput>,
     defaultValues: {
-      total_due: due.total_due,
-      rent_amount: due.rent_amount,
+      total_due: parseFloat(due.total_due),
+      rent_amount: parseFloat(due.rent_amount),
       due_date: due.due_date ?? "",
     },
   });
@@ -67,9 +60,9 @@ export default function AdjustDueDialog({
   const { mutate, isPending } = useMutation({
     mutationFn: (data: AdjustDueInput) => {
       const payload: Record<string, unknown> = {};
-      if (data.total_due !== undefined && data.total_due !== due.total_due)
+      if (data.total_due !== undefined && data.total_due !== parseFloat(due.total_due))
         payload.total_due = data.total_due;
-      if (data.rent_amount !== undefined && data.rent_amount !== due.rent_amount)
+      if (data.rent_amount !== undefined && data.rent_amount !== parseFloat(due.rent_amount))
         payload.rent_amount = data.rent_amount;
       if (data.due_date !== undefined && data.due_date !== (due.due_date ?? ""))
         payload.due_date = data.due_date || undefined;
@@ -114,7 +107,7 @@ export default function AdjustDueDialog({
                   <FormControl>
                     <Input
                       type="number"
-                      placeholder={String(due.total_due)}
+                      placeholder={due.total_due}
                       value={field.value ?? ""}
                       onChange={(e) => {
                         const val = e.target.value;
@@ -136,7 +129,7 @@ export default function AdjustDueDialog({
                   <FormControl>
                     <Input
                       type="number"
-                      placeholder={String(due.rent_amount)}
+                      placeholder={due.rent_amount}
                       value={field.value ?? ""}
                       onChange={(e) => {
                         const val = e.target.value;

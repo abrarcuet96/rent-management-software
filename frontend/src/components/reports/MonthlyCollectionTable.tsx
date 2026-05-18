@@ -1,6 +1,7 @@
 import { getDashboardSummary } from "@/api/dashboard.api";
 import PrintButton from "@/components/common/PrintButton";
 import PrintHeader from "@/components/common/PrintHeader";
+import PrintFooter from "@/components/common/PrintFooter";
 import { formatCurrency, getMonthName } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { useRef, useState } from "react";
@@ -12,8 +13,14 @@ export default function MonthlyCollectionTable() {
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
 
   return (
-    <div ref={contentRef}>
-      <PrintHeader title="মাসিক সংগ্রহ রিপোর্ট" />
+    <div ref={contentRef} data-print-document>
+      <PrintHeader
+        title="মাসিক সংগ্রহ রিপোর্ট"
+        meta={[
+          { label: "বছর", value: String(year) },
+          { label: "মোট মাস", value: "১২ মাস" },
+        ]}
+      />
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-medium text-text-primary">মাসিক সংগ্রহ</h3>
         <div className="flex items-center gap-3">
@@ -46,6 +53,7 @@ export default function MonthlyCollectionTable() {
           </tbody>
         </table>
       </div>
+      <PrintFooter />
     </div>
   );
 }

@@ -23,8 +23,9 @@ export default function BulkDistributionPreview({ dues, totalAmount }: BulkDistr
         </thead>
         <tbody>
           {dues.map((due) => {
-            const apply = Math.min(due.remaining_balance, remaining);
-            const afterRemaining = due.remaining_balance - apply;
+            const balance = parseFloat(due.remaining_balance);
+            const apply = Math.min(balance, remaining);
+            const afterRemaining = balance - apply;
             sumAfterRemaining += afterRemaining;
             remaining -= apply;
             return (

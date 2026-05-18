@@ -4,8 +4,8 @@ import { Form } from "@/components/ui/form";
 import { buildingSchema, type BuildingInput } from "@/lib/validators/building";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
-import type { RefObject } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, type RefObject } from "react";
+import { useForm, type Resolver } from "react-hook-form";
 
 interface BuildingMutationFormProps {
   onSubmit: (data: BuildingInput) => void;
@@ -23,13 +23,15 @@ export default function BuildingMutationForm({
   mode = "create",
 }: BuildingMutationFormProps) {
   const form = useForm<BuildingInput>({
-    resolver: zodResolver(buildingSchema),
+    resolver: zodResolver(buildingSchema) as Resolver<BuildingInput>,
     defaultValues: { name: "", address: "", total_floors: 1, ...defaultValues },
   });
 
-  if (formRef) {
-    formRef.current = { reset: () => form.reset() };
-  }
+  useEffect(() => {
+    if (formRef) {
+      formRef.current = { reset: form.reset };
+    }
+  }, [formRef, form.reset]);
 
   return (
     <Form {...form}>

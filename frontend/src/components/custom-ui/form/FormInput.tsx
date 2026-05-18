@@ -7,11 +7,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import type { FieldValues, Path, UseFormReturn } from "react-hook-form";
+import type { Control, FieldValues, Path, UseFormReturn } from "react-hook-form";
 
 interface FormInputProps<T extends FieldValues> {
   name: Path<T>;
-  form: UseFormReturn<T>;
+  form: UseFormReturn<T, any, any>;
   label: string;
   isRequired?: boolean;
   type?: string;
@@ -30,7 +30,7 @@ export default function FormInput<T extends FieldValues>({
 }: FormInputProps<T>) {
   return (
     <FormField
-      control={form.control}
+      control={form.control as unknown as Control<any>}
       name={name}
       render={({ field }) => (
         <FormItem>

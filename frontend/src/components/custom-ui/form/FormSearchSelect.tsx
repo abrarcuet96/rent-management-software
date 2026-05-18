@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { FieldValues, Path, UseFormReturn } from "react-hook-form";
+import type { Control, FieldValues, Path, UseFormReturn } from "react-hook-form";
 
 interface Option {
   value: string;
@@ -23,12 +23,13 @@ interface Option {
 
 interface FormSearchSelectProps<T extends FieldValues> {
   name: Path<T>;
-  form: UseFormReturn<T>;
+  form: UseFormReturn<T, any, any>;
   label: string;
   fetcher: () => Promise<Option[]>;
   isRequired?: boolean;
   placeholder?: string;
   disabled?: boolean;
+  emptyMessage?: string;
 }
 
 export default function FormSearchSelect<T extends FieldValues>({
@@ -39,6 +40,7 @@ export default function FormSearchSelect<T extends FieldValues>({
   isRequired,
   placeholder = "বেছে নিন",
   disabled,
+  emptyMessage,
 }: FormSearchSelectProps<T>) {
   const [options, setOptions] = useState<Option[]>([]);
   const [loading, setLoading] = useState(false);
@@ -63,7 +65,7 @@ export default function FormSearchSelect<T extends FieldValues>({
 
   return (
     <FormField
-      control={form.control}
+      control={form.control as unknown as Control<any>}
       name={name}
       render={({ field }) => (
         <FormItem>
@@ -93,11 +95,17 @@ export default function FormSearchSelect<T extends FieldValues>({
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              {options.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </SelectItem>
-              ))}
+              {!loading && options.length === 0 ? (
+                <div className="px-3 py-4 text-center text-xs text-text-secondary">
+                  {emptyMessage ?? "কোনো ডেটা পাওয়া যায়নি"}
+                </div>
+              ) : (
+                options.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
           <FormMessage />

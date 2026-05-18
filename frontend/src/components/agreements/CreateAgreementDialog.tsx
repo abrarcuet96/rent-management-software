@@ -19,7 +19,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import { Loader2 } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import toast from "react-hot-toast";
 
 interface CreateAgreementDialogProps {
@@ -36,9 +36,8 @@ export default function CreateAgreementDialog({
   const queryClient = useQueryClient();
 
   const form = useForm<AgreementInput>({
-    resolver: zodResolver(agreementSchema),
+    resolver: zodResolver(agreementSchema) as Resolver<AgreementInput>,
     defaultValues: {
-      rent_amount: "" as unknown as number,
       start_date: new Date().toISOString().split("T")[0],
     },
   });

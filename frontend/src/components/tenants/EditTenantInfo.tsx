@@ -46,6 +46,7 @@ export default function EditTenantInfo({ open, onOpenChange, apartmentId, tenant
       }),
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ["tenants"] });
+      queryClient.invalidateQueries({ queryKey: ["tenants", tenant.public_id] });
       queryClient.invalidateQueries({ queryKey: ["apartments"] });
       toast.success(res.data.message || "ভাড়াটে আপডেট হয়েছে");
       onOpenChange(false);

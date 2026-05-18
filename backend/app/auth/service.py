@@ -4,7 +4,19 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import hash_password, verify_password
+from app.models.expense_category import ExpenseCategory
 from app.models.owner import Owner
+
+DEFAULT_EXPENSE_CATEGORIES = [
+    "বিদ্যুৎ",
+    "পানি",
+    "গ্যাস",
+    "রক্ষণাবেক্ষণ",
+    "মেরামত",
+    "পরিষ্কার",
+    "নিরাপত্তা",
+    "অন্যান্য",
+]
 
 
 class AuthService:
@@ -27,6 +39,12 @@ class AuthService:
             hashed_password=hash_password(password),
         )
         self.db.add(owner)
+        await self.db.flush()  # get owner.id without committing yet
+
+        # Seed default expense categories for the new owner
+        for name in DEFAULT_EXPENSE_CATEGORIES:
+            self.db.add(ExpenseCategory(owner_id=owner.id, name=name, is_default=True))
+
         await self.db.commit()
         await self.db.refresh(owner)
         return owner

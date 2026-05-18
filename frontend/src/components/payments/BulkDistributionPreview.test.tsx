@@ -10,10 +10,10 @@ function makeDue(overrides: Partial<MonthlyDue>): MonthlyDue {
     agreement_public_id: "agreement-1",
     month: 1,
     year: 2025,
-    rent_amount: 5000,
-    total_due: 5000,
-    amount_paid: 0,
-    remaining_balance: 5000,
+    rent_amount: "5000.00",
+    total_due: "5000.00",
+    amount_paid: "0.00",
+    remaining_balance: "5000.00",
     status: "unpaid",
     is_auto_generated: true,
     created_at: "2025-01-01T00:00:00Z",
@@ -24,9 +24,9 @@ function makeDue(overrides: Partial<MonthlyDue>): MonthlyDue {
 describe("BulkDistributionPreview", () => {
   it("distributes exact amount across 3 dues", () => {
     const dues = [
-      makeDue({ public_id: "due-1", month: 1, year: 2025, remaining_balance: 5000 }),
-      makeDue({ public_id: "due-2", month: 2, year: 2025, remaining_balance: 5000 }),
-      makeDue({ public_id: "due-3", month: 3, year: 2025, remaining_balance: 5000 }),
+      makeDue({ public_id: "due-1", month: 1, year: 2025, remaining_balance: "5000.00" }),
+      makeDue({ public_id: "due-2", month: 2, year: 2025, remaining_balance: "5000.00" }),
+      makeDue({ public_id: "due-3", month: 3, year: 2025, remaining_balance: "5000.00" }),
     ];
 
     render(<BulkDistributionPreview dues={dues} totalAmount={15000} />);
@@ -38,8 +38,8 @@ describe("BulkDistributionPreview", () => {
 
   it("shows partial distribution when amount is less than total owed", () => {
     const dues = [
-      makeDue({ public_id: "due-1", month: 1, remaining_balance: 5000 }),
-      makeDue({ public_id: "due-2", month: 2, remaining_balance: 5000 }),
+      makeDue({ public_id: "due-1", month: 1, remaining_balance: "5000.00" }),
+      makeDue({ public_id: "due-2", month: 2, remaining_balance: "5000.00" }),
     ];
 
     render(<BulkDistributionPreview dues={dues} totalAmount={7000} />);
@@ -50,7 +50,7 @@ describe("BulkDistributionPreview", () => {
 
   it("shows excess as unapplied in footer", () => {
     const dues = [
-      makeDue({ public_id: "due-1", remaining_balance: 5000 }),
+      makeDue({ public_id: "due-1", remaining_balance: "5000.00" }),
     ];
 
     render(<BulkDistributionPreview dues={dues} totalAmount={7000} />);
@@ -61,7 +61,7 @@ describe("BulkDistributionPreview", () => {
 
   it("renders empty table for zero amount", () => {
     const dues = [
-      makeDue({ public_id: "due-1", remaining_balance: 5000 }),
+      makeDue({ public_id: "due-1", remaining_balance: "5000.00" }),
     ];
 
     render(<BulkDistributionPreview dues={dues} totalAmount={0} />);

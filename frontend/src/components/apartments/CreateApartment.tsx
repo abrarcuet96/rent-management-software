@@ -16,9 +16,10 @@ interface CreateApartmentProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   buildingId: string;
+  totalFloors: number;
 }
 
-export default function CreateApartment({ open, onOpenChange, buildingId }: CreateApartmentProps) {
+export default function CreateApartment({ open, onOpenChange, buildingId, totalFloors }: CreateApartmentProps) {
   const queryClient = useQueryClient();
 
   const { mutate, isPending } = useMutation({
@@ -42,6 +43,7 @@ export default function CreateApartment({ open, onOpenChange, buildingId }: Crea
         <ApartmentMutationForm
           onSubmit={(data) => mutate(data)}
           isPending={isPending}
+          totalFloors={totalFloors}
         />
       </DialogContent>
     </Dialog>

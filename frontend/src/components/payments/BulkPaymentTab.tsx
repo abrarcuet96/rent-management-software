@@ -29,7 +29,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import toast from "react-hot-toast";
 
 export default function BulkPaymentTab() {
@@ -37,9 +37,8 @@ export default function BulkPaymentTab() {
   const [selectedTenantId, setSelectedTenantId] = useState<string>("");
 
   const form = useForm<BulkPaymentInput>({
-    resolver: zodResolver(bulkPaymentSchema),
+    resolver: zodResolver(bulkPaymentSchema) as Resolver<BulkPaymentInput>,
     defaultValues: {
-      total_amount: "" as unknown as number,
       paid_on: new Date().toISOString().split("T")[0],
       note: "",
     },
@@ -114,11 +113,17 @@ export default function BulkPaymentTab() {
               <SelectValue placeholder="ভাড়াটে বেছে নিন" />
             </SelectTrigger>
             <SelectContent>
-              {tenants.map((t) => (
-                <SelectItem key={t.public_id} value={t.public_id}>
-                  {t.full_name} - {t.building_name} - {t.apartment_unit_number}
-                </SelectItem>
-              ))}
+              {tenants.length === 0 ? (
+                <div className="px-3 py-4 text-center text-xs text-text-secondary">
+                  কোনো সক্রিয় ভাড়াটে নেই — ভাড়াটে পেজে গিয়ে যোগ করুন
+                </div>
+              ) : (
+                tenants.map((t) => (
+                  <SelectItem key={t.public_id} value={t.public_id}>
+                    {t.full_name} - {t.building_name} - {t.apartment_unit_number}
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
         </div>

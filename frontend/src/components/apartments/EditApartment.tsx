@@ -18,9 +18,10 @@ interface EditApartmentProps {
   onOpenChange: (open: boolean) => void;
   buildingId: string;
   apartment: Apartment;
+  totalFloors: number;
 }
 
-export default function EditApartment({ open, onOpenChange, buildingId, apartment }: EditApartmentProps) {
+export default function EditApartment({ open, onOpenChange, buildingId, apartment, totalFloors }: EditApartmentProps) {
   const queryClient = useQueryClient();
 
   const { mutate, isPending } = useMutation({
@@ -45,6 +46,7 @@ export default function EditApartment({ open, onOpenChange, buildingId, apartmen
         <ApartmentMutationForm
           onSubmit={(data) => mutate(data)}
           isPending={isPending}
+          totalFloors={totalFloors}
           defaultValues={{
             unit_number: apartment.unit_number,
             floor: apartment.floor,

@@ -4,9 +4,8 @@ import { getFallback } from "@/lib/getFallback";
 import type { Building } from "@/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
-import { Building2, ChevronRight, Layers, Pencil, Trash2 } from "lucide-react";
+import { Building2, Layers, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { deleteBuilding } from "@/api/buildings.api";
 
@@ -62,15 +61,7 @@ export default function BuildingCard({ building, onEdit }: BuildingCardProps) {
         </div>
 
         {/* Card footer */}
-        <div className="border-t border-border px-4 py-2.5 flex items-center justify-between bg-neutral-bg/40">
-          <Link
-            to={`/buildings/${building.public_id}`}
-            className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
-          >
-            বিস্তারিত
-            <ChevronRight size={13} />
-          </Link>
-
+        <div className="border-t border-border px-4 py-2.5 flex items-center justify-end bg-neutral-bg/40">
           <div className="flex items-center gap-1">
             <Button
               variant="ghost"

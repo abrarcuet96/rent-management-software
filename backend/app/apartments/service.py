@@ -29,6 +29,20 @@ class ApartmentService:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Building not found")
         return building_id
 
+    async def _resolve_building_with_floors(self, building_public_id: UUID) -> tuple[UUID, int]:
+        """Return (internal building.id, total_floors) after verifying ownership."""
+        result = await self.db.execute(
+            select(Building.id, Building.total_floors).where(
+                Building.public_id == building_public_id,
+                Building.owner_id == self.owner_id,
+                Building.is_active.is_(True),
+            )
+        )
+        row = result.one_or_none()
+        if row is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Building not found")
+        return row[0], row[1]
+
     async def _get_or_404(self, building_public_id: UUID, apartment_public_id: UUID) -> Apartment:
         building_id = await self._resolve_building(building_public_id)
         result = await self.db.execute(
@@ -73,7 +87,12 @@ class ApartmentService:
         return await self._get_or_404(building_public_id, apartment_public_id)
 
     async def create_apartment(self, building_public_id: UUID, data: ApartmentCreate) -> Apartment:
-        building_id = await self._resolve_building(building_public_id)
+        building_id, total_floors = await self._resolve_building_with_floors(building_public_id)
+        if data.floor > total_floors:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"তলা নম্বর {data.floor} বিল্ডিংয়ের সর্বোচ্চ তলা ({total_floors}) এর বেশি হতে পারে না",
+            )
         apt = Apartment(
             building_id=building_id,
             unit_number=data.unit_number,
@@ -99,6 +118,15 @@ class ApartmentService:
         data: ApartmentUpdate,
     ) -> Apartment:
         apt = await self._get_or_404(building_public_id, apartment_public_id)
+        if data.floor is not None:
+            total_floors = await self.db.scalar(
+                select(Building.total_floors).where(Building.id == apt.building_id)
+            )
+            if data.floor > total_floors:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"তলা নম্বর {data.floor} বিল্ডিংয়ের সর্বোচ্চ তলা ({total_floors}) এর বেশি হতে পারে না",
+                )
         for field, value in data.model_dump(exclude_unset=True).items():
             setattr(apt, field, value)
         try:

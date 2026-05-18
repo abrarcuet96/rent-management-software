@@ -21,7 +21,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import { Loader2 } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import toast from "react-hot-toast";
 
 interface GenerateMonthlyDueProps {
@@ -34,7 +34,7 @@ export default function GenerateMonthlyDue({ open, onOpenChange, tenantId }: Gen
   const queryClient = useQueryClient();
 
   const form = useForm<DueInput>({
-    resolver: zodResolver(dueSchema),
+    resolver: zodResolver(dueSchema) as Resolver<DueInput>,
     defaultValues: {
       month: new Date().getMonth() + 1,
       year: new Date().getFullYear(),

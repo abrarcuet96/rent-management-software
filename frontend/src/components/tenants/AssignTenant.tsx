@@ -21,7 +21,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import { Loader2 } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import toast from "react-hot-toast";
 
 interface AssignTenantProps {
@@ -34,7 +34,7 @@ export default function AssignTenant({ open, onOpenChange, apartmentId }: Assign
   const queryClient = useQueryClient();
 
   const form = useForm<TenantInput>({
-    resolver: zodResolver(tenantSchema),
+    resolver: zodResolver(tenantSchema) as Resolver<TenantInput>,
     defaultValues: {
       full_name: "",
       phone: "",

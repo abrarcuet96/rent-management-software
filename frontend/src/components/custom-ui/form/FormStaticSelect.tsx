@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { FieldValues, Path, UseFormReturn } from "react-hook-form";
+import type { Control, FieldValues, Path, UseFormReturn } from "react-hook-form";
 
 interface Option {
   value: string;
@@ -21,7 +21,7 @@ interface Option {
 
 interface FormStaticSelectProps<T extends FieldValues> {
   name: Path<T>;
-  form: UseFormReturn<T>;
+  form: UseFormReturn<T, any, any>;
   label: string;
   options: Option[];
   isRequired?: boolean;
@@ -38,7 +38,7 @@ export default function FormStaticSelect<T extends FieldValues>({
 }: FormStaticSelectProps<T>) {
   return (
     <FormField
-      control={form.control}
+      control={form.control as unknown as Control<any>}
       name={name}
       render={({ field }) => (
         <FormItem>

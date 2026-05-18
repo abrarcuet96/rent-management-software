@@ -19,13 +19,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { getFallback } from "@/lib/getFallback";
 import { formatCurrency } from "@/lib/utils";
 import type { MonthlyDue } from "@/types";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import { Loader2 } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import toast from "react-hot-toast";
+import { z } from "zod";
 
 interface RecordPaymentProps {
   open: boolean;
@@ -36,25 +36,30 @@ interface RecordPaymentProps {
 
 type PaymentInput = { amount: number; paid_on: string; note?: string };
 
-export default function RecordPayment({ open, onOpenChange, due, tenantId }: RecordPaymentProps) {
+export default function RecordPayment({
+  open,
+  onOpenChange,
+  due,
+}: RecordPaymentProps) {
   const queryClient = useQueryClient();
 
+  const remainingBalance = parseFloat(due.remaining_balance);
   const paymentSchema = z.object({
-    amount: z.preprocess(
-      (v) => Number(v),
-      z
-        .number()
-        .min(0.01, "পরিমাণ প্রয়োজন")
-        .max(due.remaining_balance, `সর্বোচ্চ ${formatCurrency(due.remaining_balance)} পর্যন্ত`),
-    ),
+    amount: z.coerce
+      .number()
+      .min(0.01, "পরিমাণ প্রয়োজন")
+      .max(
+        remainingBalance,
+        `সর্বোচ্চ ${formatCurrency(remainingBalance)} পর্যন্ত`,
+      ),
     paid_on: z.string().min(1, "তারিখ প্রয়োজন"),
     note: z.string().optional(),
   });
 
   const form = useForm<PaymentInput>({
-    resolver: zodResolver(paymentSchema),
+    resolver: zodResolver(paymentSchema) as Resolver<PaymentInput>,
     defaultValues: {
-      amount: due.remaining_balance,
+      amount: remainingBalance,
       paid_on: new Date().toISOString().split("T")[0],
       note: "",
     },
@@ -88,7 +93,10 @@ export default function RecordPayment({ open, onOpenChange, due, tenantId }: Rec
         </DialogHeader>
         <div className="bg-neutral-bg rounded-lg p-3 mb-4">
           <p className="text-sm text-text-secondary">
-            বাকি: <span className="font-semibold text-danger">{formatCurrency(due.remaining_balance)}</span>
+            বাকি:{" "}
+            <span className="font-semibold text-danger">
+              {formatCurrency(due.remaining_balance)}
+            </span>
           </p>
         </div>
         <Form {...form}>
@@ -101,7 +109,9 @@ export default function RecordPayment({ open, onOpenChange, due, tenantId }: Rec
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>পেমেন্ট পরিমাণ (৳) <span className="text-danger">*</span></FormLabel>
+                  <FormLabel>
+                    পেমেন্ট পরিমাণ (৳) <span className="text-danger">*</span>
+                  </FormLabel>
                   <FormControl>
                     <Input type="number" placeholder="0" {...field} />
                   </FormControl>
@@ -114,7 +124,9 @@ export default function RecordPayment({ open, onOpenChange, due, tenantId }: Rec
               name="paid_on"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>পেমেন্টের তারিখ <span className="text-danger">*</span></FormLabel>
+                  <FormLabel>
+                    পেমেন্টের তারিখ <span className="text-danger">*</span>
+                  </FormLabel>
                   <FormControl>
                     <Input type="date" {...field} />
                   </FormControl>
@@ -129,7 +141,11 @@ export default function RecordPayment({ open, onOpenChange, due, tenantId }: Rec
                 <FormItem>
                   <FormLabel>নোট (ঐচ্ছিক)</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="কোনো মন্তব্য..." rows={2} {...field} />
+                    <Textarea
+                      placeholder="কোনো মন্তব্য..."
+                      rows={2}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -141,7 +157,9 @@ export default function RecordPayment({ open, onOpenChange, due, tenantId }: Rec
                 disabled={isPending}
                 className="bg-primary hover:bg-primary/90 text-primary-foreground"
               >
-                {isPending && <Loader2 size={16} className="animate-spin mr-1.5" />}
+                {isPending && (
+                  <Loader2 size={16} className="animate-spin mr-1.5" />
+                )}
                 পেমেন্ট করুন
               </Button>
             </div>

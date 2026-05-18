@@ -55,10 +55,10 @@ export interface MonthlyDue {
   agreement_public_id: string;
   month: number;
   year: number;
-  rent_amount: number;
-  total_due: number;
-  amount_paid: number;
-  remaining_balance: number;
+  rent_amount: string;
+  total_due: string;
+  amount_paid: string;
+  remaining_balance: string;
   status: "unpaid" | "partial" | "paid";
   is_auto_generated: boolean;
   due_date?: string;

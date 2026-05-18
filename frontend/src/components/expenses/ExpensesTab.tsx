@@ -7,7 +7,7 @@ import { formatCurrency } from "@/lib/utils";
 import type { Expense } from "@/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
-import { Edit2, Pencil, Plus, Receipt, Trash2 } from "lucide-react";
+import { Pencil, Plus, Receipt, Trash2 } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import ExpenseFormDialog from "./ExpenseFormDialog";

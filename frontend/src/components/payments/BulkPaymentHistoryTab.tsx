@@ -46,7 +46,7 @@ export default function BulkPaymentHistoryTab() {
         />
       ) : (
         <div className="space-y-3">
-          {items.map((item, idx) => {
+          {items.map((item) => {
             const key = `${item.paid_on}-${item.tenant_public_id}`;
             const isExpanded = expanded.has(key);
             return (

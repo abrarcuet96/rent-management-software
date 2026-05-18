@@ -45,6 +45,9 @@ export default function MoveOutTenant({ open, onOpenChange, apartmentId, tenant 
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ["apartments"] });
       queryClient.invalidateQueries({ queryKey: ["tenants"] });
+      queryClient.invalidateQueries({ queryKey: ["tenants", tenant.public_id] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["overdue-list"] });
       toast.success(res.data.message || "ভাড়াটে চলে গেছে");
       onOpenChange(false);
     },

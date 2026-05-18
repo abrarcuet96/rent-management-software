@@ -10,8 +10,10 @@ interface Crumb {
 const PAGE_TITLES: Record<string, string> = {
   "/dashboard": "ড্যাশবোর্ড",
   "/buildings": "বিল্ডিং",
-  "/tenants": "ভাড়াটেদের তালিকা",
-  "/payments": "পেমেন্ট",
+  "/apartments": "অ্যাপার্টমেন্ট",
+  "/tenants": "ভাড়াটে",
+  "/payments": "বাল্ক পেমেন্ট",
+  "/payment-history": "পেমেন্ট ইতিহাস",
   "/expenses": "খরচ",
   "/reports": "রিপোর্ট",
   "/settings": "সেটিংস",

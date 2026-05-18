@@ -15,10 +15,10 @@ function makeDue(overrides: Partial<MonthlyDue> = {}): MonthlyDue {
     agreement_public_id: "agreement-1",
     month: 1,
     year: 2025,
-    rent_amount: 5000,
-    total_due: 5000,
-    amount_paid: 0,
-    remaining_balance: 5000,
+    rent_amount: "5000.00",
+    total_due: "5000.00",
+    amount_paid: "0.00",
+    remaining_balance: "5000.00",
     status: "unpaid",
     is_auto_generated: true,
     created_at: "2025-01-01T00:00:00Z",
@@ -31,37 +31,37 @@ describe("MonthlyDueRow", () => {
     const due = makeDue({
       month: 3,
       year: 2025,
-      total_due: 5000,
-      amount_paid: 2000,
-      remaining_balance: 3000,
+      total_due: "5000.00",
+      amount_paid: "2000.00",
+      remaining_balance: "3000.00",
     });
 
-    render(<MonthlyDueRow due={due} onPay={() => {}} onAdjust={() => {}} />);
+    render(<MonthlyDueRow due={due} onPay={() => {}} onAdjust={() => {}} expanded={false} onToggle={() => {}} />);
 
     expect(screen.getByText(/মার্চ 2025/)).toBeInTheDocument();
   });
 
   it("renders status badge for unpaid due", () => {
     const due = makeDue({ status: "unpaid" });
-    render(<MonthlyDueRow due={due} onPay={() => {}} onAdjust={() => {}} />);
+    render(<MonthlyDueRow due={due} onPay={() => {}} onAdjust={() => {}} expanded={false} onToggle={() => {}} />);
     expect(screen.getByText("বকেয়া")).toBeInTheDocument();
   });
 
   it("renders status badge for paid due", () => {
     const due = makeDue({ status: "paid" });
-    render(<MonthlyDueRow due={due} onPay={() => {}} onAdjust={() => {}} />);
+    render(<MonthlyDueRow due={due} onPay={() => {}} onAdjust={() => {}} expanded={false} onToggle={() => {}} />);
     expect(screen.getByText("পরিশোধিত")).toBeInTheDocument();
   });
 
   it("does not show pay button for paid due", () => {
     const due = makeDue({ status: "paid" });
-    render(<MonthlyDueRow due={due} onPay={() => {}} onAdjust={() => {}} />);
+    render(<MonthlyDueRow due={due} onPay={() => {}} onAdjust={() => {}} expanded={false} onToggle={() => {}} />);
     expect(screen.queryByText("পরিশোধ")).not.toBeInTheDocument();
   });
 
   it("shows pay button for unpaid due", () => {
     const due = makeDue({ status: "unpaid" });
-    render(<MonthlyDueRow due={due} onPay={() => {}} onAdjust={() => {}} />);
+    render(<MonthlyDueRow due={due} onPay={() => {}} onAdjust={() => {}} expanded={false} onToggle={() => {}} />);
     expect(screen.getByText("পরিশোধ")).toBeInTheDocument();
   });
 
@@ -69,7 +69,7 @@ describe("MonthlyDueRow", () => {
     const user = userEvent.setup();
     const onPay = vi.fn();
     const due = makeDue({ status: "unpaid" });
-    render(<MonthlyDueRow due={due} onPay={onPay} onAdjust={() => {}} />);
+    render(<MonthlyDueRow due={due} onPay={onPay} onAdjust={() => {}} expanded={false} onToggle={() => {}} />);
 
     await user.click(screen.getByText("পরিশোধ"));
     expect(onPay).toHaveBeenCalledOnce();
@@ -79,7 +79,7 @@ describe("MonthlyDueRow", () => {
     const user = userEvent.setup();
     const onAdjust = vi.fn();
     const due = makeDue({ status: "unpaid" });
-    render(<MonthlyDueRow due={due} onPay={() => {}} onAdjust={onAdjust} />);
+    render(<MonthlyDueRow due={due} onPay={() => {}} onAdjust={onAdjust} expanded={false} onToggle={() => {}} />);
 
     await user.click(screen.getByText("সম্পাদনা"));
     expect(onAdjust).toHaveBeenCalledOnce();
@@ -87,30 +87,43 @@ describe("MonthlyDueRow", () => {
 
   it("does not show adjust button for paid due", () => {
     const due = makeDue({ status: "paid" });
-    render(<MonthlyDueRow due={due} onPay={() => {}} onAdjust={() => {}} />);
+    render(<MonthlyDueRow due={due} onPay={() => {}} onAdjust={() => {}} expanded={false} onToggle={() => {}} />);
     expect(screen.queryByText("সম্পাদনা")).not.toBeInTheDocument();
   });
 
   it("does not show adjust button for partial due", () => {
     const due = makeDue({ status: "partial" });
-    render(<MonthlyDueRow due={due} onPay={() => {}} onAdjust={() => {}} />);
+    render(<MonthlyDueRow due={due} onPay={() => {}} onAdjust={() => {}} expanded={false} onToggle={() => {}} />);
     expect(screen.queryByText("সম্পাদনা")).not.toBeInTheDocument();
   });
 
   it("shows adjust button for unpaid due", () => {
     const due = makeDue({ status: "unpaid" });
-    render(<MonthlyDueRow due={due} onPay={() => {}} onAdjust={() => {}} />);
+    render(<MonthlyDueRow due={due} onPay={() => {}} onAdjust={() => {}} expanded={false} onToggle={() => {}} />);
     expect(screen.getByText("সম্পাদনা")).toBeInTheDocument();
   });
 
-  it("expands payment history when row is clicked", async () => {
-    const user = userEvent.setup();
+  it("shows payment history when expanded", () => {
     const due = makeDue();
-    render(<MonthlyDueRow due={due} onPay={() => {}} onAdjust={() => {}} />);
+    render(<MonthlyDueRow due={due} onPay={() => {}} onAdjust={() => {}} expanded={true} onToggle={() => {}} />);
+    expect(screen.getByTestId("payment-history")).toBeInTheDocument();
+  });
+
+  it("hides payment history when not expanded", () => {
+    const due = makeDue();
+    render(<MonthlyDueRow due={due} onPay={() => {}} onAdjust={() => {}} expanded={false} onToggle={() => {}} />);
+    expect(screen.queryByTestId("payment-history")).not.toBeInTheDocument();
+  });
+
+  it("calls onToggle when row is clicked", async () => {
+    const user = userEvent.setup();
+    const onToggle = vi.fn();
+    const due = makeDue();
+    render(<MonthlyDueRow due={due} onPay={() => {}} onAdjust={() => {}} expanded={false} onToggle={onToggle} />);
 
     const row = screen.getByText(/জানুয়ারি 2025/).closest("tr")!;
     await user.click(row);
 
-    expect(screen.getByTestId("payment-history")).toBeInTheDocument();
+    expect(onToggle).toHaveBeenCalledOnce();
   });
 });

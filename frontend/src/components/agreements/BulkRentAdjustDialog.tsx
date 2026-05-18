@@ -20,7 +20,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import { Loader2 } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import toast from "react-hot-toast";
 
 interface BulkRentAdjustDialogProps {
@@ -35,10 +35,9 @@ export default function BulkRentAdjustDialog({
   const queryClient = useQueryClient();
 
   const form = useForm<BulkRentAdjustInput>({
-    resolver: zodResolver(bulkRentAdjustSchema),
+    resolver: zodResolver(bulkRentAdjustSchema) as Resolver<BulkRentAdjustInput>,
     defaultValues: {
       adjustment_type: "fixed",
-      amount: "" as unknown as number,
       scope: "all",
       building_public_id: "",
       effective_date: new Date().toISOString().split("T")[0],
@@ -123,6 +122,7 @@ export default function BulkRentAdjustDialog({
                 name="building_public_id"
                 label="বিল্ডিং"
                 isRequired
+                emptyMessage="কোনো বিল্ডিং নেই — বিল্ডিং পেজে গিয়ে তৈরি করুন।"
                 fetcher={async () => {
                   const res = await getBuildings({ page: 1, page_size: 100 });
                   return (res.data.data ?? []).map(

@@ -3,12 +3,17 @@ import EmptyState from "@/components/common/EmptyState";
 import ErrorState from "@/components/common/ErrorState";
 import SkeletonCard from "@/components/common/SkeletonCard";
 import TenantCard from "@/components/tenants/TenantCard";
+import CreateTenantDialog from "@/components/tenants/CreateTenantDialog";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Tenant } from "@/types";
 import { useQuery } from "@tanstack/react-query";
-import { Users } from "lucide-react";
+import { Plus, Users } from "lucide-react";
+import { useState } from "react";
 
 export default function TenantsPage() {
+  const [createOpen, setCreateOpen] = useState(false);
+
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["tenants"],
     queryFn: () => getTenants({ page: 1, page_size: 100 }),
@@ -22,14 +27,25 @@ export default function TenantsPage() {
 
   return (
     <div>
+      <CreateTenantDialog open={createOpen} onOpenChange={setCreateOpen} />
+
       <Tabs defaultValue="active">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-text-primary">ভাড়াটেদের তালিকা</h2>
-          <TabsList>
-            <TabsTrigger value="active">সক্রিয়</TabsTrigger>
-            <TabsTrigger value="moved_out">চলে গেছে</TabsTrigger>
-            <TabsTrigger value="all">সব</TabsTrigger>
-          </TabsList>
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex flex-col gap-2">
+            <h2 className="text-xl font-semibold text-text-primary">ভাড়াটেদের তালিকা</h2>
+            <TabsList>
+              <TabsTrigger value="active">সক্রিয়</TabsTrigger>
+              <TabsTrigger value="moved_out">চলে গেছে</TabsTrigger>
+              <TabsTrigger value="all">সব</TabsTrigger>
+            </TabsList>
+          </div>
+          <Button
+            onClick={() => setCreateOpen(true)}
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
+          >
+            <Plus size={16} className="mr-1.5" />
+            নতুন ভাড়াটে
+          </Button>
         </div>
 
         <TabsContent value="active">
@@ -84,7 +100,12 @@ function TenantGrid({ tenants, loading }: TenantGridProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {tenants.map((t) => (
-        <TenantCard key={t.public_id} tenant={t} />
+        <TenantCard
+          key={t.public_id}
+          tenant={t}
+          buildingName={t.building_name}
+          unitNumber={t.apartment_unit_number}
+        />
       ))}
     </div>
   );

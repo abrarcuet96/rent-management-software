@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -7,7 +7,7 @@
 
 /* ── Tailwind v4 theme mapping ────────────────────────────── */
 @theme inline {
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
 
   /* Map shadcn tokens to Tailwind utilities */
   --color-background: var(--background);
@@ -152,41 +152,66 @@
 }
 
 /* ── Scrollbar ────────────────────────────────────────────── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--color-neutral); }
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-neutral);
+}
 
 /* ── Print styles ─────────────────────────────────────────── */
 @media print {
   /* ── Page setup ── */
-  @page { margin: 1.8cm 1.5cm; }
+  @page {
+    margin: 1.8cm 1.5cm;
+  }
 
   /* ── Tailwind print variants ── */
-  .print\:hidden { display: none !important; }
-  .print\:block  { display: block  !important; }
+  .print\:hidden {
+    display: none !important;
+  }
+  .print\:block {
+    display: block !important;
+  }
 
   /* ── Hide all icons and interactive controls ── */
-  svg    { display: none !important; }
-  button { display: none !important; }
+  svg {
+    display: none !important;
+  }
+  button {
+    display: none !important;
+  }
 
   /* ── Hide icon wrapper divs (rounded pill/square containers holding only a single SVG) ── */
   /* Scoped to rounded-full / rounded-lg so the month-cell flex div (gap-1.5, no rounding)  */
   /* is never matched — CSS :only-child counts element children, not text nodes.             */
   div.rounded-full:has(> svg:only-child),
-  div.rounded-lg:has(> svg:only-child) { display: none !important; }
+  div.rounded-lg:has(> svg:only-child) {
+    display: none !important;
+  }
 
   /* ── Clean white canvas ── */
-  html, body {
+  html,
+  body {
     background: white !important;
     color: black !important;
     font-size: 11pt !important;
-    font-family: 'Inter', Arial, sans-serif !important;
+    font-family: "Inter", Arial, sans-serif !important;
     line-height: 1.5 !important;
   }
 
   /* ── Strip all decorative backgrounds and shadows ── */
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     box-shadow: none !important;
     text-shadow: none !important;
     background-image: none !important;
@@ -201,9 +226,15 @@
   }
 
   /* ── Preserve semantic text colours (success = paid, danger = overdue) ── */
-  .text-success { color: #1a6b4a !important; }
-  .text-danger  { color: #b91c1c !important; }
-  .text-warning { color: #92400e !important; }
+  .text-success {
+    color: #1a6b4a !important;
+  }
+  .text-danger {
+    color: #b91c1c !important;
+  }
+  .text-warning {
+    color: #92400e !important;
+  }
 
   /* ── Tables ── */
   table {
@@ -211,10 +242,15 @@
     border-collapse: collapse !important;
     page-break-inside: auto;
   }
-  thead { display: table-header-group; }
-  tr    { page-break-inside: avoid; }
+  thead {
+    display: table-header-group;
+  }
+  tr {
+    page-break-inside: avoid;
+  }
 
-  th, td {
+  th,
+  td {
     border: 1px solid #d1d5db !important;
     padding: 5px 8px !important;
     font-size: 10pt !important;
@@ -234,10 +270,14 @@
   }
 
   /* ── Remove min-width constraints that cause clipping ── */
-  table[class*="min-w"] { min-width: 0 !important; }
+  table[class*="min-w"] {
+    min-width: 0 !important;
+  }
 
   /* ── Borders: keep structural, soften colour ── */
-  .border, .border-border, [class*="border-"] {
+  .border,
+  .border-border,
+  [class*="border-"] {
     border-color: #e5e7eb !important;
   }
 
@@ -251,6 +291,70 @@
   }
 
   /* ── Hide non-content UI chrome ── */
-  nav, aside, header,
-  [class*="print:hidden"] { display: none !important; }
+  nav,
+  aside,
+  header,
+  [class*="print:hidden"] {
+    display: none !important;
+  }
+
+  /* ── Formal document: body & page ── */
+  @page {
+    size: A4;
+    margin: 16mm 14mm;
+  }
+
+  body {
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    color: #000;
+    background: #fff;
+  }
+
+  /* ── Formal table borders for all printed tables ── */
+  table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+    font-size: 11px !important;
+    page-break-inside: auto;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+  tfoot {
+    display: table-footer-group;
+  }
+  tr {
+    page-break-inside: avoid;
+  }
+
+  th,
+  td {
+    border: 1px solid #555 !important;
+    padding: 4px 7px !important;
+    background-color: #fff !important;
+    color: #000 !important;
+  }
+
+  thead th {
+    background-color: #f0f0f0 !important;
+    font-weight: bold !important;
+    text-align: left !important;
+  }
+
+  /* ── Remove card/panel chrome ── */
+  [class*="rounded"],
+  [class*="bg-surface"],
+  [class*="bg-neutral"] {
+    background-color: #fff !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* ── Outer document border ── */
+  [data-print-document] {
+    border: 1px solid #333;
+    padding: 16px;
+  }
 }

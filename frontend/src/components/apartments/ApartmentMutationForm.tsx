@@ -2,15 +2,17 @@ import FormInput from "@/components/custom-ui/form/FormInput";
 import FormStaticSelect from "@/components/custom-ui/form/FormStaticSelect";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { apartmentSchema, type ApartmentInput } from "@/lib/validators/apartment";
+import type { ApartmentInput } from "@/lib/validators/apartment";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
-import type { RefObject } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useMemo, type RefObject } from "react";
+import { useForm, type Resolver } from "react-hook-form";
+import { z } from "zod";
 
 interface ApartmentMutationFormProps {
   onSubmit: (data: ApartmentInput) => void;
   isPending: boolean;
+  totalFloors: number;
   defaultValues?: Partial<ApartmentInput>;
   formRef?: RefObject<{ reset: () => void } | null>;
   mode?: "create" | "edit";
@@ -19,18 +21,40 @@ interface ApartmentMutationFormProps {
 export default function ApartmentMutationForm({
   onSubmit,
   isPending,
+  totalFloors,
   defaultValues,
   formRef,
   mode = "create",
 }: ApartmentMutationFormProps) {
+  // Build schema dynamically so the max floor is always in sync with the building
+  const schema = useMemo(
+    () =>
+      z.object({
+        unit_number: z.string().min(1, "ইউনিট নম্বর প্রয়োজন"),
+        floor: z.coerce
+          .number({ message: "তলা নম্বর প্রয়োজন" })
+          .min(1, "তলা নম্বর ন্যূনতম ১ হতে হবে")
+          .max(totalFloors, `তলা নম্বর সর্বোচ্চ ${totalFloors} হতে পারে`),
+        status: z.enum(["vacant", "occupied"]).default("vacant"),
+      }),
+    [totalFloors],
+  );
+
   const form = useForm<ApartmentInput>({
-    resolver: zodResolver(apartmentSchema),
-    defaultValues: { unit_number: "", floor: 1, status: "vacant", ...defaultValues },
+    resolver: zodResolver(schema) as Resolver<ApartmentInput>,
+    defaultValues: {
+      unit_number: "",
+      floor: 1,
+      status: "vacant",
+      ...defaultValues,
+    },
   });
 
-  if (formRef) {
-    formRef.current = { reset: () => form.reset() };
-  }
+  useEffect(() => {
+    if (formRef) {
+      formRef.current = { reset: form.reset };
+    }
+  }, [formRef, form.reset]);
 
   return (
     <Form {...form}>
@@ -45,10 +69,10 @@ export default function ApartmentMutationForm({
         <FormInput
           form={form}
           name="floor"
-          label="তলা"
+          label={`তলা (১ – ${totalFloors})`}
           isRequired
           type="number"
-          placeholder="তলা নম্বর"
+          placeholder={`১ থেকে ${totalFloors}`}
         />
         {mode === "edit" && (
           <FormStaticSelect

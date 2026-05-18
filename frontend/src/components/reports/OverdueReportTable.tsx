@@ -4,6 +4,7 @@ import TableSkeleton from "@/components/common/TableSkeleton";
 import StatusBadge from "@/components/common/StatusBadge";
 import PrintButton from "@/components/common/PrintButton";
 import PrintHeader from "@/components/common/PrintHeader";
+import PrintFooter from "@/components/common/PrintFooter";
 import { formatCurrency } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { CheckCircle2 } from "lucide-react";
@@ -37,8 +38,14 @@ export default function OverdueReportTable() {
   const items: OverdueItem[] = (data?.data.data as OverdueItem[]) ?? [];
 
   return (
-    <div ref={contentRef}>
-      <PrintHeader title="বকেয়া রিপোর্ট" />
+    <div ref={contentRef} data-print-document>
+      <PrintHeader
+        title="বকেয়া রিপোর্ট"
+        meta={[
+          { label: "মোট বকেয়া", value: `${items.length} টি` },
+          { label: "স্ট্যাটাস", value: "সক্রিয় বকেয়া" },
+        ]}
+      />
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-medium text-text-primary">বকেয়া তালিকা</h3>
         <PrintButton contentRef={contentRef} documentTitle="বকেয়া রিপোর্ট" />
@@ -93,6 +100,7 @@ export default function OverdueReportTable() {
           </table>
         </div>
       )}
+      <PrintFooter />
     </div>
   );
 }

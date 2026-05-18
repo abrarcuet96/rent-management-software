@@ -2,6 +2,7 @@ import { getAnnualSummary } from "@/api/reports.api";
 import EmptyState from "@/components/common/EmptyState";
 import PrintButton from "@/components/common/PrintButton";
 import PrintHeader from "@/components/common/PrintHeader";
+import PrintFooter from "@/components/common/PrintFooter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
@@ -25,8 +26,14 @@ export default function AnnualSummaryTable() {
   } | undefined;
 
   return (
-    <div ref={contentRef}>
-      <PrintHeader title="বার্ষিক সারসংক্ষেপ" />
+    <div ref={contentRef} data-print-document>
+      <PrintHeader
+        title="বার্ষিক সারসংক্ষেপ"
+        meta={[
+          { label: "বছর", value: String(year) },
+          { label: "রিপোর্টের ধরন", value: "বার্ষিক আর্থিক সারসংক্ষেপ" },
+        ]}
+      />
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-medium text-text-primary">বার্ষিক সারসংক্ষেপ</h3>
         <div className="flex items-center gap-3">
@@ -87,6 +94,42 @@ export default function AnnualSummaryTable() {
           icon={<BarChart3 size={40} />}
         />
       )}
+
+      {/* Print-only formal table view of the summary */}
+      {summary && (
+        <div className="hidden print:block mt-4">
+          <table>
+            <thead>
+              <tr>
+                <th style={{ width: "60%" }}>বিবরণ</th>
+                <th style={{ width: "40%", textAlign: "right" }}>পরিমাণ (৳)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>মোট সংগ্রহ</td>
+                <td style={{ textAlign: "right" }}>{formatCurrency(summary.total_collected)}</td>
+              </tr>
+              <tr>
+                <td>মোট ব্যয়</td>
+                <td style={{ textAlign: "right" }}>{formatCurrency(summary.total_expenses)}</td>
+              </tr>
+              <tr>
+                <td>বকেয়া</td>
+                <td style={{ textAlign: "right" }}>{formatCurrency(summary.total_outstanding)}</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <th>নিট লাভ</th>
+                <th style={{ textAlign: "right" }}>{formatCurrency(summary.net_profit)}</th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      )}
+
+      <PrintFooter />
     </div>
   );
 }
