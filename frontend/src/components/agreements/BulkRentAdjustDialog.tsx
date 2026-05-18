@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import FormInput from "@/components/custom-ui/form/FormInput";
+import FormDatePicker from "@/components/custom-ui/form/FormDatePicker";
 import FormSearchSelect from "@/components/custom-ui/form/FormSearchSelect";
 import FormStaticSelect from "@/components/custom-ui/form/FormStaticSelect";
 import { getFallback } from "@/lib/getFallback";
@@ -135,12 +136,11 @@ export default function BulkRentAdjustDialog({
               />
             )}
 
-            <FormInput
+            <FormDatePicker
               form={form}
               name="effective_date"
               label="কার্যকর তারিখ"
               isRequired
-              type="date"
             />
 
             <div className="flex justify-end pt-2">

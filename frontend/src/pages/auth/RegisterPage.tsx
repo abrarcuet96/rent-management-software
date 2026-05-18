@@ -1,15 +1,8 @@
 import { registerOwner } from "@/api/auth.api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Form } from "@/components/ui/form";
+import FormInput from "@/components/custom-ui/form/FormInput";
 import { registerSchema, type RegisterInput } from "@/lib/validators/auth";
 import { useAuthStore } from "@/stores/authStore";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -126,79 +119,39 @@ export default function RegisterPage() {
                   onSubmit={form.handleSubmit((data) => mutate(data))}
                   className="space-y-4"
                 >
-                  <FormField
-                    control={form.control}
+                  <FormInput
+                    form={form}
                     name="full_name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>পূর্ণ নাম</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="আপনার পূর্ণ নাম"
-                            autoComplete="name"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                    label="পূর্ণ নাম"
+                    placeholder="আপনার পূর্ণ নাম"
+                    autoComplete="name"
                   />
 
-                  <FormField
-                    control={form.control}
+                  <FormInput
+                    form={form}
                     name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>ইমেইল</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="email"
-                            placeholder="example@email.com"
-                            autoComplete="email"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                    label="ইমেইল"
+                    type="email"
+                    placeholder="example@email.com"
+                    autoComplete="email"
                   />
 
-                  <FormField
-                    control={form.control}
+                  <FormInput
+                    form={form}
                     name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>পাসওয়ার্ড</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="password"
-                            placeholder="কমপক্ষে ৮ অক্ষর"
-                            autoComplete="new-password"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                    label="পাসওয়ার্ড"
+                    type="password"
+                    placeholder="কমপক্ষে ৮ অক্ষর"
+                    autoComplete="new-password"
                   />
 
-                  <FormField
-                    control={form.control}
+                  <FormInput
+                    form={form}
                     name="confirmPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>পাসওয়ার্ড নিশ্চিত করুন</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="password"
-                            placeholder="পাসওয়ার্ড আবার লিখুন"
-                            autoComplete="new-password"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                    label="পাসওয়ার্ড নিশ্চিত করুন"
+                    type="password"
+                    placeholder="পাসওয়ার্ড আবার লিখুন"
+                    autoComplete="new-password"
                   />
 
                   {/* Server-side error */}

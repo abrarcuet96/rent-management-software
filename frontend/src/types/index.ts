@@ -91,6 +91,7 @@ export interface Expense {
   amount: number;
   expense_date: string;
   is_tenant_charged: boolean;
+  charged_tenant_public_ids: string[];
 }
 
 export interface DashboardSummary {

@@ -6,15 +6,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Form } from "@/components/ui/form";
+import FormInput from "@/components/custom-ui/form/FormInput";
+import FormDatePicker from "@/components/custom-ui/form/FormDatePicker";
 import { getFallback } from "@/lib/getFallback";
 import { dueSchema, type DueInput } from "@/lib/validators/due";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -72,44 +66,26 @@ export default function GenerateMonthlyDue({ open, onOpenChange, tenantId }: Gen
             onSubmit={form.handleSubmit((data) => mutate(data))}
             className="space-y-4"
           >
-            <FormField
-              control={form.control}
+            <FormInput
+              form={form}
               name="month"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>মাস <span className="text-danger">*</span></FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="1-12" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="মাস"
+              isRequired
+              type="number"
+              placeholder="1-12"
             />
-            <FormField
-              control={form.control}
+            <FormInput
+              form={form}
               name="year"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>সাল <span className="text-danger">*</span></FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="2024" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="সাল"
+              isRequired
+              type="number"
+              placeholder="2024"
             />
-            <FormField
-              control={form.control}
+            <FormDatePicker
+              form={form}
               name="due_date"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>ডিউ তারিখ (ঐচ্ছিক)</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="ডিউ তারিখ (ঐচ্ছিক)"
             />
             <div className="flex justify-end pt-2">
               <Button

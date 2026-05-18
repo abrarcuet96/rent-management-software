@@ -3,15 +3,10 @@ import { recordBulkPayment } from "@/api/payments.api";
 import { getTenants } from "@/api/tenants.api";
 import BulkDistributionPreview from "@/components/payments/BulkDistributionPreview";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Form } from "@/components/ui/form";
+import FormInput from "@/components/custom-ui/form/FormInput";
+import FormTextArea from "@/components/custom-ui/form/FormTextArea";
+import FormDatePicker from "@/components/custom-ui/form/FormDatePicker";
 import {
   Select,
   SelectContent,
@@ -19,7 +14,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { getFallback } from "@/lib/getFallback";
 import { formatCurrency, getMonthName } from "@/lib/utils";
 import {
@@ -115,9 +119,9 @@ export default function BulkPaymentTab() {
       <div className="bg-surface rounded-xl p-6 border border-border space-y-6">
         {/* Tenant selector */}
         <div>
-          <label className="text-sm font-medium">
+          <Label>
             ভাড়াটে <span className="text-danger">*</span>
-          </label>
+          </Label>
           <Select value={selectedTenantId} onValueChange={setSelectedTenantId}>
             <SelectTrigger className="mt-1.5">
               <SelectValue placeholder="ভাড়াটে বেছে নিন" />
@@ -144,68 +148,41 @@ export default function BulkPaymentTab() {
             onSubmit={form.handleSubmit((data) => mutate(data))}
             className="space-y-4"
           >
-            <FormField
-              control={form.control}
+            <FormInput
+              form={form}
               name="total_amount"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    মোট পেমেন্ট পরিমাণ (৳){" "}
-                    <span className="text-danger">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="0" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                  {isOverpaying && (
-                    <p className="text-xs text-danger mt-1">
-                      সর্বোচ্চ {formatCurrency(totalOutstanding)} পর্যন্ত দেওয়া
-                      সম্ভব — মোট বকেয়া এর বেশি গ্রহণযোগ্য নয়
-                    </p>
-                  )}
-                  {!isOverpaying &&
-                    previewAmount > 0 &&
-                    totalOutstanding > 0 && (
-                      <p className="text-xs text-text-secondary mt-1">
-                        মোট বকেয়া: {formatCurrency(totalOutstanding)}
-                      </p>
-                    )}
-                </FormItem>
-              )}
+              label="মোট পেমেন্ট পরিমাণ (৳)"
+              isRequired
+              type="number"
+              placeholder="0"
             />
+            {isOverpaying && (
+              <p className="text-xs text-danger -mt-3">
+                সর্বোচ্চ {formatCurrency(totalOutstanding)} পর্যন্ত দেওয়া
+                সম্ভব — মোট বকেয়া এর বেশি গ্রহণযোগ্য নয়
+              </p>
+            )}
+            {!isOverpaying &&
+              previewAmount > 0 &&
+              totalOutstanding > 0 && (
+                <p className="text-xs text-text-secondary -mt-3">
+                  মোট বকেয়া: {formatCurrency(totalOutstanding)}
+                </p>
+              )}
 
-            <FormField
-              control={form.control}
+            <FormDatePicker
+              form={form}
               name="paid_on"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    পেমেন্টের তারিখ <span className="text-danger">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="পেমেন্টের তারিখ"
+              isRequired
             />
 
-            <FormField
-              control={form.control}
+            <FormTextArea
+              form={form}
               name="note"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>নোট (ঐচ্ছিক)</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="কোনো মন্তব্য..."
-                      rows={2}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="নোট (ঐচ্ছিক)"
+              placeholder="কোনো মন্তব্য..."
+              rows={2}
             />
 
             {/* Show as soon as a tenant is selected */}
@@ -221,63 +198,63 @@ export default function BulkPaymentTab() {
                   বকেয়া ({openDues.length}টি)
                 </p>
                 <div className="border border-border rounded-lg overflow-hidden">
-                  <table className="w-full text-sm">
-                    <thead className="bg-neutral-bg">
-                      <tr>
-                        <th className="text-left px-3 py-2 font-medium text-text-secondary">
+                  <Table className="text-sm">
+                    <TableHeader className="bg-neutral-bg">
+                      <TableRow>
+                        <TableHead className="text-left px-3 py-2 font-medium text-text-secondary">
                           মাস/বছর
-                        </th>
-                        <th className="text-right px-3 py-2 font-medium text-text-secondary">
+                        </TableHead>
+                        <TableHead className="text-right px-3 py-2 font-medium text-text-secondary">
                           মোট দেয়
-                        </th>
-                        <th className="text-right px-3 py-2 font-medium text-text-secondary">
+                        </TableHead>
+                        <TableHead className="text-right px-3 py-2 font-medium text-text-secondary">
                           পরিশোধিত
-                        </th>
-                        <th className="text-right px-3 py-2 font-medium text-text-secondary">
+                        </TableHead>
+                        <TableHead className="text-right px-3 py-2 font-medium text-text-secondary">
                           বাকি
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
                       {openDues.map((due) => (
-                        <tr
+                        <TableRow
                           key={due.public_id}
                           className="border-t border-border"
                         >
-                          <td className="px-3 py-2 text-text-primary">
+                          <TableCell className="px-3 py-2 text-text-primary">
                             {getMonthName(due.month)} {due.year}
-                          </td>
-                          <td className="px-3 py-2 text-right text-text-primary">
+                          </TableCell>
+                          <TableCell className="px-3 py-2 text-right text-text-primary">
                             {formatCurrency(due.total_due)}
-                          </td>
-                          <td className="px-3 py-2 text-right text-success">
+                          </TableCell>
+                          <TableCell className="px-3 py-2 text-right text-success">
                             {formatCurrency(due.amount_paid)}
-                          </td>
-                          <td className="px-3 py-2 text-right font-medium text-danger">
+                          </TableCell>
+                          <TableCell className="px-3 py-2 text-right font-medium text-danger">
                             {formatCurrency(due.remaining_balance)}
-                          </td>
-                        </tr>
+                          </TableCell>
+                        </TableRow>
                       ))}
-                    </tbody>
-                    <tfoot className="bg-neutral-bg">
-                      <tr>
-                        <td
+                    </TableBody>
+                    <TableFooter className="bg-neutral-bg">
+                      <TableRow>
+                        <TableCell
                           colSpan={3}
                           className="px-3 py-2 font-medium text-text-primary"
                         >
                           মোট বাকি
-                        </td>
-                        <td className="px-3 py-2 text-right font-medium text-danger">
+                        </TableCell>
+                        <TableCell className="px-3 py-2 text-right font-medium text-danger">
                           {formatCurrency(
                             openDues.reduce(
                               (s, d) => s + Number(d.remaining_balance),
                               0,
                             ),
                           )}
-                        </td>
-                      </tr>
-                    </tfoot>
-                  </table>
+                        </TableCell>
+                      </TableRow>
+                    </TableFooter>
+                  </Table>
                 </div>
               </div>
             )}

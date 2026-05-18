@@ -17,6 +17,13 @@ import RecordPayment from "@/components/payments/RecordPayment";
 import EditTenantInfo from "@/components/tenants/EditTenantInfo";
 import MoveOutTenant from "@/components/tenants/MoveOutTenant";
 import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { formatCurrency } from "@/lib/utils";
 import { useNavigationStore } from "@/stores/navigationStore";
 import type { MonthlyDue } from "@/types";
@@ -279,30 +286,30 @@ export default function TenantDetailPage() {
           />
         ) : (
           <div className="overflow-x-auto print:overflow-visible">
-            <table className="w-full min-w-[560px] print:min-w-0 text-sm">
-              <thead className="bg-neutral-bg">
-                <tr>
-                  <th className="text-left px-3 py-2 font-medium text-text-secondary whitespace-nowrap">
+            <Table className="min-w-[560px] print:min-w-0 text-sm">
+              <TableHeader className="bg-neutral-bg">
+                <TableRow>
+                  <TableHead className="text-left px-3 py-2 font-medium text-text-secondary whitespace-nowrap">
                     মাস/বছর
-                  </th>
-                  <th className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap">
+                  </TableHead>
+                  <TableHead className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap">
                     মোট দেয়
-                  </th>
-                  <th className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap">
+                  </TableHead>
+                  <TableHead className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap">
                     পরিশোধিত
-                  </th>
-                  <th className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap">
+                  </TableHead>
+                  <TableHead className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap">
                     বাকি
-                  </th>
-                  <th className="text-center px-3 py-2 font-medium text-text-secondary whitespace-nowrap">
+                  </TableHead>
+                  <TableHead className="text-center px-3 py-2 font-medium text-text-secondary whitespace-nowrap">
                     স্ট্যাটাস
-                  </th>
-                  <th className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap print:hidden">
+                  </TableHead>
+                  <TableHead className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap print:hidden">
                     অ্যাকশন
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {dues.map((due) => (
                   <MonthlyDueRow
                     key={due.public_id}
@@ -313,8 +320,8 @@ export default function TenantDetailPage() {
                     onToggle={() => toggleDue(due.public_id)}
                   />
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         )}
       </div>

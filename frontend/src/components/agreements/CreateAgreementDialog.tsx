@@ -10,6 +10,7 @@ import {
   Form,
 } from "@/components/ui/form";
 import FormInput from "@/components/custom-ui/form/FormInput";
+import FormDatePicker from "@/components/custom-ui/form/FormDatePicker";
 import { getFallback } from "@/lib/getFallback";
 import {
   agreementSchema,
@@ -78,12 +79,11 @@ export default function CreateAgreementDialog({
               type="number"
               placeholder="0"
             />
-            <FormInput
+            <FormDatePicker
               form={form}
               name="start_date"
               label="শুরুর তারিখ"
               isRequired
-              type="date"
             />
             <div className="flex justify-end pt-2">
               <Button

@@ -116,8 +116,9 @@ export default function ApartmentCard({ apartment, buildingId, onEdit, onAssignT
         <div className="border-t border-border px-4 py-2.5 flex items-center justify-between bg-neutral-bg/40">
           {/* Left action: vacant → assign, occupied → toggle tenant info */}
           {isOccupied ? (
-            <button
-              className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+            <Button
+              variant="ghost"
+              className="h-auto p-0 text-xs font-medium text-primary hover:text-primary/80 hover:bg-transparent gap-1"
               onClick={() => setTenantPanelOpen((v) => !v)}
             >
               {tenantPanelOpen ? (
@@ -131,15 +132,16 @@ export default function ApartmentCard({ apartment, buildingId, onEdit, onAssignT
                   ভাড়াটে দেখুন
                 </>
               )}
-            </button>
+            </Button>
           ) : (
-            <button
-              className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+            <Button
+              variant="ghost"
+              className="h-auto p-0 text-xs font-medium text-primary hover:text-primary/80 hover:bg-transparent gap-1"
               onClick={onAssignTenant}
             >
               <Plus size={13} />
               ভাড়াটে যোগ করুন
-            </button>
+            </Button>
           )}
 
           <div className="flex items-center gap-1">

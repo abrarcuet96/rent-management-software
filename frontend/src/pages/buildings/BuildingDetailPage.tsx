@@ -68,10 +68,13 @@ export default function BuildingDetailPage() {
     <div>
       {/* Building info */}
       <div className="bg-surface rounded-xl p-5 border border-border mb-6">
-        <h2 className="text-xl font-semibold text-text-primary">{building?.name}</h2>
+        <h2 className="text-xl font-semibold text-text-primary">
+          {building?.name}
+        </h2>
         <p className="text-sm text-text-secondary mt-1">{building?.address}</p>
         <p className="text-xs text-text-secondary mt-2">
-          মোট তলা: {building?.total_floors} • মোট অ্যাপার্টমেন্ট: {apartments.length}
+          মোট তলা: {building?.total_floors} • মোট অ্যাপার্টমেন্ট:{" "}
+          {apartments.length}
         </p>
       </div>
 
@@ -134,6 +137,7 @@ export default function BuildingDetailPage() {
         open={createOpen}
         onOpenChange={setCreateOpen}
         buildingId={buildingId!}
+        totalFloors={building?.total_floors ?? 0}
       />
       {editApartment && (
         <EditApartment
@@ -143,6 +147,7 @@ export default function BuildingDetailPage() {
           }}
           buildingId={buildingId!}
           apartment={editApartment}
+          totalFloors={building?.total_floors ?? 0}
         />
       )}
     </div>
@@ -160,7 +165,16 @@ interface ApartmentGridProps {
   emptyDescription: string;
 }
 
-function ApartmentGrid({ apartments, buildingId, loading, error, onRetry, onEdit, emptyTitle, emptyDescription }: ApartmentGridProps) {
+function ApartmentGrid({
+  apartments,
+  buildingId,
+  loading,
+  error,
+  onRetry,
+  onEdit,
+  emptyTitle,
+  emptyDescription,
+}: ApartmentGridProps) {
   if (error) {
     return <ErrorState onRetry={onRetry} />;
   }

@@ -17,6 +17,8 @@ interface FormInputProps<T extends FieldValues> {
   type?: string;
   placeholder?: string;
   description?: string;
+  autoComplete?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export default function FormInput<T extends FieldValues>({
@@ -27,6 +29,8 @@ export default function FormInput<T extends FieldValues>({
   type = "text",
   placeholder,
   description,
+  autoComplete,
+  onChange,
 }: FormInputProps<T>) {
   return (
     <FormField
@@ -39,7 +43,13 @@ export default function FormInput<T extends FieldValues>({
             {isRequired && <span className="text-danger ml-0.5">*</span>}
           </FormLabel>
           <FormControl>
-            <Input type={type} placeholder={placeholder} {...field} />
+            <Input
+              type={type}
+              placeholder={placeholder}
+              autoComplete={autoComplete}
+              {...field}
+              {...(onChange ? { onChange, value: (field.value as string | number) ?? "" } : {})}
+            />
           </FormControl>
           {description && <FormDescription>{description}</FormDescription>}
           <FormMessage />

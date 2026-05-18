@@ -43,3 +43,12 @@ export const updateExpense = (
 
 export const deleteExpense = (id: string) =>
   apiClient.delete<StandardResponse<null>>(`/expenses/${id}`);
+
+export const chargeExpenseToTenants = (
+  expenseId: string,
+  tenantPublicIds: string[],
+) =>
+  apiClient.post<StandardResponse<{ charged: number; skipped: number }>>(
+    `/expenses/${expenseId}/charge`,
+    { tenant_public_ids: tenantPublicIds },
+  );

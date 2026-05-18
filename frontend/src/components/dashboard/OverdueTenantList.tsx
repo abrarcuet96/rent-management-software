@@ -4,6 +4,14 @@ import ErrorState from "@/components/common/ErrorState";
 import TableSkeleton from "@/components/common/TableSkeleton";
 import StatusBadge from "@/components/common/StatusBadge";
 import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { formatCurrency } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { CheckCircle2, CreditCard } from "lucide-react";
@@ -64,32 +72,32 @@ export default function OverdueTenantList() {
         />
       ) : (
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-neutral-bg">
-            <tr>
-              <th className="text-left px-3 py-2 font-medium text-text-secondary">ভাড়াটে</th>
-              <th className="text-left px-3 py-2 font-medium text-text-secondary">বিল্ডিং/ইউনিট</th>
-              <th className="text-left px-3 py-2 font-medium text-text-secondary">মাস/বছর</th>
-              <th className="text-right px-3 py-2 font-medium text-text-secondary">বাকি</th>
-              <th className="text-center px-3 py-2 font-medium text-text-secondary">বকেয়া দিন</th>
-              <th className="text-center px-3 py-2 font-medium text-text-secondary">স্ট্যাটাস</th>
-              <th className="text-right px-3 py-2 font-medium text-text-secondary">অ্যাকশন</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table className="text-sm">
+          <TableHeader className="bg-neutral-bg">
+            <TableRow>
+              <TableHead className="text-left px-3 py-2 font-medium text-text-secondary">ভাড়াটে</TableHead>
+              <TableHead className="text-left px-3 py-2 font-medium text-text-secondary">বিল্ডিং/ইউনিট</TableHead>
+              <TableHead className="text-left px-3 py-2 font-medium text-text-secondary">মাস/বছর</TableHead>
+              <TableHead className="text-right px-3 py-2 font-medium text-text-secondary">বাকি</TableHead>
+              <TableHead className="text-center px-3 py-2 font-medium text-text-secondary">বকেয়া দিন</TableHead>
+              <TableHead className="text-center px-3 py-2 font-medium text-text-secondary">স্ট্যাটাস</TableHead>
+              <TableHead className="text-right px-3 py-2 font-medium text-text-secondary">অ্যাকশন</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {items.map((item) => (
-              <tr key={item.due_public_id} className="border-t border-border hover:bg-neutral-bg">
-                <td className="px-3 py-2 text-text-primary">{item.tenant_name}</td>
-                <td className="px-3 py-2 text-text-secondary">
+              <TableRow key={item.due_public_id} className="border-t border-border hover:bg-neutral-bg">
+                <TableCell className="px-3 py-2 text-text-primary">{item.tenant_name}</TableCell>
+                <TableCell className="px-3 py-2 text-text-secondary">
                   {item.building_name} • {item.apartment_unit}
-                </td>
-                <td className="px-3 py-2 text-text-primary">
+                </TableCell>
+                <TableCell className="px-3 py-2 text-text-primary">
                   {item.month}/{item.year}
-                </td>
-                <td className="px-3 py-2 text-right font-medium text-danger">
+                </TableCell>
+                <TableCell className="px-3 py-2 text-right font-medium text-danger">
                   {formatCurrency(item.remaining_balance)}
-                </td>
-                <td className="px-3 py-2 text-center text-text-secondary">
+                </TableCell>
+                <TableCell className="px-3 py-2 text-center text-text-secondary">
                   {item.days_overdue > 0 ? (
                     <span className="text-danger font-medium">{item.days_overdue}</span>
                   ) : item.days_overdue < 0 ? (
@@ -97,11 +105,11 @@ export default function OverdueTenantList() {
                   ) : (
                     "—"
                   )}
-                </td>
-                <td className="px-3 py-2 text-center">
+                </TableCell>
+                <TableCell className="px-3 py-2 text-center">
                   <StatusBadge status={item.status as "unpaid" | "partial"} />
-                </td>
-                <td className="px-3 py-2 text-right">
+                </TableCell>
+                <TableCell className="px-3 py-2 text-right">
                   <Button
                     variant="outline"
                     size="sm"
@@ -111,11 +119,11 @@ export default function OverdueTenantList() {
                     <CreditCard size={13} className="mr-1" />
                     পরিশোধ
                   </Button>
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
       )}
 

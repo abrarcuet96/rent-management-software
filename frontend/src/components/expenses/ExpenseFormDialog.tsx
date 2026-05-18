@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
+import FormDatePicker from "@/components/custom-ui/form/FormDatePicker";
 import FormInput from "@/components/custom-ui/form/FormInput";
 import FormSearchSelect from "@/components/custom-ui/form/FormSearchSelect";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -176,12 +177,11 @@ export default function ExpenseFormDialog({
               placeholder="0"
             />
 
-            <FormInput
+            <FormDatePicker
               form={form}
               name="expense_date"
               label="তারিখ"
               isRequired
-              type="date"
             />
 
             <FormField

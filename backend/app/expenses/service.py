@@ -1,4 +1,5 @@
 from datetime import date
+from decimal import Decimal
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -7,12 +8,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.expenses.schemas import ExpenseCategoryCreate, ExpenseCreate, ExpenseUpdate
+from app.models.due_expense import DueExpense
 from app.models.expense import Expense
 from app.models.expense_category import ExpenseCategory
+from app.models.monthly_due import MonthlyDue
 from app.shared.ownership import (
     resolve_apartment_id,
     resolve_building_id,
     resolve_category_id,
+    resolve_tenant_id,
 )
 
 
@@ -127,6 +131,9 @@ class ExpenseService:
                 selectinload(Expense.category),
                 selectinload(Expense.building),
                 selectinload(Expense.apartment),
+                selectinload(Expense.due_expenses)
+                .selectinload(DueExpense.monthly_due)
+                .selectinload(MonthlyDue.tenant),
             )
             .order_by(Expense.expense_date.desc(), Expense.created_at.desc())
             .offset(offset)
@@ -146,6 +153,9 @@ class ExpenseService:
                 selectinload(Expense.category),
                 selectinload(Expense.building),
                 selectinload(Expense.apartment),
+                selectinload(Expense.due_expenses)
+                .selectinload(DueExpense.monthly_due)
+                .selectinload(MonthlyDue.tenant),
             )
         )
         expense = result.scalar_one_or_none()
@@ -227,3 +237,86 @@ class ExpenseService:
         expense = await self.get_expense(public_id)
         expense.is_active = False
         await self.db.commit()
+
+    async def charge_tenants(
+        self,
+        expense_public_id: UUID,
+        tenant_public_ids: list[UUID],
+    ) -> tuple[int, int]:
+        """Link this expense to each tenant's MonthlyDue for the expense's month/year.
+
+        For each tenant_public_id:
+          - Resolves tenant (verifies ownership chain)
+          - Finds their MonthlyDue for the same month/year as expense_date
+          - Skips if no due exists for that period
+          - Skips if already charged (idempotent — same due_id+expense_id pair)
+          - Otherwise creates DueExpense and updates the due's totals/status
+
+        Returns (charged_count, skipped_count).
+        """
+        expense = await self.get_expense(expense_public_id)
+        if not expense.is_tenant_charged:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="This expense is not marked as tenant-charged",
+            )
+
+        month = expense.expense_date.month
+        year = expense.expense_date.year
+        charged = 0
+        skipped = 0
+
+        for tenant_public_id in tenant_public_ids:
+            tenant_id = await resolve_tenant_id(
+                self.db, self.owner_id, tenant_public_id, require_active=False
+            )
+
+            # Find the MonthlyDue for this tenant and expense month/year
+            due = await self.db.scalar(
+                select(MonthlyDue).where(
+                    MonthlyDue.tenant_id == tenant_id,
+                    MonthlyDue.month == month,
+                    MonthlyDue.year == year,
+                    MonthlyDue.is_active.is_(True),
+                )
+            )
+            if due is None:
+                skipped += 1
+                continue
+
+            # Idempotency: skip if already charged
+            existing = await self.db.scalar(
+                select(DueExpense.id).where(
+                    DueExpense.due_id == due.id,
+                    DueExpense.expense_id == expense.id,
+                )
+            )
+            if existing is not None:
+                skipped += 1
+                continue
+
+            # Create the DueExpense junction row
+            due_expense_row = DueExpense(
+                due_id=due.id,
+                expense_id=expense.id,
+                charged_amount=expense.amount,
+            )
+            self.db.add(due_expense_row)
+
+            # Update MonthlyDue ledger
+            due.total_due += expense.amount
+            due.remaining_balance += expense.amount
+            # Recalculate status
+            if due.remaining_balance == Decimal("0"):
+                due.status = "paid"
+            elif due.amount_paid > Decimal("0"):
+                due.status = "partial"
+            else:
+                due.status = "unpaid"
+
+            charged += 1
+
+        if charged > 0:
+            await self.db.commit()
+
+        return charged, skipped

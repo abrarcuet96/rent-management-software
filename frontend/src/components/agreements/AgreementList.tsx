@@ -1,5 +1,13 @@
 import { getAgreements } from "@/api/agreements.api";
 import EmptyState from "@/components/common/EmptyState";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { formatCurrency } from "@/lib/utils";
 import type { TenantAgreement } from "@/types";
 import { useQuery } from "@tanstack/react-query";
@@ -37,36 +45,36 @@ export default function AgreementList({ tenantId }: AgreementListProps) {
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead className="bg-neutral-bg">
-          <tr>
-            <th className="text-left px-3 py-2 font-medium text-text-secondary">
+      <Table className="text-sm">
+        <TableHeader className="bg-neutral-bg">
+          <TableRow>
+            <TableHead className="text-left px-3 py-2 font-medium text-text-secondary">
               শুরুর তারিখ
-            </th>
-            <th className="text-left px-3 py-2 font-medium text-text-secondary">
+            </TableHead>
+            <TableHead className="text-left px-3 py-2 font-medium text-text-secondary">
               শেষের তারিখ
-            </th>
-            <th className="text-right px-3 py-2 font-medium text-text-secondary">
+            </TableHead>
+            <TableHead className="text-right px-3 py-2 font-medium text-text-secondary">
               ভাড়া
-            </th>
-            <th className="text-center px-3 py-2 font-medium text-text-secondary">
+            </TableHead>
+            <TableHead className="text-center px-3 py-2 font-medium text-text-secondary">
               স্ট্যাটাস
-            </th>
-          </tr>
-        </thead>
-        <tbody>
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {agreements.map((ag) => (
-            <tr key={ag.public_id} className="border-t border-border">
-              <td className="px-3 py-2.5 text-text-primary">
+            <TableRow key={ag.public_id} className="border-t border-border">
+              <TableCell className="px-3 py-2.5 text-text-primary">
                 {ag.start_date}
-              </td>
-              <td className="px-3 py-2.5 text-text-secondary">
+              </TableCell>
+              <TableCell className="px-3 py-2.5 text-text-secondary">
                 {ag.end_date ?? "—"}
-              </td>
-              <td className="px-3 py-2.5 text-right text-text-primary font-medium">
+              </TableCell>
+              <TableCell className="px-3 py-2.5 text-right text-text-primary font-medium">
                 {formatCurrency(ag.rent_amount)}
-              </td>
-              <td className="px-3 py-2.5 text-center">
+              </TableCell>
+              <TableCell className="px-3 py-2.5 text-center">
                 {ag.is_active ? (
                   <span className="text-xs bg-success-bg text-success rounded-full px-2 py-0.5">
                     সক্রিয়
@@ -76,11 +84,11 @@ export default function AgreementList({ tenantId }: AgreementListProps) {
                     নিষ্ক্রিয়
                   </span>
                 )}
-              </td>
-            </tr>
+              </TableCell>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   );
 }

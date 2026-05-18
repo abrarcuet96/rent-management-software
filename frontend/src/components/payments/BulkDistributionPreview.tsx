@@ -1,3 +1,12 @@
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { formatCurrency, getMonthName } from "@/lib/utils";
 import type { MonthlyDue } from "@/types";
 
@@ -12,16 +21,16 @@ export default function BulkDistributionPreview({ dues, totalAmount }: BulkDistr
 
   return (
     <div className="border border-border rounded-lg overflow-hidden">
-      <table className="w-full text-sm">
-        <thead className="bg-neutral-bg">
-          <tr>
-            <th className="text-left px-3 py-2 font-medium text-text-secondary">মাস/বছর</th>
-            <th className="text-right px-3 py-2 font-medium text-text-secondary">বকেয়া</th>
-            <th className="text-right px-3 py-2 font-medium text-text-secondary">প্রযোজ্য</th>
-            <th className="text-right px-3 py-2 font-medium text-text-secondary">বাকি</th>
-          </tr>
-        </thead>
-        <tbody>
+      <Table className="text-sm">
+        <TableHeader className="bg-neutral-bg">
+          <TableRow>
+            <TableHead className="text-left px-3 py-2 font-medium text-text-secondary">মাস/বছর</TableHead>
+            <TableHead className="text-right px-3 py-2 font-medium text-text-secondary">বকেয়া</TableHead>
+            <TableHead className="text-right px-3 py-2 font-medium text-text-secondary">প্রযোজ্য</TableHead>
+            <TableHead className="text-right px-3 py-2 font-medium text-text-secondary">বাকি</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {dues.map((due) => {
             const balance = parseFloat(due.remaining_balance);
             const apply = Math.min(balance, remaining);
@@ -29,48 +38,48 @@ export default function BulkDistributionPreview({ dues, totalAmount }: BulkDistr
             sumAfterRemaining += afterRemaining;
             remaining -= apply;
             return (
-              <tr key={due.public_id} className="border-t border-border">
-                <td className="px-3 py-2 text-text-primary">
+              <TableRow key={due.public_id} className="border-t border-border">
+                <TableCell className="px-3 py-2 text-text-primary">
                   {getMonthName(due.month)} {due.year}
-                </td>
-                <td className="px-3 py-2 text-right text-text-primary">
+                </TableCell>
+                <TableCell className="px-3 py-2 text-right text-text-primary">
                   {formatCurrency(due.remaining_balance)}
-                </td>
-                <td className="px-3 py-2 text-right text-success font-medium">
+                </TableCell>
+                <TableCell className="px-3 py-2 text-right text-success font-medium">
                   {formatCurrency(apply)}
-                </td>
-                <td className="px-3 py-2 text-right text-text-secondary">
+                </TableCell>
+                <TableCell className="px-3 py-2 text-right text-text-secondary">
                   {formatCurrency(afterRemaining)}
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             );
           })}
-        </tbody>
-        <tfoot className="bg-neutral-bg">
-          <tr>
-            <td colSpan={2} className="px-3 py-2 font-medium text-text-primary">
+        </TableBody>
+        <TableFooter className="bg-neutral-bg">
+          <TableRow>
+            <TableCell colSpan={2} className="px-3 py-2 font-medium text-text-primary">
               মোট
-            </td>
-            <td className="px-3 py-2 text-right font-medium text-success">
+            </TableCell>
+            <TableCell className="px-3 py-2 text-right font-medium text-success">
               {formatCurrency(totalAmount - remaining)}
-            </td>
-            <td className="px-3 py-2 text-right font-medium text-text-secondary">
+            </TableCell>
+            <TableCell className="px-3 py-2 text-right font-medium text-text-secondary">
               {sumAfterRemaining > 0 ? formatCurrency(sumAfterRemaining) : "৳০"}
-            </td>
-          </tr>
+            </TableCell>
+          </TableRow>
           {remaining > 0 && (
-          <tr>
-            <td colSpan={2} className="px-3 py-2 font-medium text-text-secondary">
+          <TableRow>
+            <TableCell colSpan={2} className="px-3 py-2 font-medium text-text-secondary">
               অব্যবহৃত
-            </td>
-            <td className="px-3 py-2 text-right text-text-secondary">
+            </TableCell>
+            <TableCell className="px-3 py-2 text-right text-text-secondary">
               {formatCurrency(remaining)}
-            </td>
-            <td></td>
-          </tr>
+            </TableCell>
+            <TableCell></TableCell>
+          </TableRow>
           )}
-        </tfoot>
-      </table>
+        </TableFooter>
+      </Table>
     </div>
   );
 }

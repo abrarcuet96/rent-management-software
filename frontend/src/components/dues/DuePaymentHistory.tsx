@@ -1,4 +1,12 @@
 import { getPayments } from "@/api/payments.api";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { formatCurrency } from "@/lib/utils";
 import type { PaymentRecord } from "@/types";
 import { useQuery } from "@tanstack/react-query";
@@ -39,26 +47,26 @@ export default function DuePaymentHistory({ dueId }: DuePaymentHistoryProps) {
         পেমেন্ট ইতিহাস ({payments.length})
       </p>
       <div className="rounded-lg border border-border overflow-hidden print:overflow-visible bg-surface">
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="border-b border-border bg-neutral-bg">
-              <th className="text-left px-3 py-2 font-medium text-text-secondary whitespace-nowrap">তারিখ</th>
-              <th className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap">পরিমাণ</th>
-              <th className="text-left px-3 py-2 font-medium text-text-secondary">নোট</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table className="text-xs">
+          <TableHeader>
+            <TableRow className="border-b border-border bg-neutral-bg">
+              <TableHead className="text-left px-3 py-2 font-medium text-text-secondary whitespace-nowrap">তারিখ</TableHead>
+              <TableHead className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap">পরিমাণ</TableHead>
+              <TableHead className="text-left px-3 py-2 font-medium text-text-secondary">নোট</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {payments.map((p) => (
-              <tr key={p.public_id} className="border-b border-border/50 last:border-0">
-                <td className="px-3 py-2 text-text-primary whitespace-nowrap">{p.paid_on}</td>
-                <td className="px-3 py-2 text-right text-success font-medium whitespace-nowrap">
+              <TableRow key={p.public_id} className="border-b border-border/50 last:border-0">
+                <TableCell className="px-3 py-2 text-text-primary whitespace-nowrap">{p.paid_on}</TableCell>
+                <TableCell className="px-3 py-2 text-right text-success font-medium whitespace-nowrap">
                   {formatCurrency(p.amount_paid)}
-                </td>
-                <td className="px-3 py-2 text-text-secondary">{p.note ?? "—"}</td>
-              </tr>
+                </TableCell>
+                <TableCell className="px-3 py-2 text-text-secondary">{p.note ?? "—"}</TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </div>
   );

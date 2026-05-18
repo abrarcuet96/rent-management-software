@@ -5,6 +5,14 @@ import StatusBadge from "@/components/common/StatusBadge";
 import PrintButton from "@/components/common/PrintButton";
 import PrintHeader from "@/components/common/PrintHeader";
 import PrintFooter from "@/components/common/PrintFooter";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { formatCurrency } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { CheckCircle2 } from "lucide-react";
@@ -60,44 +68,44 @@ export default function OverdueReportTable() {
         />
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-neutral-bg">
-              <tr>
-                <th className="text-left px-3 py-2 font-medium text-text-secondary">ভাড়াটে</th>
-                <th className="text-left px-3 py-2 font-medium text-text-secondary">বিল্ডিং/ইউনিট</th>
-                <th className="text-left px-3 py-2 font-medium text-text-secondary">মাস/বছর</th>
-                <th className="text-right px-3 py-2 font-medium text-text-secondary">প্রদান</th>
-                <th className="text-right px-3 py-2 font-medium text-text-secondary">বাকি</th>
-                <th className="text-center px-3 py-2 font-medium text-text-secondary">দিন</th>
-                <th className="text-center px-3 py-2 font-medium text-text-secondary">স্ট্যাটাস</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table className="text-sm">
+            <TableHeader className="bg-neutral-bg">
+              <TableRow>
+                <TableHead className="text-left px-3 py-2 font-medium text-text-secondary">ভাড়াটে</TableHead>
+                <TableHead className="text-left px-3 py-2 font-medium text-text-secondary">বিল্ডিং/ইউনিট</TableHead>
+                <TableHead className="text-left px-3 py-2 font-medium text-text-secondary">মাস/বছর</TableHead>
+                <TableHead className="text-right px-3 py-2 font-medium text-text-secondary">প্রদান</TableHead>
+                <TableHead className="text-right px-3 py-2 font-medium text-text-secondary">বাকি</TableHead>
+                <TableHead className="text-center px-3 py-2 font-medium text-text-secondary">দিন</TableHead>
+                <TableHead className="text-center px-3 py-2 font-medium text-text-secondary">স্ট্যাটাস</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {items.map((item) => (
-                <tr key={item.due_public_id} className="border-t border-border">
-                  <td className="px-3 py-2 text-text-primary">{item.tenant_name}</td>
-                  <td className="px-3 py-2 text-text-secondary">
+                <TableRow key={item.due_public_id} className="border-t border-border">
+                  <TableCell className="px-3 py-2 text-text-primary">{item.tenant_name}</TableCell>
+                  <TableCell className="px-3 py-2 text-text-secondary">
                     {item.building_name} • {item.apartment_unit}
-                  </td>
-                  <td className="px-3 py-2 text-text-primary">
+                  </TableCell>
+                  <TableCell className="px-3 py-2 text-text-primary">
                     {item.month}/{item.year}
-                  </td>
-                  <td className="px-3 py-2 text-right text-text-primary">
+                  </TableCell>
+                  <TableCell className="px-3 py-2 text-right text-text-primary">
                     {formatCurrency(item.amount_paid)}
-                  </td>
-                  <td className="px-3 py-2 text-right font-medium text-danger">
+                  </TableCell>
+                  <TableCell className="px-3 py-2 text-right font-medium text-danger">
                     {formatCurrency(item.remaining_balance)}
-                  </td>
-                  <td className="px-3 py-2 text-center text-text-secondary">
+                  </TableCell>
+                  <TableCell className="px-3 py-2 text-center text-text-secondary">
                     {item.days_overdue}
-                  </td>
-                  <td className="px-3 py-2 text-center">
+                  </TableCell>
+                  <TableCell className="px-3 py-2 text-center">
                     <StatusBadge status={item.status as "unpaid" | "partial"} />
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
       <PrintFooter />

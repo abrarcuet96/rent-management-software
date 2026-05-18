@@ -6,15 +6,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Form } from "@/components/ui/form";
+import FormInput from "@/components/custom-ui/form/FormInput";
+import FormDatePicker from "@/components/custom-ui/form/FormDatePicker";
 import { getFallback } from "@/lib/getFallback";
 import { tenantSchema, type TenantInput } from "@/lib/validators/tenant";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -82,109 +76,59 @@ export default function AssignTenant({ open, onOpenChange, apartmentId }: Assign
             onSubmit={form.handleSubmit((data) => mutate(data))}
             className="space-y-4"
           >
-            <FormField
-              control={form.control}
+            <FormInput
+              form={form}
               name="full_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>পূর্ণ নাম <span className="text-danger">*</span></FormLabel>
-                  <FormControl>
-                    <Input placeholder="ভাড়াটের নাম" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="পূর্ণ নাম"
+              isRequired
+              placeholder="ভাড়াটের নাম"
             />
-            <FormField
-              control={form.control}
+            <FormInput
+              form={form}
               name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>ফোন নম্বর <span className="text-danger">*</span></FormLabel>
-                  <FormControl>
-                    <Input placeholder="01XXXXXXXXX" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="ফোন নম্বর"
+              isRequired
+              placeholder="01XXXXXXXXX"
             />
-            <FormField
-              control={form.control}
+            <FormInput
+              form={form}
               name="nid_number"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>এনআইডি নম্বর</FormLabel>
-                  <FormControl>
-                    <Input placeholder="ঐচ্ছিক" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="এনআইডি নম্বর"
+              placeholder="ঐচ্ছিক"
             />
-            <FormField
-              control={form.control}
+            <FormInput
+              form={form}
               name="address"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>ঠিকানা</FormLabel>
-                  <FormControl>
-                    <Input placeholder="ঐচ্ছিক" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="ঠিকানা"
+              placeholder="ঐচ্ছিক"
             />
-            <FormField
-              control={form.control}
+            <FormInput
+              form={form}
               name="member_count"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>পরিবারের সদস্য সংখ্যা <span className="text-danger">*</span></FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="1" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="পরিবারের সদস্য সংখ্যা"
+              isRequired
+              type="number"
+              placeholder="1"
             />
-            <FormField
-              control={form.control}
+            <FormDatePicker
+              form={form}
               name="move_in_date"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>প্রবেশের তারিখ <span className="text-danger">*</span></FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="প্রবেশের তারিখ"
+              isRequired
             />
-            <FormField
-              control={form.control}
+            <FormInput
+              form={form}
               name="initial_rent_amount"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>মাসিক ভাড়া (৳) <span className="text-danger">*</span></FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="10000" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="মাসিক ভাড়া (৳)"
+              isRequired
+              type="number"
+              placeholder="10000"
             />
-            <FormField
-              control={form.control}
+            <FormDatePicker
+              form={form}
               name="agreement_start_date"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>চুক্তির শুরুর তারিখ <span className="text-danger">*</span></FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="চুক্তির শুরুর তারিখ"
+              isRequired
             />
             <div className="flex justify-end pt-2">
               <Button

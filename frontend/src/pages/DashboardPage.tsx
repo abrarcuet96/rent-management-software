@@ -6,6 +6,13 @@ import PaymentStatusDonut from "@/components/dashboard/PaymentStatusDonut";
 import BulkGenerateDueDialog from "@/components/payments/BulkGenerateDueDialog";
 import StatCard from "@/components/common/StatCard";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency } from "@/lib/utils";
 import type { PendingDueCount } from "@/types";
@@ -41,28 +48,36 @@ export default function DashboardPage() {
     <div className="space-y-6">
       {/* Month/Year selector */}
       <div className="flex items-center gap-3">
-        <select
-          value={month}
-          onChange={(e) => setMonth(Number(e.target.value))}
-          className="text-sm border border-border rounded-md px-2 py-1.5 bg-surface"
+        <Select
+          value={String(month)}
+          onValueChange={(v) => setMonth(Number(v))}
         >
-          {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-            <option key={m} value={m}>
-              {MONTHS_BANGLA[m - 1]}
-            </option>
-          ))}
-        </select>
-        <select
-          value={year}
-          onChange={(e) => setYear(Number(e.target.value))}
-          className="text-sm border border-border rounded-md px-2 py-1.5 bg-surface"
+          <SelectTrigger className="w-40">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+              <SelectItem key={m} value={String(m)}>
+                {MONTHS_BANGLA[m - 1]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select
+          value={String(year)}
+          onValueChange={(v) => setYear(Number(v))}
         >
-          {Array.from({ length: 5 }, (_, i) => now.getFullYear() - i).map((y) => (
-            <option key={y} value={y}>
-              {y}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger className="w-28">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {Array.from({ length: 5 }, (_, i) => now.getFullYear() - i).map((y) => (
+              <SelectItem key={y} value={String(y)}>
+                {y}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Stat cards */}

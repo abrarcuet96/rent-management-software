@@ -209,13 +209,14 @@ function SidebarContent({ collapsed, onClose }: { collapsed: boolean; onClose?: 
           )}
 
           {/* Collapse / close button */}
-          <button
+          <Button
+            variant="ghost"
             onClick={onClose ?? toggleSidebar}
-            className="flex w-full items-center justify-center h-8 text-white/50 hover:text-white hover:bg-white/10 rounded-md transition-colors"
+            className="flex w-full items-center justify-center h-8 text-white/50 hover:text-white hover:bg-white/10 rounded-md"
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-          </button>
+          </Button>
         </div>
       </TooltipProvider>
     </div>

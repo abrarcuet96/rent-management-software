@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   BarChart3,
@@ -322,10 +323,11 @@ function FlowChart({
           const active = activeStep === step.id;
           return (
             <div key={step.id}>
-              <button
+              <Button
+                variant="ghost"
                 onClick={() => setActiveStep(active ? null : step.id)}
                 className={cn(
-                  "w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left",
+                  "w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left h-auto justify-start",
                   active
                     ? `${step.bgColor} ${step.borderColor} shadow-md`
                     : "bg-surface border-border hover:border-primary/30",
@@ -359,7 +361,7 @@ function FlowChart({
                     active && "rotate-180",
                   )}
                 />
-              </button>
+              </Button>
               {active && (
                 <div
                   className={cn(
@@ -391,10 +393,11 @@ function FlowChart({
               const active = activeStep === step.id;
               return (
                 <div key={step.id} className="flex items-center">
-                  <button
+                  <Button
+                    variant="ghost"
                     onClick={() => setActiveStep(active ? null : step.id)}
                     className={cn(
-                      "flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all w-[6.5rem] shrink-0 group",
+                      "flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all w-[6.5rem] shrink-0 h-auto",
                       active
                         ? `${step.bgColor} ${step.borderColor} shadow-md ring-2 ring-offset-2 ring-offset-background`
                         : "bg-surface border-border hover:border-primary/40 hover:shadow-md",
@@ -427,7 +430,7 @@ function FlowChart({
                         {step.sublabel}
                       </p>
                     </div>
-                  </button>
+                  </Button>
 
                   {i < FLOW_STEPS.length - 1 && (
                     <div className="flex items-center mx-0.5 shrink-0">
@@ -585,9 +588,10 @@ function FeatureCard({ feature }: { feature: FeatureSection }) {
 
   return (
     <div className="bg-surface rounded-2xl border border-border overflow-hidden">
-      <button
+      <Button
+        variant="ghost"
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center gap-4 p-5 text-left hover:bg-neutral-bg transition-colors"
+        className="w-full flex items-center gap-4 p-5 text-left hover:bg-neutral-bg h-auto justify-start rounded-none"
       >
         <div
           className={cn(
@@ -609,7 +613,7 @@ function FeatureCard({ feature }: { feature: FeatureSection }) {
             open && "rotate-180",
           )}
         />
-      </button>
+      </Button>
 
       {open && (
         <div className="border-t border-border px-5 pb-5 pt-4 space-y-4">

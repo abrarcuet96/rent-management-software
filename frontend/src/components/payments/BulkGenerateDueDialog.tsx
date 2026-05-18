@@ -7,6 +7,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { getFallback } from "@/lib/getFallback";
 import type { PendingDueCount } from "@/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -84,43 +92,51 @@ export default function BulkGenerateDueDialog({ open, onOpenChange }: BulkGenera
         <div className="space-y-4">
           {/* Month selector */}
           <div>
-            <label className="text-sm font-medium">
+            <Label>
               মাস <span className="text-danger">*</span>
-            </label>
-            <select
-              value={month}
-              onChange={(e) => { setMonth(Number(e.target.value)); setResult(null); }}
-              className="mt-1.5 w-full text-sm border border-border rounded-md px-3 py-2 bg-surface"
+            </Label>
+            <Select
+              value={String(month)}
+              onValueChange={(v) => { setMonth(Number(v)); setResult(null); }}
             >
-              {MONTHS.map((name, i) => (
-                <option key={i + 1} value={i + 1}>
-                  {name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="mt-1.5">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {MONTHS.map((name, i) => (
+                  <SelectItem key={i + 1} value={String(i + 1)}>
+                    {name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Year selector */}
           <div>
-            <label className="text-sm font-medium">
+            <Label>
               বছর <span className="text-danger">*</span>
-            </label>
-            <select
-              value={year}
-              onChange={(e) => { setYear(Number(e.target.value)); setResult(null); }}
-              className="mt-1.5 w-full text-sm border border-border rounded-md px-3 py-2 bg-surface"
+            </Label>
+            <Select
+              value={String(year)}
+              onValueChange={(v) => { setYear(Number(v)); setResult(null); }}
             >
-              {Array.from({ length: 5 }, (_, i) => now.getFullYear() - i).map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="mt-1.5">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: 5 }, (_, i) => now.getFullYear() - i).map((y) => (
+                  <SelectItem key={y} value={String(y)}>
+                    {y}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Due date */}
           <div>
-            <label className="text-sm font-medium">ডিউ তারিখ (ঐচ্ছিক)</label>
+            <Label>ডিউ তারিখ (ঐচ্ছিক)</Label>
             <Input
               type="date"
               value={dueDate}

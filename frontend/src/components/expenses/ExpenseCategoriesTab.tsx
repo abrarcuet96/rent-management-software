@@ -6,6 +6,14 @@ import ConfirmDialog from "@/components/common/ConfirmDialog";
 import EmptyState from "@/components/common/EmptyState";
 import ErrorState from "@/components/common/ErrorState";
 import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import type { ExpenseCategory } from "@/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
@@ -83,25 +91,25 @@ export default function ExpenseCategoriesTab() {
         />
       ) : (
         <div className="border border-border rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-neutral-bg">
-              <tr>
-                <th className="text-left px-3 py-2 font-medium text-text-secondary">
+          <Table className="text-sm">
+            <TableHeader className="bg-neutral-bg">
+              <TableRow>
+                <TableHead className="text-left px-3 py-2 font-medium text-text-secondary">
                   নাম
-                </th>
-                <th className="text-center px-3 py-2 font-medium text-text-secondary">
+                </TableHead>
+                <TableHead className="text-center px-3 py-2 font-medium text-text-secondary">
                   ডিফল্ট
-                </th>
-                <th className="text-right px-3 py-2 font-medium text-text-secondary">
+                </TableHead>
+                <TableHead className="text-right px-3 py-2 font-medium text-text-secondary">
                   অ্যাকশন
-                </th>
-              </tr>
-            </thead>
-            <tbody>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {categories.map((cat) => (
-                <tr key={cat.public_id} className="border-t border-border">
-                  <td className="px-3 py-2.5 text-text-primary">{cat.name}</td>
-                  <td className="px-3 py-2.5 text-center">
+                <TableRow key={cat.public_id} className="border-t border-border">
+                  <TableCell className="px-3 py-2.5 text-text-primary">{cat.name}</TableCell>
+                  <TableCell className="px-3 py-2.5 text-center">
                     {cat.is_default ? (
                       <span className="text-xs bg-neutral-bg text-text-secondary rounded-full px-2 py-0.5">
                         ডিফল্ট
@@ -109,8 +117,8 @@ export default function ExpenseCategoriesTab() {
                     ) : (
                       "—"
                     )}
-                  </td>
-                  <td className="px-3 py-2.5 text-right">
+                  </TableCell>
+                  <TableCell className="px-3 py-2.5 text-right">
                     {!cat.is_default && (
                       <Button
                         variant="ghost"
@@ -122,11 +130,11 @@ export default function ExpenseCategoriesTab() {
                         ডিলিট
                       </Button>
                     )}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
 

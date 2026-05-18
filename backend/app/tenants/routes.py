@@ -59,13 +59,14 @@ def _to_response(
 @router_portfolio.get("", response_model=PaginatedResponse)
 async def list_tenants_portfolio(
     status: str | None = Query(None, pattern="^(active|moved_out)$"),
+    building_public_id: UUID | None = Query(None),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
     owner_id: UUID = Depends(get_current_owner),
 ) -> PaginatedResponse:
     service = TenantService(db, owner_id)
-    tenants, total = await service.list_tenants(status, page, page_size)
+    tenants, total = await service.list_tenants(status, building_public_id, page, page_size)
     items: list[TenantResponse] = []
     for tenant in tenants:
         result = await db.execute(

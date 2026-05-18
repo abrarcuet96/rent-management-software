@@ -18,6 +18,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface PaymentHistoryItem {
   due_public_id: string;
@@ -152,36 +160,36 @@ export default function PaymentHistoryReport() {
               </div>
 
               {item.payments.length > 0 && (
-                <table className="w-full text-xs">
-                  <thead>
-                    <tr className="border-b border-border">
-                      <th className="text-left px-4 py-1.5 font-medium text-text-secondary">
+                <Table className="text-xs">
+                  <TableHeader>
+                    <TableRow className="border-b border-border">
+                      <TableHead className="text-left px-4 py-1.5 font-medium text-text-secondary">
                         তারিখ
-                      </th>
-                      <th className="text-right px-4 py-1.5 font-medium text-text-secondary">
+                      </TableHead>
+                      <TableHead className="text-right px-4 py-1.5 font-medium text-text-secondary">
                         পরিমাণ
-                      </th>
-                      <th className="text-left px-4 py-1.5 font-medium text-text-secondary">
+                      </TableHead>
+                      <TableHead className="text-left px-4 py-1.5 font-medium text-text-secondary">
                         নোট
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {item.payments.map((p) => (
-                      <tr key={p.public_id} className="border-b border-border/50">
-                        <td className="px-4 py-2 text-text-primary">
+                      <TableRow key={p.public_id} className="border-b border-border/50">
+                        <TableCell className="px-4 py-2 text-text-primary">
                           {p.paid_on}
-                        </td>
-                        <td className="px-4 py-2 text-right text-success font-medium">
+                        </TableCell>
+                        <TableCell className="px-4 py-2 text-right text-success font-medium">
                           {formatCurrency(p.amount_paid)}
-                        </td>
-                        <td className="px-4 py-2 text-text-secondary">
+                        </TableCell>
+                        <TableCell className="px-4 py-2 text-text-secondary">
                           {p.note ?? "—"}
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     ))}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               )}
 
               {item.payments.length === 0 && (

@@ -2,6 +2,21 @@ import { getDashboardSummary } from "@/api/dashboard.api";
 import PrintButton from "@/components/common/PrintButton";
 import PrintHeader from "@/components/common/PrintHeader";
 import PrintFooter from "@/components/common/PrintFooter";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { formatCurrency, getMonthName } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { useRef, useState } from "react";
@@ -24,34 +39,35 @@ export default function MonthlyCollectionTable() {
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-medium text-text-primary">মাসিক সংগ্রহ</h3>
         <div className="flex items-center gap-3">
-          <select
-            value={year}
-            onChange={(e) => setYear(Number(e.target.value))}
-            className="text-sm border border-border rounded-md px-2 py-1.5 bg-surface"
-          >
-            {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map((y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </select>
+          <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
+            <SelectTrigger className="w-28">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map((y) => (
+                <SelectItem key={y} value={String(y)}>
+                  {y}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <PrintButton contentRef={contentRef} documentTitle="মাসিক সংগ্রহ" />
         </div>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-neutral-bg">
-            <tr>
-              <th className="text-left px-3 py-2 font-medium text-text-secondary">মাস</th>
-              <th className="text-right px-3 py-2 font-medium text-text-secondary">সংগ্রহ</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table className="text-sm">
+          <TableHeader className="bg-neutral-bg">
+            <TableRow>
+              <TableHead className="text-left px-3 py-2 font-medium text-text-secondary">মাস</TableHead>
+              <TableHead className="text-right px-3 py-2 font-medium text-text-secondary">সংগ্রহ</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {months.map((m) => (
               <MonthRow key={m} month={m} year={year} />
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
       <PrintFooter />
     </div>
@@ -68,19 +84,19 @@ function MonthRow({ month, year }: { month: number; year: number }) {
 
   if (isLoading) {
     return (
-      <tr className="border-t border-border">
-        <td className="px-3 py-2 text-text-primary">{getMonthName(month)}</td>
-        <td className="px-3 py-2 text-right text-text-secondary">...</td>
-      </tr>
+      <TableRow className="border-t border-border">
+        <TableCell className="px-3 py-2 text-text-primary">{getMonthName(month)}</TableCell>
+        <TableCell className="px-3 py-2 text-right text-text-secondary">...</TableCell>
+      </TableRow>
     );
   }
 
   return (
-    <tr className="border-t border-border">
-      <td className="px-3 py-2 text-text-primary">{getMonthName(month)}</td>
-      <td className="px-3 py-2 text-right font-medium text-success">
+    <TableRow className="border-t border-border">
+      <TableCell className="px-3 py-2 text-text-primary">{getMonthName(month)}</TableCell>
+      <TableCell className="px-3 py-2 text-right font-medium text-success">
         {formatCurrency(collected)}
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   );
 }

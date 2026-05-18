@@ -6,15 +6,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Form } from "@/components/ui/form";
+import FormInput from "@/components/custom-ui/form/FormInput";
+import FormDatePicker from "@/components/custom-ui/form/FormDatePicker";
 import { getFallback } from "@/lib/getFallback";
 import { formatCurrency } from "@/lib/utils";
 import type { MonthlyDue } from "@/types";
@@ -98,62 +92,38 @@ export default function AdjustDueDialog({
               </span>
             </div>
 
-            <FormField
-              control={form.control}
+            <FormInput
+              form={form}
               name="total_due"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>মোট দেয় (৳)</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder={due.total_due}
-                      value={field.value ?? ""}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        field.onChange(val === "" ? undefined : val);
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="মোট দেয় (৳)"
+              type="number"
+              placeholder={due.total_due}
+              onChange={(e) => {
+                const val = e.target.value;
+                form.setValue("total_due", val === "" ? undefined : Number(val), {
+                  shouldValidate: true,
+                });
+              }}
             />
 
-            <FormField
-              control={form.control}
+            <FormInput
+              form={form}
               name="rent_amount"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>ভাড়া (৳)</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder={due.rent_amount}
-                      value={field.value ?? ""}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        field.onChange(val === "" ? undefined : val);
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="ভাড়া (৳)"
+              type="number"
+              placeholder={due.rent_amount}
+              onChange={(e) => {
+                const val = e.target.value;
+                form.setValue("rent_amount", val === "" ? undefined : Number(val), {
+                  shouldValidate: true,
+                });
+              }}
             />
 
-            <FormField
-              control={form.control}
+            <FormDatePicker
+              form={form}
               name="due_date"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>ডিউ ডেট</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} value={field.value ?? ""} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="ডিউ ডেট"
             />
 
             <div className="flex justify-end pt-2">

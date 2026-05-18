@@ -17,6 +17,13 @@ import MonthlyDueRow from "@/components/payments/MonthlyDueRow";
 import RecordPayment from "@/components/payments/RecordPayment";
 import AdjustDueDialog from "@/components/dues/AdjustDueDialog";
 import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useNavigationStore } from "@/stores/navigationStore";
 import type { MonthlyDue, Tenant } from "@/types";
 import { useQuery } from "@tanstack/react-query";
@@ -225,18 +232,18 @@ export default function ApartmentDetailPage() {
               />
             ) : (
               <div className="overflow-x-auto print:overflow-visible">
-                <table className="w-full min-w-[560px] print:min-w-0 text-sm">
-                  <thead className="bg-neutral-bg">
-                    <tr>
-                      <th className="text-left px-3 py-2 font-medium text-text-secondary whitespace-nowrap">মাস/বছর</th>
-                      <th className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap">মোট দেয়</th>
-                      <th className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap">পরিশোধিত</th>
-                      <th className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap">বাকি</th>
-                      <th className="text-center px-3 py-2 font-medium text-text-secondary whitespace-nowrap">স্ট্যাটাস</th>
-                      <th className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap print:hidden">অ্যাকশন</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+                <Table className="min-w-[560px] print:min-w-0 text-sm">
+                  <TableHeader className="bg-neutral-bg">
+                    <TableRow>
+                      <TableHead className="text-left px-3 py-2 font-medium text-text-secondary whitespace-nowrap">মাস/বছর</TableHead>
+                      <TableHead className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap">মোট দেয়</TableHead>
+                      <TableHead className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap">পরিশোধিত</TableHead>
+                      <TableHead className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap">বাকি</TableHead>
+                      <TableHead className="text-center px-3 py-2 font-medium text-text-secondary whitespace-nowrap">স্ট্যাটাস</TableHead>
+                      <TableHead className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap print:hidden">অ্যাকশন</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {dues.map((due) => (
                       <MonthlyDueRow
                         key={due.public_id}
@@ -247,8 +254,8 @@ export default function ApartmentDetailPage() {
                         onToggle={() => toggleDue(due.public_id)}
                       />
                     ))}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
             )}
           </div>

@@ -5,6 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.expenses.schemas import (
+    ChargeTenantsRequest,
+    ChargeTenantsResponse,
     ExpenseCategoryCreate,
     ExpenseCategoryResponse,
     ExpenseCreate,
@@ -74,6 +76,7 @@ async def delete_category(
 
 
 def _expense_to_response(e: object) -> ExpenseResponse:
+    charged_ids = [de.monthly_due.tenant.public_id for de in e.due_expenses if de.monthly_due]
     return ExpenseResponse(
         public_id=e.public_id,
         category_public_id=e.category.public_id,
@@ -83,6 +86,7 @@ def _expense_to_response(e: object) -> ExpenseResponse:
         amount=e.amount,
         expense_date=str(e.expense_date),
         is_tenant_charged=e.is_tenant_charged,
+        charged_tenant_public_ids=charged_ids,
     )
 
 
@@ -151,3 +155,19 @@ async def delete_expense(
     service = ExpenseService(db, owner_id)
     await service.deactivate_expense(public_id)
     return StandardResponse(success=True, message="Expense deactivated")
+
+
+@router.post("/expenses/{public_id}/charge", response_model=StandardResponse)
+async def charge_expense_to_tenants(
+    public_id: UUID,
+    body: ChargeTenantsRequest,
+    db: AsyncSession = Depends(get_db),
+    owner_id: UUID = Depends(get_current_owner),
+) -> StandardResponse:
+    service = ExpenseService(db, owner_id)
+    charged, skipped = await service.charge_tenants(public_id, body.tenant_public_ids)
+    return StandardResponse(
+        success=True,
+        data=ChargeTenantsResponse(charged=charged, skipped=skipped),
+        message=f"{charged} জনকে চার্জ করা হয়েছে, {skipped} জন বাদ দেওয়া হয়েছে",
+    )

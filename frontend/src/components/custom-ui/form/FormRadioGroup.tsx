@@ -5,6 +5,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import type { FieldValues, Path, UseFormReturn } from "react-hook-form";
 
@@ -42,12 +43,12 @@ export default function FormRadioGroup<T extends FieldValues>({
               {options.map((opt) => (
                 <div key={opt.value} className="flex items-center gap-2">
                   <RadioGroupItem value={opt.value} id={`${name}-${opt.value}`} />
-                  <label
+                  <Label
                     htmlFor={`${name}-${opt.value}`}
-                    className="text-sm cursor-pointer"
+                    className="cursor-pointer font-normal"
                   >
                     {opt.label}
-                  </label>
+                  </Label>
                 </div>
               ))}
             </RadioGroup>

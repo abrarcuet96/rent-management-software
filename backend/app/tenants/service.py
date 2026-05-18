@@ -8,6 +8,7 @@ from app.models.apartment import Apartment
 from app.models.building import Building
 from app.models.tenant import Tenant
 from app.models.tenant_agreement import TenantAgreement
+from app.shared.ownership import resolve_building_id
 from app.tenants.schemas import TenantCreate, TenantMoveOutRequest, TenantUpdate
 
 
@@ -56,6 +57,7 @@ class TenantService:
     async def list_tenants(
         self,
         status_filter: str | None = None,
+        building_public_id: UUID | None = None,
         page: int = 1,
         page_size: int = 20,
     ) -> tuple[list[Tenant], int]:
@@ -68,6 +70,9 @@ class TenantService:
             conditions.append(Tenant.is_active.is_(True))
         elif status_filter == "moved_out":
             conditions.append(Tenant.is_active.is_(False))
+        if building_public_id is not None:
+            building_id = await resolve_building_id(self.db, self.owner_id, building_public_id)
+            conditions.append(Building.id == building_id)
 
         total = await self.db.scalar(
             select(func.count())

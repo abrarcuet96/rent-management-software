@@ -1,6 +1,7 @@
-import { addTenant } from "@/api/tenants.api";
-import { getBuildings } from "@/api/buildings.api";
 import { getApartments } from "@/api/apartments.api";
+import { getBuildings } from "@/api/buildings.api";
+import { addTenant } from "@/api/tenants.api";
+import FormDatePicker from "@/components/custom-ui/form/FormDatePicker";
 import FormInput from "@/components/custom-ui/form/FormInput";
 import FormSearchSelect from "@/components/custom-ui/form/FormSearchSelect";
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getFallback } from "@/lib/getFallback";
-import { tenantSchema, type TenantInput } from "@/lib/validators/tenant";
+import { tenantSchema } from "@/lib/validators/tenant";
 import type { Apartment } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -49,7 +50,10 @@ interface CreateTenantDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export default function CreateTenantDialog({ open, onOpenChange }: CreateTenantDialogProps) {
+export default function CreateTenantDialog({
+  open,
+  onOpenChange,
+}: CreateTenantDialogProps) {
   const queryClient = useQueryClient();
 
   const form = useForm<CreateTenantInput>({
@@ -73,7 +77,8 @@ export default function CreateTenantDialog({ open, onOpenChange }: CreateTenantD
   // Fetch vacant apartments for the selected building
   const { data: apartmentsData, isLoading: loadingApartments } = useQuery({
     queryKey: ["apartments", buildingId, "vacant"],
-    queryFn: () => getApartments(buildingId, { page: 1, page_size: 100, status: "vacant" }),
+    queryFn: () =>
+      getApartments(buildingId, { page: 1, page_size: 100, status: "vacant" }),
     enabled: !!buildingId,
   });
 
@@ -115,7 +120,13 @@ export default function CreateTenantDialog({ open, onOpenChange }: CreateTenantD
   }, [buildingId, form]);
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) form.reset(); onOpenChange(o); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        if (!o) form.reset();
+        onOpenChange(o);
+      }}
+    >
       <DialogContent className="max-w-lg rounded-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>নতুন ভাড়াটে যোগ করুন</DialogTitle>
@@ -127,7 +138,9 @@ export default function CreateTenantDialog({ open, onOpenChange }: CreateTenantD
           >
             {/* ── Location selectors ── */}
             <div className="rounded-lg border border-border bg-neutral-bg p-4 space-y-3">
-              <p className="text-xs font-medium text-text-secondary uppercase tracking-wide">অ্যাপার্টমেন্ট নির্বাচন</p>
+              <p className="text-xs font-medium text-text-secondary uppercase tracking-wide">
+                অ্যাপার্টমেন্ট নির্বাচন
+              </p>
 
               <FormSearchSelect
                 form={form}
@@ -138,10 +151,12 @@ export default function CreateTenantDialog({ open, onOpenChange }: CreateTenantD
                 emptyMessage="কোনো বিল্ডিং নেই — বিল্ডিং পেজে গিয়ে তৈরি করুন"
                 fetcher={async () => {
                   const res = await getBuildings({ page: 1, page_size: 100 });
-                  return (res.data.data ?? []).map((b: { public_id: string; name: string }) => ({
-                    value: b.public_id,
-                    label: b.name,
-                  }));
+                  return (res.data.data ?? []).map(
+                    (b: { public_id: string; name: string }) => ({
+                      value: b.public_id,
+                      label: b.name,
+                    }),
+                  );
                 }}
               />
 
@@ -166,7 +181,10 @@ export default function CreateTenantDialog({ open, onOpenChange }: CreateTenantD
                               placeholder={
                                 loadingApartments ? (
                                   <span className="flex items-center gap-1.5">
-                                    <Loader2 size={14} className="animate-spin" />
+                                    <Loader2
+                                      size={14}
+                                      className="animate-spin"
+                                    />
                                     লোড হচ্ছে...
                                   </span>
                                 ) : (
@@ -177,7 +195,8 @@ export default function CreateTenantDialog({ open, onOpenChange }: CreateTenantD
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {!loadingApartments && vacantApartments.length === 0 ? (
+                          {!loadingApartments &&
+                          vacantApartments.length === 0 ? (
                             <div className="px-3 py-4 text-center text-xs text-text-secondary">
                               এই বিল্ডিংয়ে কোনো খালি অ্যাপার্টমেন্ট নেই
                             </div>
@@ -204,14 +223,60 @@ export default function CreateTenantDialog({ open, onOpenChange }: CreateTenantD
             </div>
 
             {/* ── Tenant fields ── */}
-            <FormInput form={form} name="full_name" label="পূর্ণ নাম" isRequired placeholder="ভাড়াটের নাম" />
-            <FormInput form={form} name="phone" label="ফোন নম্বর" isRequired placeholder="01XXXXXXXXX" />
-            <FormInput form={form} name="nid_number" label="এনআইডি নম্বর" placeholder="ঐচ্ছিক" />
-            <FormInput form={form} name="address" label="ঠিকানা" placeholder="ঐচ্ছিক" />
-            <FormInput form={form} name="member_count" label="পরিবারের সদস্য সংখ্যা" isRequired type="number" placeholder="1" />
-            <FormInput form={form} name="move_in_date" label="প্রবেশের তারিখ" isRequired type="date" />
-            <FormInput form={form} name="initial_rent_amount" label="মাসিক ভাড়া (৳)" isRequired type="number" placeholder="10000" />
-            <FormInput form={form} name="agreement_start_date" label="চুক্তির শুরুর তারিখ" isRequired type="date" />
+            <FormInput
+              form={form}
+              name="full_name"
+              label="পূর্ণ নাম"
+              isRequired
+              placeholder="ভাড়াটের নাম"
+            />
+            <FormInput
+              form={form}
+              name="phone"
+              label="ফোন নম্বর"
+              isRequired
+              placeholder="01XXXXXXXXX"
+            />
+            <FormInput
+              form={form}
+              name="nid_number"
+              label="এনআইডি নম্বর"
+              placeholder="ঐচ্ছিক"
+            />
+            <FormInput
+              form={form}
+              name="address"
+              label="ঠিকানা"
+              placeholder="ঐচ্ছিক"
+            />
+            <FormInput
+              form={form}
+              name="member_count"
+              label="পরিবারের সদস্য সংখ্যা"
+              isRequired
+              type="number"
+              placeholder="1"
+            />
+            <FormDatePicker
+              form={form}
+              name="move_in_date"
+              label="প্রবেশের তারিখ"
+              isRequired
+            />
+            <FormInput
+              form={form}
+              name="initial_rent_amount"
+              label="মাসিক ভাড়া (৳)"
+              isRequired
+              type="number"
+              placeholder="10000"
+            />
+            <FormDatePicker
+              form={form}
+              name="agreement_start_date"
+              label="চুক্তির শুরুর তারিখ"
+              isRequired
+            />
 
             <div className="flex justify-end pt-2">
               <Button
@@ -219,7 +284,9 @@ export default function CreateTenantDialog({ open, onOpenChange }: CreateTenantD
                 disabled={isPending}
                 className="bg-primary hover:bg-primary/90 text-primary-foreground"
               >
-                {isPending && <Loader2 size={16} className="animate-spin mr-1.5" />}
+                {isPending && (
+                  <Loader2 size={16} className="animate-spin mr-1.5" />
+                )}
                 যোগ করুন
               </Button>
             </div>

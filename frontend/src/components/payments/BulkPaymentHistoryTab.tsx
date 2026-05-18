@@ -2,12 +2,21 @@ import { getBulkPaymentHistory } from "@/api/payments.api";
 import StatusBadge from "@/components/common/StatusBadge";
 import EmptyState from "@/components/common/EmptyState";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatCurrency, getMonthName } from "@/lib/utils";
 import type { BulkPaymentHistoryItem } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, ChevronRight, Receipt } from "lucide-react";
 import { useState } from "react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function BulkPaymentHistoryTab() {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -54,9 +63,10 @@ export default function BulkPaymentHistoryTab() {
                 key={key}
                 className="bg-surface rounded-lg border border-border overflow-hidden"
               >
-                <button
+                <Button
+                  variant="ghost"
                   onClick={() => toggle(key)}
-                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-neutral-bg transition-colors text-left"
+                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-neutral-bg h-auto rounded-none justify-between text-left"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     {isExpanded ? (
@@ -95,43 +105,43 @@ export default function BulkPaymentHistoryTab() {
                       </TooltipProvider>
                     )}
                   </div>
-                </button>
+                </Button>
 
                 {isExpanded && (
                   <div className="border-t border-border">
-                    <table className="w-full text-xs">
-                      <thead>
-                        <tr className="border-b border-border bg-neutral-bg">
-                          <th className="text-left px-4 py-2 font-medium text-text-secondary">
+                    <Table className="text-xs">
+                      <TableHeader>
+                        <TableRow className="border-b border-border bg-neutral-bg">
+                          <TableHead className="text-left px-4 py-2 font-medium text-text-secondary">
                             মাস/বছর
-                          </th>
-                          <th className="text-right px-4 py-2 font-medium text-text-secondary">
+                          </TableHead>
+                          <TableHead className="text-right px-4 py-2 font-medium text-text-secondary">
                             পরিশোধিত
-                          </th>
-                          <th className="text-center px-4 py-2 font-medium text-text-secondary">
+                          </TableHead>
+                          <TableHead className="text-center px-4 py-2 font-medium text-text-secondary">
                             স্ট্যাটাস
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
                         {item.dues.map((due) => (
-                          <tr
+                          <TableRow
                             key={due.due_public_id}
                             className="border-b border-border/50 hover:bg-neutral-bg"
                           >
-                            <td className="px-4 py-2 text-text-primary">
+                            <TableCell className="px-4 py-2 text-text-primary">
                               {getMonthName(due.month)} {due.year}
-                            </td>
-                            <td className="px-4 py-2 text-right text-success font-medium">
+                            </TableCell>
+                            <TableCell className="px-4 py-2 text-right text-success font-medium">
                               {formatCurrency(due.amount_applied)}
-                            </td>
-                            <td className="px-4 py-2 text-center">
+                            </TableCell>
+                            <TableCell className="px-4 py-2 text-center">
                               <StatusBadge status={due.new_status as "paid" | "partial"} />
-                            </td>
-                          </tr>
+                            </TableCell>
+                          </TableRow>
                         ))}
-                      </tbody>
-                    </table>
+                      </TableBody>
+                    </Table>
                   </div>
                 )}
               </div>
@@ -140,23 +150,25 @@ export default function BulkPaymentHistoryTab() {
 
           {total > 20 && (
             <div className="flex justify-center gap-2 pt-4">
-              <button
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="px-3 py-1.5 text-sm rounded border border-border hover:bg-neutral-bg disabled:opacity-40"
               >
                 পূর্ববর্তী
-              </button>
+              </Button>
               <span className="px-3 py-1.5 text-sm text-text-secondary">
                 পৃষ্ঠা {page} / {Math.ceil(total / 20)}
               </span>
-              <button
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setPage((p) => p + 1)}
                 disabled={page >= Math.ceil(total / 20)}
-                className="px-3 py-1.5 text-sm rounded border border-border hover:bg-neutral-bg disabled:opacity-40"
               >
                 পরবর্তী
-              </button>
+              </Button>
             </div>
           )}
         </div>

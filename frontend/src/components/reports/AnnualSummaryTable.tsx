@@ -4,6 +4,13 @@ import PrintButton from "@/components/common/PrintButton";
 import PrintHeader from "@/components/common/PrintHeader";
 import PrintFooter from "@/components/common/PrintFooter";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { formatCurrency } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { BarChart3 } from "lucide-react";
@@ -37,17 +44,18 @@ export default function AnnualSummaryTable() {
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-medium text-text-primary">বার্ষিক সারসংক্ষেপ</h3>
         <div className="flex items-center gap-3">
-          <select
-            value={year}
-            onChange={(e) => setYear(Number(e.target.value))}
-            className="text-sm border border-border rounded-md px-2 py-1.5 bg-surface"
-          >
-            {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map((y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </select>
+          <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
+            <SelectTrigger className="w-28">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map((y) => (
+                <SelectItem key={y} value={String(y)}>
+                  {y}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <PrintButton contentRef={contentRef} documentTitle="বার্ষিক সারসংক্ষেপ" />
         </div>
       </div>

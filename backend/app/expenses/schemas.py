@@ -31,6 +31,15 @@ class ExpenseUpdate(BaseModel):
     is_tenant_charged: bool | None = None
 
 
+class ChargeTenantsRequest(BaseModel):
+    tenant_public_ids: list[UUID]
+
+
+class ChargeTenantsResponse(BaseModel):
+    charged: int
+    skipped: int
+
+
 class ExpenseResponse(BaseModel):
     public_id: UUID
     category_public_id: UUID
@@ -40,3 +49,4 @@ class ExpenseResponse(BaseModel):
     amount: Decimal
     expense_date: str
     is_tenant_charged: bool
+    charged_tenant_public_ids: list[UUID] = []
