@@ -15,7 +15,7 @@ import type { Expense, Tenant } from "@/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import { Loader2, Users } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
 
 interface ChargeTenantsDialogProps {
@@ -76,27 +76,28 @@ export default function ChargeTenantsDialog({
     [expense],
   );
 
-  // Initialise selection when tenants load
-  useEffect(() => {
-    if (!open) {
-      setSelected(new Set());
-      return;
-    }
-    if (tenants.length === 0) return;
+  // Auto-selected tenant IDs (apartment scope, not yet charged)
+  const autoSelectedIds = useMemo(() => {
+    if (scope !== "apartment" || tenants.length === 0) return new Set<string>();
+    const t = tenants[0];
+    if (t && !alreadyCharged.has(t.public_id)) return new Set([t.public_id]);
+    return new Set<string>();
+  }, [scope, tenants, alreadyCharged]);
 
-    if (scope === "apartment") {
-      // Auto-select the single tenant if not yet charged
-      const t = tenants[0];
-      if (t && !alreadyCharged.has(t.public_id)) {
-        setSelected(new Set([t.public_id]));
-      } else {
-        setSelected(new Set());
-      }
-    } else {
-      // Building scope: none pre-checked
-      setSelected(new Set());
+  // Effective selection: auto-selected XOR user toggles
+  const effectiveSelection = useMemo(() => {
+    const result = new Set(autoSelectedIds);
+    for (const id of selected) {
+      if (result.has(id)) result.delete(id);
+      else result.add(id);
     }
-  }, [open, tenants, scope, alreadyCharged]);
+    return result;
+  }, [autoSelectedIds, selected]);
+
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) setSelected(new Set());
+    onOpenChange(newOpen);
+  };
 
   const toggleTenant = (id: string) => {
     setSelected((prev) => {
@@ -108,23 +109,33 @@ export default function ChargeTenantsDialog({
   };
 
   const selectAll = () => {
-    const uncharged = tenants
+    const unchargedIds = tenants
       .filter((t) => !alreadyCharged.has(t.public_id))
       .map((t) => t.public_id);
-    setSelected(new Set(uncharged));
+    // selected represents "toggled on" vs autoSelectedIds
+    // For building scope: autoSelectedIds is empty, set selected = unchargedIds
+    // For apartment scope: autoSelectedIds already has the tenant, so clear overrides
+    const result = new Set<string>();
+    for (const id of unchargedIds) {
+      if (!autoSelectedIds.has(id)) result.add(id);
+    }
+    setSelected(result);
   };
 
   const deselectAll = () => setSelected(new Set());
 
+  const uncharged = tenants.filter((t) => !alreadyCharged.has(t.public_id));
+
   const allSelected =
-    tenants.filter((t) => !alreadyCharged.has(t.public_id)).length > 0 &&
-    tenants
-      .filter((t) => !alreadyCharged.has(t.public_id))
-      .every((t) => selected.has(t.public_id));
+    uncharged.length > 0 &&
+    uncharged.every((t) => effectiveSelection.has(t.public_id));
 
   const { mutate, isPending } = useMutation({
     mutationFn: () =>
-      chargeExpenseToTenants(expense!.public_id, Array.from(selected)),
+      chargeExpenseToTenants(
+        expense!.public_id,
+        Array.from(effectiveSelection),
+      ),
     onSuccess: (res) => {
       const { charged, skipped } = res.data.data;
       queryClient.invalidateQueries({ queryKey: ["expenses"] });
@@ -134,7 +145,7 @@ export default function ChargeTenantsDialog({
       } else {
         toast(`${skipped} জন ইতিমধ্যে চার্জ করা আছে বা এই মাসের ডিউ নেই`);
       }
-      onOpenChange(false);
+      handleOpenChange(false);
     },
     onError: (error: AxiosError<{ message?: string }>) => {
       getFallback({ error });
@@ -142,17 +153,15 @@ export default function ChargeTenantsDialog({
   });
 
   const handleSubmit = () => {
-    if (selected.size === 0) {
+    if (effectiveSelection.size === 0) {
       toast.error("কমপক্ষে একজন ভাড়াটে নির্বাচন করুন");
       return;
     }
     mutate();
   };
 
-  const uncharged = tenants.filter((t) => !alreadyCharged.has(t.public_id));
-
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-md rounded-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -189,7 +198,7 @@ export default function ChargeTenantsDialog({
             {scope === "building" && uncharged.length > 1 && (
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-text-secondary">
-                  {selected.size} জন নির্বাচিত
+                  {effectiveSelection.size} জন নির্বাচিত
                 </span>
                 <Button
                   variant="ghost"
@@ -205,7 +214,8 @@ export default function ChargeTenantsDialog({
             <div className="space-y-1 max-h-64 overflow-y-auto pr-1">
               {tenants.map((tenant) => {
                 const charged = alreadyCharged.has(tenant.public_id);
-                const isChecked = charged || selected.has(tenant.public_id);
+                const isChecked =
+                  charged || effectiveSelection.has(tenant.public_id);
                 return (
                   <Label
                     key={tenant.public_id}
@@ -247,7 +257,7 @@ export default function ChargeTenantsDialog({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => onOpenChange(false)}
+            onClick={() => handleOpenChange(false)}
             disabled={isPending}
           >
             বাতিল
@@ -255,11 +265,11 @@ export default function ChargeTenantsDialog({
           <Button
             size="sm"
             className="bg-primary hover:bg-primary/90 text-primary-foreground"
-            disabled={isPending || selected.size === 0 || isLoading}
+            disabled={isPending || effectiveSelection.size === 0 || isLoading}
             onClick={handleSubmit}
           >
             {isPending && <Loader2 size={14} className="animate-spin mr-1.5" />}
-            চার্জ করুন ({selected.size})
+            চার্জ করুন ({effectiveSelection.size})
           </Button>
         </div>
       </DialogContent>

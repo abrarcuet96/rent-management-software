@@ -21,7 +21,7 @@ interface Option {
 
 interface FormStaticSelectProps<T extends FieldValues> {
   name: Path<T>;
-  form: UseFormReturn<T, any, any>;
+  form: UseFormReturn<T>;
   label: string;
   options: Option[];
   isRequired?: boolean;
@@ -38,7 +38,7 @@ export default function FormStaticSelect<T extends FieldValues>({
 }: FormStaticSelectProps<T>) {
   return (
     <FormField
-      control={form.control as unknown as Control<any>}
+      control={form.control as unknown as Control<FieldValues>}
       name={name}
       render={({ field }) => (
         <FormItem>

@@ -1,4 +1,4 @@
-import { getPendingDueCount, generateBulkDue } from "@/api/dues.api";
+import { generateBulkDue, getPendingDueCount } from "@/api/dues.api";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,8 +19,8 @@ import { getFallback } from "@/lib/getFallback";
 import type { PendingDueCount } from "@/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
-import { Loader2, CheckCircle, AlertTriangle, Info } from "lucide-react";
-import { useState, useEffect } from "react";
+import { AlertTriangle, CheckCircle, Info, Loader2 } from "lucide-react";
+import { useState } from "react";
 import toast from "react-hot-toast";
 
 interface BulkGenerateDueDialogProps {
@@ -29,27 +29,46 @@ interface BulkGenerateDueDialogProps {
 }
 
 const MONTHS = [
-  "জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন",
-  "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর",
+  "জানুয়ারি",
+  "ফেব্রুয়ারি",
+  "মার্চ",
+  "এপ্রিল",
+  "মে",
+  "জুন",
+  "জুলাই",
+  "আগস্ট",
+  "সেপ্টেম্বর",
+  "অক্টোবর",
+  "নভেম্বর",
+  "ডিসেম্বর",
 ];
 
-export default function BulkGenerateDueDialog({ open, onOpenChange }: BulkGenerateDueDialogProps) {
+export default function BulkGenerateDueDialog({
+  open,
+  onOpenChange,
+}: BulkGenerateDueDialogProps) {
   const queryClient = useQueryClient();
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [year, setYear] = useState(now.getFullYear());
   const [dueDate, setDueDate] = useState("");
-  const [result, setResult] = useState<{ created: number; skipped: number; no_agreement: number } | null>(null);
+  const [result, setResult] = useState<{
+    created: number;
+    skipped: number;
+    no_agreement: number;
+  } | null>(null);
 
   // Reset state when dialog opens
-  useEffect(() => {
-    if (open) {
+  const handleOpenChange = (newOpen: boolean) => {
+    if (newOpen) {
+      const now = new Date();
       setMonth(now.getMonth() + 1);
       setYear(now.getFullYear());
       setDueDate("");
       setResult(null);
     }
-  }, [open]);
+    onOpenChange(newOpen);
+  };
 
   const { data: countData, isLoading: countLoading } = useQuery({
     queryKey: ["pending-due-count", month, year],
@@ -83,7 +102,7 @@ export default function BulkGenerateDueDialog({ open, onOpenChange }: BulkGenera
   const canGenerate = pending > 0;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-md rounded-xl">
         <DialogHeader>
           <DialogTitle>মাসিক ডিউ তৈরি করুন</DialogTitle>
@@ -97,7 +116,10 @@ export default function BulkGenerateDueDialog({ open, onOpenChange }: BulkGenera
             </Label>
             <Select
               value={String(month)}
-              onValueChange={(v) => { setMonth(Number(v)); setResult(null); }}
+              onValueChange={(v) => {
+                setMonth(Number(v));
+                setResult(null);
+              }}
             >
               <SelectTrigger className="mt-1.5">
                 <SelectValue />
@@ -119,17 +141,22 @@ export default function BulkGenerateDueDialog({ open, onOpenChange }: BulkGenera
             </Label>
             <Select
               value={String(year)}
-              onValueChange={(v) => { setYear(Number(v)); setResult(null); }}
+              onValueChange={(v) => {
+                setYear(Number(v));
+                setResult(null);
+              }}
             >
               <SelectTrigger className="mt-1.5">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {Array.from({ length: 5 }, (_, i) => now.getFullYear() - i).map((y) => (
-                  <SelectItem key={y} value={String(y)}>
-                    {y}
-                  </SelectItem>
-                ))}
+                {Array.from({ length: 5 }, (_, i) => now.getFullYear() - i).map(
+                  (y) => (
+                    <SelectItem key={y} value={String(y)}>
+                      {y}
+                    </SelectItem>
+                  ),
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -169,7 +196,8 @@ export default function BulkGenerateDueDialog({ open, onOpenChange }: BulkGenera
                 <div className="flex items-start gap-2 text-text-secondary">
                   <CheckCircle size={16} className="shrink-0 mt-0.5" />
                   <span>
-                    <strong>{count.already_has_due}</strong> জনের ইতিমধ্যে ডিউ আছে
+                    <strong>{count.already_has_due}</strong> জনের ইতিমধ্যে ডিউ
+                    আছে
                   </span>
                 </div>
               )}
@@ -177,7 +205,8 @@ export default function BulkGenerateDueDialog({ open, onOpenChange }: BulkGenera
                 <div className="flex items-start gap-2 text-text-secondary">
                   <Info size={16} className="shrink-0 mt-0.5" />
                   <span>
-                    <strong>{count.no_agreement}</strong> জনের কোনো active চুক্তি নেই
+                    <strong>{count.no_agreement}</strong> জনের কোনো active
+                    চুক্তি নেই
                   </span>
                 </div>
               )}
@@ -210,7 +239,9 @@ export default function BulkGenerateDueDialog({ open, onOpenChange }: BulkGenera
               disabled={isPending || !canGenerate}
               className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
-              {isPending && <Loader2 size={16} className="animate-spin mr-1.5" />}
+              {isPending && (
+                <Loader2 size={16} className="animate-spin mr-1.5" />
+              )}
               {canGenerate ? `ডিউ তৈরি করুন (${pending})` : "ডিউ তৈরি করুন"}
             </Button>
           </div>

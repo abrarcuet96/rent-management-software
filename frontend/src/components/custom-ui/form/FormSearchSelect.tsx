@@ -14,7 +14,12 @@ import {
 } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { Control, FieldValues, Path, UseFormReturn } from "react-hook-form";
+import type {
+  Control,
+  FieldValues,
+  Path,
+  UseFormReturn,
+} from "react-hook-form";
 
 interface Option {
   value: string;
@@ -23,7 +28,7 @@ interface Option {
 
 interface FormSearchSelectProps<T extends FieldValues> {
   name: Path<T>;
-  form: UseFormReturn<T, any, any>;
+  form: UseFormReturn<T>;
   label: string;
   fetcher: () => Promise<Option[]>;
   isRequired?: boolean;
@@ -43,11 +48,10 @@ export default function FormSearchSelect<T extends FieldValues>({
   emptyMessage,
 }: FormSearchSelectProps<T>) {
   const [options, setOptions] = useState<Option[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
     fetcher()
       .then((data) => {
         if (!cancelled) {
@@ -65,7 +69,7 @@ export default function FormSearchSelect<T extends FieldValues>({
 
   return (
     <FormField
-      control={form.control as unknown as Control<any>}
+      control={form.control as unknown as Control<FieldValues>}
       name={name}
       render={({ field }) => (
         <FormItem>

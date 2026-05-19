@@ -6,16 +6,16 @@ import EmptyState from "@/components/common/EmptyState";
 import ErrorState from "@/components/common/ErrorState";
 import ExpandCollapseButton from "@/components/common/ExpandCollapseButton";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
-import TableSkeleton from "@/components/common/TableSkeleton";
 import PrintButton from "@/components/common/PrintButton";
 import StatusBadge from "@/components/common/StatusBadge";
-import AssignTenant from "@/components/tenants/AssignTenant";
-import EditTenantInfo from "@/components/tenants/EditTenantInfo";
-import MoveOutTenant from "@/components/tenants/MoveOutTenant";
+import TableSkeleton from "@/components/common/TableSkeleton";
+import AdjustDueDialog from "@/components/dues/AdjustDueDialog";
 import GenerateMonthlyDue from "@/components/payments/GenerateMonthlyDue";
 import MonthlyDueRow from "@/components/payments/MonthlyDueRow";
 import RecordPayment from "@/components/payments/RecordPayment";
-import AdjustDueDialog from "@/components/dues/AdjustDueDialog";
+import AssignTenant from "@/components/tenants/AssignTenant";
+import EditTenantInfo from "@/components/tenants/EditTenantInfo";
+import MoveOutTenant from "@/components/tenants/MoveOutTenant";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -32,7 +32,10 @@ import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 
 export default function ApartmentDetailPage() {
-  const { buildingId, apartmentId } = useParams<{ buildingId: string; apartmentId: string }>();
+  const { buildingId, apartmentId } = useParams<{
+    buildingId: string;
+    apartmentId: string;
+  }>();
   const [assignOpen, setAssignOpen] = useState(false);
   const [editTenant, setEditTenant] = useState<Tenant | null>(null);
   const [moveOutOpen, setMoveOutOpen] = useState(false);
@@ -50,7 +53,12 @@ export default function ApartmentDetailPage() {
     enabled: !!buildingId,
   });
 
-  const { data: aptData, isLoading: aptLoading, error: aptError, refetch: refetchApt } = useQuery({
+  const {
+    data: aptData,
+    isLoading: aptLoading,
+    error: aptError,
+    refetch: refetchApt,
+  } = useQuery({
     queryKey: ["apartments", buildingId, apartmentId],
     queryFn: () => getApartmentById(buildingId!, apartmentId!),
     enabled: !!buildingId && !!apartmentId,
@@ -86,26 +94,40 @@ export default function ApartmentDetailPage() {
     }
   }, [dues]);
 
-  const allDuesExpanded = dues.length > 0 && dues.every((d) => expandedDues.has(d.public_id));
+  const allDuesExpanded =
+    dues.length > 0 && dues.every((d) => expandedDues.has(d.public_id));
 
   const toggleDue = (id: string) =>
     setExpandedDues((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
       return next;
     });
 
-  const expandAllDues = () => setExpandedDues(new Set(dues.map((d) => d.public_id)));
+  const expandAllDues = () =>
+    setExpandedDues(new Set(dues.map((d) => d.public_id)));
   const collapseAllDues = () => setExpandedDues(new Set());
 
   useEffect(() => {
     if (building) setActiveBuilding(buildingId ?? null, building.name);
-    if (apartment) setActiveApartment(apartmentId ?? null, `ইউনিট ${apartment.unit_number}`);
+    if (apartment)
+      setActiveApartment(apartmentId ?? null, `ইউনিট ${apartment.unit_number}`);
     return () => {
       setActiveBuilding(null);
       setActiveApartment(null);
     };
-  }, [building, apartment, buildingId, apartmentId, setActiveBuilding, setActiveApartment]);
+  }, [
+    building,
+    apartment,
+    buildingId,
+    apartmentId,
+    setActiveBuilding,
+    setActiveApartment,
+  ]);
 
   if (aptLoading) {
     return <LoadingSpinner />;
@@ -118,7 +140,10 @@ export default function ApartmentDetailPage() {
   return (
     <div ref={contentRef} className="space-y-4">
       <div className="flex print:hidden">
-        <PrintButton contentRef={contentRef} documentTitle={`ইউনিট ${apartment.unit_number}`} />
+        <PrintButton
+          contentRef={contentRef}
+          documentTitle={`ইউনিট ${apartment.unit_number}`}
+        />
       </div>
 
       {/* Apartment info */}
@@ -132,7 +157,9 @@ export default function ApartmentDetailPage() {
               <h2 className="text-xl font-semibold text-text-primary">
                 ইউনিট {apartment.unit_number}
               </h2>
-              <p className="text-sm text-text-secondary">তলা {apartment.floor}</p>
+              <p className="text-sm text-text-secondary">
+                তলা {apartment.floor}
+              </p>
             </div>
           </div>
           <StatusBadge status={apartment.status} />
@@ -166,7 +193,9 @@ export default function ApartmentDetailPage() {
                   <User size={20} className="text-success" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="font-medium text-text-primary truncate">{tenant.full_name}</h3>
+                  <h3 className="font-medium text-text-primary truncate">
+                    {tenant.full_name}
+                  </h3>
                   <p className="text-sm text-text-secondary">{tenant.phone}</p>
                 </div>
               </div>
@@ -191,10 +220,14 @@ export default function ApartmentDetailPage() {
               </div>
             </div>
             {tenant.nid_number && (
-              <p className="text-sm text-text-secondary">এনআইডি: {tenant.nid_number}</p>
+              <p className="text-sm text-text-secondary">
+                এনআইডি: {tenant.nid_number}
+              </p>
             )}
             {tenant.address && (
-              <p className="text-sm text-text-secondary">ঠিকানা: {tenant.address}</p>
+              <p className="text-sm text-text-secondary">
+                ঠিকানা: {tenant.address}
+              </p>
             )}
             <p className="text-sm text-text-secondary">
               প্রবেশ: {tenant.move_in_date} • সদস্য: {tenant.member_count}
@@ -205,7 +238,9 @@ export default function ApartmentDetailPage() {
           <div className="bg-surface rounded-xl border border-border overflow-hidden">
             <div className="flex items-center justify-between p-4 border-b border-border">
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-medium text-text-primary">মাসিক ডিউ</h3>
+                <h3 className="text-sm font-medium text-text-primary">
+                  মাসিক ডিউ
+                </h3>
                 {dues.length > 0 && (
                   <ExpandCollapseButton
                     allExpanded={allDuesExpanded}
@@ -235,12 +270,24 @@ export default function ApartmentDetailPage() {
                 <Table className="min-w-[560px] print:min-w-0 text-sm">
                   <TableHeader className="bg-neutral-bg">
                     <TableRow>
-                      <TableHead className="text-left px-3 py-2 font-medium text-text-secondary whitespace-nowrap">মাস/বছর</TableHead>
-                      <TableHead className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap">মোট দেয়</TableHead>
-                      <TableHead className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap">পরিশোধিত</TableHead>
-                      <TableHead className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap">বাকি</TableHead>
-                      <TableHead className="text-center px-3 py-2 font-medium text-text-secondary whitespace-nowrap">স্ট্যাটাস</TableHead>
-                      <TableHead className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap print:hidden">অ্যাকশন</TableHead>
+                      <TableHead className="text-left px-3 py-2 font-medium text-text-secondary whitespace-nowrap">
+                        মাস/বছর
+                      </TableHead>
+                      <TableHead className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap">
+                        মোট দেয়
+                      </TableHead>
+                      <TableHead className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap">
+                        পরিশোধিত
+                      </TableHead>
+                      <TableHead className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap">
+                        বাকি
+                      </TableHead>
+                      <TableHead className="text-center px-3 py-2 font-medium text-text-secondary whitespace-nowrap">
+                        স্ট্যাটাস
+                      </TableHead>
+                      <TableHead className="text-right px-3 py-2 font-medium text-text-secondary whitespace-nowrap print:hidden">
+                        অ্যাকশন
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
