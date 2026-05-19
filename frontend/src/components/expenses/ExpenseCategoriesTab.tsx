@@ -40,7 +40,7 @@ export default function ExpenseCategoriesTab() {
     mutationFn: (id: string) => deleteExpenseCategory(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["expense-categories"] });
-      toast.success("ক্যাটাগরি ডিঅ্যাক্টিভেট হয়েছে");
+      toast.success("ক্যাটাগরি মুছে ফেলা হয়েছে");
       setDeleteCategory(null);
     },
     onError: (error: AxiosError<{ message?: string }>) => {
@@ -148,7 +148,7 @@ export default function ExpenseCategoriesTab() {
             if (!open) setDeleteCategory(null);
           }}
           title="ক্যাটাগরি ডিলিট করুন"
-          description={`"${deleteCategory.name}" ক্যাটাগরিটি ডিঅ্যাক্টিভেট করবেন?`}
+          description={`"${deleteCategory.name}" ক্যাটাগরিটি মুছে ফেলবেন?`}
           confirmLabel="ডিলিট"
           variant="danger"
           isPending={deleting}

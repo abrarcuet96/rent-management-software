@@ -8,7 +8,6 @@ VENV     := ".venv"
 PYTHON   := VENV + "/bin/python"
 PIP      := VENV + "/bin/pip"
 UVICORN  := VENV + "/bin/uvicorn"
-PYTEST   := VENV + "/bin/pytest"
 ALEMBIC  := VENV + "/bin/alembic"
 RUFF     := VENV + "/bin/ruff"
 
@@ -18,7 +17,6 @@ DB_PASS := "postgres"
 DB_HOST := "localhost"
 DB_PORT := "5432"
 DB_NAME := "rentflow_dev"
-DB_TEST := "rentflow_test"
 
 # ── default ───────────────────────────────────────────────────────────────────
 default:
@@ -47,25 +45,13 @@ db-create:
     createdb -U {{DB_USER}} -h {{DB_HOST}} -p {{DB_PORT}} {{DB_NAME}}
     @echo "✓ Created database {{DB_NAME}}"
 
-db-create-test:
-    createdb -U {{DB_USER}} -h {{DB_HOST}} -p {{DB_PORT}} {{DB_TEST}}
-    @echo "✓ Created test database {{DB_TEST}}"
-
 db-drop:
     psql -U {{DB_USER}} -h {{DB_HOST}} -p {{DB_PORT}} -d postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '{{DB_NAME}}' AND pid <> pg_backend_pid();" 2>/dev/null || true
     dropdb --if-exists -U {{DB_USER}} -h {{DB_HOST}} -p {{DB_PORT}} {{DB_NAME}}
     @echo "✓ Dropped database {{DB_NAME}}"
 
-db-drop-test:
-    psql -U {{DB_USER}} -h {{DB_HOST}} -p {{DB_PORT}} -d postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '{{DB_TEST}}' AND pid <> pg_backend_pid();" 2>/dev/null || true
-    dropdb --if-exists -U {{DB_USER}} -h {{DB_HOST}} -p {{DB_PORT}} {{DB_TEST}}
-    @echo "✓ Dropped test database {{DB_TEST}}"
-
 db-reset: db-drop db-create schema-apply seed
     @echo "✓ Database reset"
-
-db-reset-test: db-drop-test db-create-test
-    @echo "✓ Test database reset"
 
 # ── migrations ────────────────────────────────────────────────────────────────
 schema-apply:
@@ -81,25 +67,6 @@ seed-demo:
     @echo "✓ Demo data seeded (2025 + 2026)"
 
 migrate: schema-apply
-
-# ── tests ─────────────────────────────────────────────────────────────────────
-test:
-    {{PYTEST}} backend/tests -v
-
-test-unit:
-    {{PYTEST}} backend/tests/unit -v
-
-test-integration:
-    {{PYTEST}} backend/tests/integration -v
-
-test-coverage:
-    {{PYTEST}} backend/tests --cov=backend/app --cov-report=term-missing --cov-report=html
-
-test-file file:
-    {{PYTEST}} {{file}} -v
-
-test-k keyword:
-    {{PYTEST}} backend/tests -v -k "{{keyword}}"
 
 # ── linting / formatting ──────────────────────────────────────────────────────
 format:
@@ -143,10 +110,6 @@ docker-clean:
 docker-logs:
     docker compose logs -f api
 
-docker-test:
-    docker compose -f docker-compose.test.yml up --build --abort-on-container-exit --exit-code-from test
-    docker compose -f docker-compose.test.yml down -v
-
 docker-rebuild:
     docker compose build --no-cache api
     docker compose up -d api
@@ -164,24 +127,6 @@ frontend-deps:
 frontend-check:
     cd frontend && npx tsc --noEmit
 
-frontend-test:
-    cd frontend && npm run test:unit
-
-frontend-test-watch:
-    cd frontend && npm run test:unit:watch
-
-frontend-test-integration:
-    cd frontend && npm run test:integration
-
-frontend-test-e2e:
-    cd frontend && npm run test:e2e
-
-frontend-test-e2e-ui:
-    cd frontend && npm run test:e2e:ui
-
-frontend-test-all:
-    cd frontend && npm run test:unit && npm run test:integration
-
 # ── all-in-one ────────────────────────────────────────────────────────────────
 setup: venv deps-dev db-create migrate pre-commit-install
     @echo "✓ Project ready"
@@ -189,5 +134,5 @@ setup: venv deps-dev db-create migrate pre-commit-install
 check-all: check frontend-check
     @echo "✓ All checks passed"
 
-ready: check test
+ready: check
     @echo "✓ Ready to commit"

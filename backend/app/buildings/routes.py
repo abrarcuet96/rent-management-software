@@ -78,4 +78,4 @@ async def delete_building(
 ) -> StandardResponse:
     service = BuildingService(db, owner_id)
     await service.deactivate_building(public_id)
-    return StandardResponse(success=True, message="Building deactivated")
+    return StandardResponse(success=True, message="Building deleted")

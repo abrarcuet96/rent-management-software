@@ -101,4 +101,4 @@ async def delete_apartment(
 ) -> StandardResponse:
     service = ApartmentService(db, owner_id)
     await service.deactivate_apartment(building_public_id, apartment_public_id)
-    return StandardResponse(success=True, message="Apartment deactivated")
+    return StandardResponse(success=True, message="Apartment deleted")

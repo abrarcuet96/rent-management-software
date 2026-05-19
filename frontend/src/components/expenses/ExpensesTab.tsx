@@ -41,7 +41,7 @@ export default function ExpensesTab() {
     mutationFn: (id: string) => deleteExpense(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["expenses"] });
-      toast.success("খরচ ডিঅ্যাক্টিভেট হয়েছে");
+      toast.success("খরচ মুছে ফেলা হয়েছে");
       setDeleteTarget(null);
     },
     onError: (error: AxiosError<{ message?: string }>) => {
@@ -201,7 +201,7 @@ export default function ExpensesTab() {
             if (!open) setDeleteTarget(null);
           }}
           title="খরচ ডিলিট করুন"
-          description={`"${deleteTarget.description}" খরচটি ডিঅ্যাক্টিভেট করবেন?`}
+          description={`"${deleteTarget.description}" খরচটি মুছে ফেলবেন?`}
           confirmLabel="ডিলিট"
           variant="danger"
           isPending={deleting}
