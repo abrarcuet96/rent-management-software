@@ -9,8 +9,8 @@ import SkeletonCard from "@/components/common/SkeletonCard";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigationStore } from "@/stores/navigationStore";
-import type { Apartment } from "@/types";
-import { useQuery } from "@tanstack/react-query";
+import type { APARTMENT } from "@/types";
+import { useFetchData } from "@/hooks/useFetchData";
 import { DoorOpen, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -18,7 +18,7 @@ import { useParams } from "react-router-dom";
 export default function BuildingDetailPage() {
   const { buildingId } = useParams<{ buildingId: string }>();
   const [createOpen, setCreateOpen] = useState(false);
-  const [editApartment, setEditApartment] = useState<Apartment | null>(null);
+  const [editApartment, setEditApartment] = useState<APARTMENT | null>(null);
   const { setActiveBuilding, setActiveApartment } = useNavigationStore();
 
   const {
@@ -26,7 +26,7 @@ export default function BuildingDetailPage() {
     isLoading: buildingLoading,
     error: buildingError,
     refetch: refetchBuilding,
-  } = useQuery({
+  } = useFetchData({
     queryKey: ["buildings", buildingId],
     queryFn: () => getBuildingById(buildingId!),
     enabled: !!buildingId,
@@ -37,14 +37,14 @@ export default function BuildingDetailPage() {
     isLoading: apartmentsLoading,
     error: apartmentsError,
     refetch: refetchApartments,
-  } = useQuery({
+  } = useFetchData({
     queryKey: ["apartments", buildingId],
     queryFn: () => getApartments(buildingId!, { page: 1, page_size: 100 }),
     enabled: !!buildingId,
   });
 
   const building = buildingData?.data.data;
-  const apartments = apartmentsData?.data.data ?? [];
+  const apartments: APARTMENT[] = apartmentsData?.data.data ?? [];
 
   useEffect(() => {
     if (building) {
@@ -155,12 +155,12 @@ export default function BuildingDetailPage() {
 }
 
 interface ApartmentGridProps {
-  apartments: Apartment[];
+  apartments: APARTMENT[];
   buildingId: string;
   loading: boolean;
   error: Error | null;
   onRetry: () => void;
-  onEdit: (apt: Apartment) => void;
+  onEdit: (apt: APARTMENT) => void;
   emptyTitle: string;
   emptyDescription: string;
 }

@@ -18,7 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatCurrency, getMonthName } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
+import { useFetchData } from "@/hooks/useFetchData";
 import { useRef, useState } from "react";
 
 export default function MonthlyCollectionTable() {
@@ -75,7 +75,7 @@ export default function MonthlyCollectionTable() {
 }
 
 function MonthRow({ month, year }: { month: number; year: number }) {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useFetchData({
     queryKey: ["dashboard", month, year],
     queryFn: () => getDashboardSummary({ month, year }),
   });

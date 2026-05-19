@@ -13,7 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatCurrency } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
+import { useFetchData } from "@/hooks/useFetchData";
 import { CheckCircle2, CreditCard } from "lucide-react";
 import { useState } from "react";
 import RecordPayment from "@/components/payments/RecordPayment";
@@ -38,7 +38,7 @@ interface OverdueItem {
 
 export default function OverdueTenantList() {
   const [payingDue, setPayingDue] = useState<OverdueItem | null>(null);
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, error, refetch } = useFetchData({
     queryKey: ["overdue-list"],
     queryFn: () => getOverdueList(),
   });

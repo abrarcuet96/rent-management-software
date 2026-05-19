@@ -3,11 +3,11 @@ import DuePaymentHistory from "@/components/dues/DuePaymentHistory";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { formatCurrency, getMonthName } from "@/lib/utils";
-import type { MonthlyDue } from "@/types";
+import type { MONTHLY_DUE } from "@/types";
 import { ChevronDown, ChevronRight, CreditCard, Edit2 } from "lucide-react";
 
 interface MonthlyDueRowProps {
-  due: MonthlyDue;
+  due: MONTHLY_DUE;
   onPay: () => void;
   onAdjust: () => void;
   expanded: boolean;

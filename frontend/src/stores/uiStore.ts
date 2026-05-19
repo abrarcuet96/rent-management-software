@@ -1,11 +1,11 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { devtools, persist } from "zustand/middleware";
 
 type Theme = "light" | "dark" | "system";
 type BuildingStatusFilter = "all" | "vacant" | "occupied";
 type TenantStatusFilter = "active" | "moved_out" | "all";
 
-interface UiState {
+interface UI_STATE {
   sidebarCollapsed: boolean;
   mobileMenuOpen: boolean;
   theme: Theme;
@@ -19,24 +19,27 @@ interface UiState {
   setTenantStatusFilter: (filter: TenantStatusFilter) => void;
 }
 
-export const useUiStore = create<UiState>()(
-  persist(
-    (set) => ({
-      sidebarCollapsed: false,
-      mobileMenuOpen: false,
-      theme: "system",
-      buildingStatusFilter: "all",
-      tenantStatusFilter: "active",
-      toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
-      setTheme: (theme) => set({ theme }),
-      toggleMobileMenu: () => set((s) => ({ mobileMenuOpen: !s.mobileMenuOpen })),
-      setMobileMenuOpen: (open) => set({ mobileMenuOpen: open }),
-      setBuildingStatusFilter: (filter) => set({ buildingStatusFilter: filter }),
-      setTenantStatusFilter: (filter) => set({ tenantStatusFilter: filter }),
-    }),
-    {
-      name: "rentflow-ui",
-      partialize: (state) => ({ sidebarCollapsed: state.sidebarCollapsed, theme: state.theme }),
-    },
+export const useUiStore = create<UI_STATE>()(
+  devtools(
+    persist(
+      (set) => ({
+        sidebarCollapsed: false,
+        mobileMenuOpen: false,
+        theme: "system",
+        buildingStatusFilter: "all",
+        tenantStatusFilter: "active",
+        toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
+        setTheme: (theme) => set({ theme }),
+        toggleMobileMenu: () => set((s) => ({ mobileMenuOpen: !s.mobileMenuOpen })),
+        setMobileMenuOpen: (open) => set({ mobileMenuOpen: open }),
+        setBuildingStatusFilter: (filter) => set({ buildingStatusFilter: filter }),
+        setTenantStatusFilter: (filter) => set({ tenantStatusFilter: filter }),
+      }),
+      {
+        name: "rentflow-ui",
+        partialize: (state) => ({ sidebarCollapsed: state.sidebarCollapsed, theme: state.theme }),
+      },
+    ),
+    { name: "uiStore" },
   ),
 );

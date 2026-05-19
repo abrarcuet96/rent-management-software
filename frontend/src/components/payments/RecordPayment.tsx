@@ -12,7 +12,7 @@ import FormTextArea from "@/components/custom-ui/form/FormTextArea";
 import FormDatePicker from "@/components/custom-ui/form/FormDatePicker";
 import { getFallback } from "@/lib/getFallback";
 import { formatCurrency } from "@/lib/utils";
-import type { MonthlyDue } from "@/types";
+import type { MONTHLY_DUE } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
@@ -24,11 +24,11 @@ import { z } from "zod";
 interface RecordPaymentProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  due: MonthlyDue;
+  due: MONTHLY_DUE;
   tenantId: string;
 }
 
-type PaymentInput = { amount: number; paid_on: string; note?: string };
+type CREATE_PAYMENT_LOCAL = { amount: number; paid_on: string; note?: string };
 
 export default function RecordPayment({
   open,
@@ -50,8 +50,8 @@ export default function RecordPayment({
     note: z.string().optional(),
   });
 
-  const form = useForm<PaymentInput>({
-    resolver: zodResolver(paymentSchema) as Resolver<PaymentInput>,
+  const form = useForm<CREATE_PAYMENT_LOCAL>({
+    resolver: zodResolver(paymentSchema) as Resolver<CREATE_PAYMENT_LOCAL>,
     defaultValues: {
       amount: remainingBalance,
       paid_on: new Date().toISOString().split("T")[0],
@@ -60,7 +60,7 @@ export default function RecordPayment({
   });
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (data: PaymentInput) =>
+    mutationFn: (data: CREATE_PAYMENT_LOCAL) =>
       recordPayment(due.public_id, {
         amount: data.amount,
         paid_on: data.paid_on,

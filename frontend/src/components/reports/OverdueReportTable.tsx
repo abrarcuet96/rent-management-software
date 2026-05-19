@@ -14,7 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatCurrency } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
+import { useFetchData } from "@/hooks/useFetchData";
 import { CheckCircle2 } from "lucide-react";
 import { useRef } from "react";
 
@@ -38,7 +38,7 @@ interface OverdueItem {
 
 export default function OverdueReportTable() {
   const contentRef = useRef<HTMLDivElement>(null);
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useFetchData({
     queryKey: ["overdue-list"],
     queryFn: () => getOverdueList(),
   });

@@ -1,9 +1,9 @@
 import { formatCurrency, getCssVar, getMonthName } from "@/lib/utils";
-import type { DashboardSummary } from "@/types";
+import type { DASHBOARD_SUMMARY } from "@/types";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 interface CollectionBarChartProps {
-  summary: DashboardSummary;
+  summary: DASHBOARD_SUMMARY;
 }
 
 export default function CollectionBarChart({ summary }: CollectionBarChartProps) {

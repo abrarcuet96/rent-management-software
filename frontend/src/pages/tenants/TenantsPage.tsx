@@ -6,20 +6,21 @@ import TenantCard from "@/components/tenants/TenantCard";
 import CreateTenantDialog from "@/components/tenants/CreateTenantDialog";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { Tenant } from "@/types";
-import { useQuery } from "@tanstack/react-query";
+import type { TENANT } from "@/types";
+import { useFetchData } from "@/hooks/useFetchData";
 import { Plus, Users } from "lucide-react";
 import { useState } from "react";
 
 export default function TenantsPage() {
   const [createOpen, setCreateOpen] = useState(false);
 
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, error, refetch } = useFetchData({
     queryKey: ["tenants"],
     queryFn: () => getTenants({ page: 1, page_size: 100 }),
   });
 
-  const tenants = data?.data.data ?? [];
+  // TODO: filter by status via API (status param) instead of is_active — is_active is an internal DB field
+  const tenants: TENANT[] = data?.data.data ?? [];
 
   if (error) {
     return <ErrorState onRetry={() => refetch()} />;
@@ -72,7 +73,7 @@ export default function TenantsPage() {
 }
 
 interface TenantGridProps {
-  tenants: Tenant[];
+  tenants: TENANT[];
   loading: boolean;
 }
 

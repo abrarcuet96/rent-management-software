@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { formatCurrency } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
+import { useFetchData } from "@/hooks/useFetchData";
 import { BarChart3 } from "lucide-react";
 import { useRef, useState } from "react";
 
@@ -20,7 +20,7 @@ export default function AnnualSummaryTable() {
   const contentRef = useRef<HTMLDivElement>(null);
   const [year, setYear] = useState(new Date().getFullYear());
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useFetchData({
     queryKey: ["annual-summary", year],
     queryFn: () => getAnnualSummary(year),
   });

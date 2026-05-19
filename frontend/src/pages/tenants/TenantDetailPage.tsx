@@ -26,8 +26,8 @@ import {
 } from "@/components/ui/table";
 import { formatCurrency } from "@/lib/utils";
 import { useNavigationStore } from "@/stores/navigationStore";
-import type { MonthlyDue } from "@/types";
-import { useQuery } from "@tanstack/react-query";
+import type { MONTHLY_DUE } from "@/types";
+import { useFetchData } from "@/hooks/useFetchData";
 import { Edit2, FileText, LogOut, Phone, Plus, User } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -44,8 +44,8 @@ export default function TenantDetailPage() {
   const [agreementOpen, setAgreementOpen] = useState(false);
   const [bulkRentOpen, setBulkRentOpen] = useState(false);
   const [generateDueOpen, setGenerateDueOpen] = useState(false);
-  const [payingDue, setPayingDue] = useState<MonthlyDue | null>(null);
-  const [adjustingDue, setAdjustingDue] = useState<MonthlyDue | null>(null);
+  const [payingDue, setPayingDue] = useState<MONTHLY_DUE | null>(null);
+  const [adjustingDue, setAdjustingDue] = useState<MONTHLY_DUE | null>(null);
 
   // Expand/collapse
   const [expandedDues, setExpandedDues] = useState<Set<string>>(new Set());
@@ -55,7 +55,7 @@ export default function TenantDetailPage() {
     isLoading: tenantLoading,
     error: tenantError,
     refetch: refetchTenant,
-  } = useQuery({
+  } = useFetchData({
     queryKey: ["tenants", tenantId],
     queryFn: () => getTenantById(tenantId!),
     enabled: !!tenantId,
@@ -68,13 +68,13 @@ export default function TenantDetailPage() {
     return () => setActiveTenant(null);
   }, [tenant, tenantId, setActiveTenant]);
 
-  const { data: duesData, isLoading: duesLoading } = useQuery({
+  const { data: duesData, isLoading: duesLoading } = useFetchData({
     queryKey: ["dues", tenantId],
     queryFn: () => getDues(tenantId!, { page: 1, page_size: 100 }),
     enabled: !!tenantId,
   });
 
-  const dues = useMemo<MonthlyDue[]>(
+  const dues = useMemo<MONTHLY_DUE[]>(
     () => duesData?.data.data ?? [],
     [duesData],
   );

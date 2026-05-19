@@ -14,8 +14,8 @@ import FormDatePicker from "@/components/custom-ui/form/FormDatePicker";
 import { getFallback } from "@/lib/getFallback";
 import {
   agreementSchema,
-  type AgreementInput,
-} from "@/lib/validators/agreement";
+  type CREATE_AGREEMENT,
+} from "@/schemas/agreement.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
@@ -36,15 +36,15 @@ export default function CreateAgreementDialog({
 }: CreateAgreementDialogProps) {
   const queryClient = useQueryClient();
 
-  const form = useForm<AgreementInput>({
-    resolver: zodResolver(agreementSchema) as Resolver<AgreementInput>,
+  const form = useForm<CREATE_AGREEMENT>({
+    resolver: zodResolver(agreementSchema) as Resolver<CREATE_AGREEMENT>,
     defaultValues: {
       start_date: new Date().toISOString().split("T")[0],
     },
   });
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (data: AgreementInput) =>
+    mutationFn: (data: CREATE_AGREEMENT) =>
       createAgreement(tenantId, {
         rent_amount: data.rent_amount,
         start_date: data.start_date,

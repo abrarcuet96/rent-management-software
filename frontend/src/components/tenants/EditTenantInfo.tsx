@@ -9,8 +9,8 @@ import {
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { getFallback } from "@/lib/getFallback";
-import { editTenantSchema, type EditTenantInput } from "@/lib/validators/tenant";
-import type { Tenant } from "@/types";
+import { editTenantSchema, type EDIT_TENANT } from "@/schemas/tenant.schema";
+import type { TENANT } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
@@ -22,13 +22,13 @@ interface EditTenantInfoProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   apartmentId: string;
-  tenant: Tenant;
+  tenant: TENANT;
 }
 
 export default function EditTenantInfo({ open, onOpenChange, apartmentId, tenant }: EditTenantInfoProps) {
   const queryClient = useQueryClient();
 
-  const form = useForm<EditTenantInput>({
+  const form = useForm<EDIT_TENANT>({
     resolver: zodResolver(editTenantSchema),
     defaultValues: {
       full_name: tenant.full_name,
@@ -38,7 +38,7 @@ export default function EditTenantInfo({ open, onOpenChange, apartmentId, tenant
   });
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (data: EditTenantInput) =>
+    mutationFn: (data: EDIT_TENANT) =>
       updateTenant(apartmentId, tenant.public_id, {
         full_name: data.full_name,
         phone: data.phone,

@@ -2,13 +2,13 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import MonthlyDueRow from "./MonthlyDueRow";
-import type { MonthlyDue } from "@/types";
+import type { MONTHLY_DUE } from "@/types";
 
 vi.mock("@/components/dues/DuePaymentHistory", () => ({
   default: () => <div data-testid="payment-history">Payment History</div>,
 }));
 
-function makeDue(overrides: Partial<MonthlyDue> = {}): MonthlyDue {
+function makeDue(overrides: Partial<MONTHLY_DUE> = {}): MONTHLY_DUE {
   return {
     public_id: "due-1",
     tenant_public_id: "tenant-1",

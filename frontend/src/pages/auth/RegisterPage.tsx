@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
 import FormInput from "@/components/custom-ui/form/FormInput";
-import { registerSchema, type RegisterInput } from "@/lib/validators/auth";
+import { getFallback } from "@/lib/getFallback";
+import { registerSchema, type REGISTER_INPUT } from "@/schemas/auth.schema";
 import { useAuthStore } from "@/stores/authStore";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -27,7 +28,7 @@ export default function RegisterPage() {
   const navigate = useNavigate();
   const setAuth = useAuthStore((s) => s.setAuth);
 
-  const form = useForm<RegisterInput>({
+  const form = useForm<REGISTER_INPUT>({
     resolver: zodResolver(registerSchema),
     defaultValues: { full_name: "", email: "", password: "", confirmPassword: "" },
   });
@@ -43,7 +44,7 @@ export default function RegisterPage() {
   }, [form]);
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (data: RegisterInput) =>
+    mutationFn: (data: REGISTER_INPUT) =>
       registerOwner({
         full_name: data.full_name,
         email: data.email,
@@ -61,11 +62,7 @@ export default function RegisterPage() {
       navigate("/dashboard", { replace: true });
     },
     onError: (error: AxiosError<{ message?: string; detail?: string }>) => {
-      const message =
-        error.response?.data?.message ||
-        error.response?.data?.detail ||
-        "নিবন্ধন ব্যর্থ হয়েছে। আবার চেষ্টা করুন।";
-      form.setError("root", { message });
+      getFallback({ error, fallbackMessage: "নিবন্ধন ব্যর্থ হয়েছে। আবার চেষ্টা করুন।" });
     },
   });
 

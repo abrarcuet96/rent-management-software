@@ -28,11 +28,12 @@ import { getFallback } from "@/lib/getFallback";
 import { formatCurrency, getMonthName } from "@/lib/utils";
 import {
   bulkPaymentSchema,
-  type BulkPaymentInput,
-} from "@/lib/validators/payment";
-import type { MonthlyDue, Tenant } from "@/types";
+  type BULK_PAYMENT_INPUT,
+} from "@/schemas/payment.schema";
+import type { MONTHLY_DUE, TENANT } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useFetchData } from "@/hooks/useFetchData";
 import type { AxiosError } from "axios";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
@@ -43,8 +44,8 @@ export default function BulkPaymentTab() {
   const queryClient = useQueryClient();
   const [selectedTenantId, setSelectedTenantId] = useState<string>("");
 
-  const form = useForm<BulkPaymentInput>({
-    resolver: zodResolver(bulkPaymentSchema) as Resolver<BulkPaymentInput>,
+  const form = useForm<BULK_PAYMENT_INPUT>({
+    resolver: zodResolver(bulkPaymentSchema) as Resolver<BULK_PAYMENT_INPUT>,
     defaultValues: {
       paid_on: new Date().toISOString().split("T")[0],
       note: "",
@@ -53,20 +54,20 @@ export default function BulkPaymentTab() {
 
   const totalAmount = form.watch("total_amount");
 
-  const { data: tenantsData } = useQuery({
+  const { data: tenantsData } = useFetchData({
     queryKey: ["tenants", "all", "bulk-pay"],
     queryFn: () => getTenants({ page: 1, page_size: 100, status: "active" }),
   });
 
-  const tenants: Tenant[] = (tenantsData?.data.data ?? []) as Tenant[];
+  const tenants: TENANT[] = (tenantsData?.data.data ?? []) as TENANT[];
 
-  const { data: duesData } = useQuery({
+  const { data: duesData } = useFetchData({
     queryKey: ["dues", selectedTenantId, "open"],
     queryFn: () => getDues(selectedTenantId, { page: 1, page_size: 100 }),
     enabled: !!selectedTenantId,
   });
 
-  const allDues: MonthlyDue[] = (duesData?.data.data ?? []) as MonthlyDue[];
+  const allDues: MONTHLY_DUE[] = (duesData?.data.data ?? []) as MONTHLY_DUE[];
 
   const openDues = allDues
     .filter((d) => d.status === "unpaid" || d.status === "partial")
@@ -87,7 +88,7 @@ export default function BulkPaymentTab() {
     previewAmount > totalOutstanding;
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (data: BulkPaymentInput) =>
+    mutationFn: (data: BULK_PAYMENT_INPUT) =>
       recordBulkPayment({
         tenant_public_id: selectedTenantId,
         total_amount: data.total_amount,
@@ -117,7 +118,7 @@ export default function BulkPaymentTab() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="bg-surface rounded-xl p-6 border border-border space-y-6">
-        {/* Tenant selector */}
+        {/* TENANT selector */}
         <div>
           <Label>
             ভাড়াটে <span className="text-danger">*</span>

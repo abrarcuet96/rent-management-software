@@ -10,7 +10,7 @@ import { Form } from "@/components/ui/form";
 import FormInput from "@/components/custom-ui/form/FormInput";
 import FormDatePicker from "@/components/custom-ui/form/FormDatePicker";
 import { getFallback } from "@/lib/getFallback";
-import { tenantSchema, type TenantInput } from "@/lib/validators/tenant";
+import { tenantSchema, type CREATE_TENANT } from "@/schemas/tenant.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
@@ -27,8 +27,8 @@ interface AssignTenantProps {
 export default function AssignTenant({ open, onOpenChange, apartmentId }: AssignTenantProps) {
   const queryClient = useQueryClient();
 
-  const form = useForm<TenantInput>({
-    resolver: zodResolver(tenantSchema) as Resolver<TenantInput>,
+  const form = useForm<CREATE_TENANT>({
+    resolver: zodResolver(tenantSchema) as Resolver<CREATE_TENANT>,
     defaultValues: {
       full_name: "",
       phone: "",
@@ -42,7 +42,7 @@ export default function AssignTenant({ open, onOpenChange, apartmentId }: Assign
   });
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (data: TenantInput) =>
+    mutationFn: (data: CREATE_TENANT) =>
       addTenant(apartmentId, {
         full_name: data.full_name,
         phone: data.phone,

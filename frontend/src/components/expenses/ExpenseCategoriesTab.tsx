@@ -14,8 +14,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { ExpenseCategory } from "@/types";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { EXPENSE_CATEGORY } from "@/types";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useFetchData } from "@/hooks/useFetchData";
 import type { AxiosError } from "axios";
 import { Plus, Tags, Trash2 } from "lucide-react";
 import { useState } from "react";
@@ -26,14 +27,14 @@ import { getFallback } from "@/lib/getFallback";
 export default function ExpenseCategoriesTab() {
   const queryClient = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
-  const [deleteCategory, setDeleteCategory] = useState<ExpenseCategory | null>(null);
+  const [deleteCategory, setDeleteCategory] = useState<EXPENSE_CATEGORY | null>(null);
 
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, error, refetch } = useFetchData({
     queryKey: ["expense-categories"],
     queryFn: () => getExpenseCategories({ page: 1, page_size: 100 }),
   });
 
-  const categories: ExpenseCategory[] = data?.data.data ?? [];
+  const categories: EXPENSE_CATEGORY[] = data?.data.data ?? [];
 
   const { mutate: removeCategory, isPending: deleting } = useMutation({
     mutationFn: (id: string) => deleteExpenseCategory(id),

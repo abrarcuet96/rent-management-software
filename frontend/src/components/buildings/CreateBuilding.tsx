@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { getFallback } from "@/lib/getFallback";
-import type { BuildingInput } from "@/lib/validators/building";
+import type { CREATE_BUILDING } from "@/schemas/building.schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import toast from "react-hot-toast";
@@ -38,7 +38,7 @@ export default function CreateBuilding({ open, onOpenChange }: CreateBuildingPro
         <DialogHeader>
           <DialogTitle>নতুন বিল্ডিং</DialogTitle>
         </DialogHeader>
-        <BuildingMutationForm onSubmit={(data: BuildingInput) => mutate(data)} isPending={isPending} />
+        <BuildingMutationForm onSubmit={(data: CREATE_BUILDING) => mutate(data)} isPending={isPending} />
       </DialogContent>
     </Dialog>
   );

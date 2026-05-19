@@ -2,7 +2,7 @@ import FormInput from "@/components/custom-ui/form/FormInput";
 import FormStaticSelect from "@/components/custom-ui/form/FormStaticSelect";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import type { ApartmentInput } from "@/lib/validators/apartment";
+import type { CREATE_APARTMENT } from "@/schemas/apartment.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useEffect, useMemo, type RefObject } from "react";
@@ -10,10 +10,10 @@ import { useForm, type Resolver } from "react-hook-form";
 import { z } from "zod";
 
 interface ApartmentMutationFormProps {
-  onSubmit: (data: ApartmentInput) => void;
+  onSubmit: (data: CREATE_APARTMENT) => void;
   isPending: boolean;
   totalFloors: number;
-  defaultValues?: Partial<ApartmentInput>;
+  defaultValues?: Partial<CREATE_APARTMENT>;
   formRef?: RefObject<{ reset: () => void } | null>;
   mode?: "create" | "edit";
 }
@@ -40,8 +40,8 @@ export default function ApartmentMutationForm({
     [totalFloors],
   );
 
-  const form = useForm<ApartmentInput>({
-    resolver: zodResolver(schema) as Resolver<ApartmentInput>,
+  const form = useForm<CREATE_APARTMENT>({
+    resolver: zodResolver(schema) as Resolver<CREATE_APARTMENT>,
     defaultValues: {
       unit_number: "",
       floor: 1,

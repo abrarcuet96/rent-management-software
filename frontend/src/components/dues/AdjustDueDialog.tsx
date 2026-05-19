@@ -11,7 +11,7 @@ import FormInput from "@/components/custom-ui/form/FormInput";
 import FormDatePicker from "@/components/custom-ui/form/FormDatePicker";
 import { getFallback } from "@/lib/getFallback";
 import { formatCurrency } from "@/lib/utils";
-import type { MonthlyDue } from "@/types";
+import type { MONTHLY_DUE } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
@@ -31,7 +31,7 @@ type AdjustDueInput = z.infer<typeof adjustDueSchema>;
 interface AdjustDueDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  due: MonthlyDue;
+  due: MONTHLY_DUE;
   tenantId: string;
 }
 

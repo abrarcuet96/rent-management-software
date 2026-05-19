@@ -27,10 +27,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getFallback } from "@/lib/getFallback";
-import { tenantSchema } from "@/lib/validators/tenant";
-import type { Apartment } from "@/types";
+import { tenantSchema } from "@/schemas/tenant.schema";
+import type { APARTMENT } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useFetchData } from "@/hooks/useFetchData";
 import type { AxiosError } from "axios";
 import { Loader2 } from "lucide-react";
 import { useEffect, useRef } from "react";
@@ -75,14 +76,14 @@ export default function CreateTenantDialog({
   const buildingId = form.watch("building_public_id");
 
   // Fetch vacant apartments for the selected building
-  const { data: apartmentsData, isLoading: loadingApartments } = useQuery({
+  const { data: apartmentsData, isLoading: loadingApartments } = useFetchData({
     queryKey: ["apartments", buildingId, "vacant"],
     queryFn: () =>
       getApartments(buildingId, { page: 1, page_size: 100, status: "vacant" }),
     enabled: !!buildingId,
   });
 
-  const vacantApartments: Apartment[] = apartmentsData?.data.data ?? [];
+  const vacantApartments: APARTMENT[] = apartmentsData?.data.data ?? [];
 
   const { mutate, isPending } = useMutation({
     mutationFn: (data: CreateTenantInput) =>

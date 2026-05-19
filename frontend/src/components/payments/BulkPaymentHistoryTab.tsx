@@ -13,8 +13,8 @@ import {
 } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatCurrency, getMonthName } from "@/lib/utils";
-import type { BulkPaymentHistoryItem } from "@/types";
-import { useQuery } from "@tanstack/react-query";
+import type { BULK_PAYMENT_HISTORY_ITEM } from "@/types";
+import { useFetchData } from "@/hooks/useFetchData";
 import { ChevronDown, ChevronRight, Receipt } from "lucide-react";
 import { useState } from "react";
 
@@ -22,12 +22,12 @@ export default function BulkPaymentHistoryTab() {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [page, setPage] = useState(1);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useFetchData({
     queryKey: ["bulk-payment-history", page],
     queryFn: () => getBulkPaymentHistory({ page, page_size: 20 }),
   });
 
-  const items: BulkPaymentHistoryItem[] = (data?.data.data ?? []) as BulkPaymentHistoryItem[];
+  const items: BULK_PAYMENT_HISTORY_ITEM[] = (data?.data.data ?? []) as BULK_PAYMENT_HISTORY_ITEM[];
   const total = data?.data.pagination?.total ?? 0;
 
   const toggle = (key: string) => {

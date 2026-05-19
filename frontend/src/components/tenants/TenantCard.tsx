@@ -1,10 +1,10 @@
 import StatusBadge from "@/components/common/StatusBadge";
-import type { Tenant } from "@/types";
+import type { TENANT } from "@/types";
 import { ChevronRight, Phone, User } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface TenantCardProps {
-  tenant: Tenant;
+  tenant: TENANT;
   buildingName?: string;
   unitNumber?: string;
 }

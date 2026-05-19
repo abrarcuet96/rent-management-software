@@ -1,5 +1,5 @@
 import { createExpense, updateExpense } from "@/api/expenses.api";
-import type { Expense } from "@/types";
+import type { EXPENSE } from "@/types";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -22,8 +22,8 @@ import {
 import { getFallback } from "@/lib/getFallback";
 import {
   expenseSchema,
-  type ExpenseInput,
-} from "@/lib/validators/expense";
+  type CREATE_EXPENSE,
+} from "@/schemas/expense.schema";
 import { getBuildings } from "@/api/buildings.api";
 import { getExpenseCategories } from "@/api/expenses.api";
 import { getApartments } from "@/api/apartments.api";
@@ -38,7 +38,7 @@ import toast from "react-hot-toast";
 interface ExpenseFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  expense?: Expense;
+  expense?: EXPENSE;
 }
 
 export default function ExpenseFormDialog({
@@ -49,8 +49,8 @@ export default function ExpenseFormDialog({
   const queryClient = useQueryClient();
   const isEdit = !!expense;
 
-  const form = useForm<ExpenseInput>({
-    resolver: zodResolver(expenseSchema) as Resolver<ExpenseInput>,
+  const form = useForm<CREATE_EXPENSE>({
+    resolver: zodResolver(expenseSchema) as Resolver<CREATE_EXPENSE>,
     defaultValues: {
       category_public_id: expense?.category_public_id ?? "",
       building_public_id: expense?.building_public_id ?? "",
@@ -71,7 +71,7 @@ export default function ExpenseFormDialog({
   }, [buildingId, form]);
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (data: ExpenseInput) => {
+    mutationFn: (data: CREATE_EXPENSE) => {
       const payload = {
         category_public_id: data.category_public_id,
         building_public_id: data.building_public_id || undefined,

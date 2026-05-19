@@ -4,8 +4,9 @@ import LoadingSpinner from "@/components/common/LoadingSpinner";
 import StatusBadge from "@/components/common/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { getFallback } from "@/lib/getFallback";
-import type { Apartment, Tenant } from "@/types";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { APARTMENT, TENANT } from "@/types";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useFetchData } from "@/hooks/useFetchData";
 import type { AxiosError } from "axios";
 import { ChevronDown, ChevronUp, DoorOpen, Pencil, Phone, Plus, Trash2, User } from "lucide-react";
 import { useState } from "react";
@@ -14,19 +15,19 @@ import { deleteApartment } from "@/api/apartments.api";
 import { Link } from "react-router-dom";
 
 interface ApartmentCardProps {
-  apartment: Apartment;
+  apartment: APARTMENT;
   buildingId: string;
   onEdit: () => void;
   onAssignTenant?: () => void;
 }
 
 function OccupiedTenantPanel({ apartmentId }: { apartmentId: string }) {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useFetchData({
     queryKey: ["tenants", "active", apartmentId],
     queryFn: () => getActiveTenant(apartmentId),
   });
 
-  const tenant: Tenant | undefined = data?.data.data;
+  const tenant: TENANT | undefined = data?.data.data;
 
   if (isLoading) {
     return (

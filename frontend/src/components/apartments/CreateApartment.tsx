@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { getFallback } from "@/lib/getFallback";
-import type { ApartmentInput } from "@/lib/validators/apartment";
+import type { CREATE_APARTMENT } from "@/schemas/apartment.schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import toast from "react-hot-toast";
@@ -23,7 +23,7 @@ export default function CreateApartment({ open, onOpenChange, buildingId, totalF
   const queryClient = useQueryClient();
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (data: ApartmentInput) => createApartment(buildingId, data),
+    mutationFn: (data: CREATE_APARTMENT) => createApartment(buildingId, data),
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ["apartments", buildingId] });
       toast.success(res.data.message || "অ্যাপার্টমেন্ট তৈরি হয়েছে");

@@ -16,8 +16,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getFallback } from "@/lib/getFallback";
-import type { PendingDueCount } from "@/types";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { PENDING_DUE_COUNT } from "@/types";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useFetchData } from "@/hooks/useFetchData";
 import type { AxiosError } from "axios";
 import { AlertTriangle, CheckCircle, Info, Loader2 } from "lucide-react";
 import { useState } from "react";
@@ -70,13 +71,13 @@ export default function BulkGenerateDueDialog({
     onOpenChange(newOpen);
   };
 
-  const { data: countData, isLoading: countLoading } = useQuery({
+  const { data: countData, isLoading: countLoading } = useFetchData({
     queryKey: ["pending-due-count", month, year],
     queryFn: () => getPendingDueCount(month, year),
     enabled: open,
   });
 
-  const count: PendingDueCount | undefined = countData?.data.data;
+  const count: PENDING_DUE_COUNT | undefined = countData?.data.data;
 
   const { mutate, isPending } = useMutation({
     mutationFn: () =>

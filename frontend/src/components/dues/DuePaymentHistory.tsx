@@ -8,8 +8,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatCurrency } from "@/lib/utils";
-import type { PaymentRecord } from "@/types";
-import { useQuery } from "@tanstack/react-query";
+import type { PAYMENT_RECORD } from "@/types";
+import { useFetchData } from "@/hooks/useFetchData";
 import { Loader2 } from "lucide-react";
 
 interface DuePaymentHistoryProps {
@@ -17,13 +17,13 @@ interface DuePaymentHistoryProps {
 }
 
 export default function DuePaymentHistory({ dueId }: DuePaymentHistoryProps) {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useFetchData({
     queryKey: ["payments", dueId],
     queryFn: () => getPayments(dueId),
     enabled: !!dueId,
   });
 
-  const payments: PaymentRecord[] = data?.data.data ?? [];
+  const payments: PAYMENT_RECORD[] = data?.data.data ?? [];
 
   if (isLoading) {
     return (

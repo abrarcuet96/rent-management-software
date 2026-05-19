@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { getFallback } from "@/lib/getFallback";
-import type { Tenant } from "@/types";
+import type { TENANT } from "@/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import { Loader2 } from "lucide-react";
@@ -29,7 +29,7 @@ interface MoveOutTenantProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   apartmentId: string;
-  tenant: Tenant;
+  tenant: TENANT;
 }
 
 export default function MoveOutTenant({ open, onOpenChange, apartmentId, tenant }: MoveOutTenantProps) {

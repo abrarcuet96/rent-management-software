@@ -8,21 +8,21 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatCurrency, getMonthName } from "@/lib/utils";
-import type { MonthlyDue } from "@/types";
+import type { MONTHLY_DUE } from "@/types";
 import { useMemo } from "react";
 
 interface BulkDistributionPreviewProps {
-  dues: MonthlyDue[];
+  dues: MONTHLY_DUE[];
   totalAmount: number;
 }
 
 interface DistributionRow {
-  due: MonthlyDue;
+  due: MONTHLY_DUE;
   apply: number;
   afterRemaining: number;
 }
 
-function computeDistribution(dues: MonthlyDue[], totalAmount: number) {
+function computeDistribution(dues: MONTHLY_DUE[], totalAmount: number) {
   let remaining = totalAmount;
   const rows: DistributionRow[] = [];
 

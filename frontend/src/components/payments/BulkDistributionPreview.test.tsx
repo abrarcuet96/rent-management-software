@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
 import BulkDistributionPreview from "./BulkDistributionPreview";
-import type { MonthlyDue } from "@/types";
+import type { MONTHLY_DUE } from "@/types";
 
-function makeDue(overrides: Partial<MonthlyDue>): MonthlyDue {
+function makeDue(overrides: Partial<MONTHLY_DUE>): MONTHLY_DUE {
   return {
     public_id: "due-1",
     tenant_public_id: "tenant-1",

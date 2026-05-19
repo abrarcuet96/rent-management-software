@@ -1,25 +1,25 @@
 import type {
-  Expense,
-  ExpenseCategory,
-  PaginatedResponse,
-  StandardResponse,
+  EXPENSE,
+  EXPENSE_CATEGORY,
+  PAGINATED_RESPONSE,
+  STANDARD_RESPONSE,
 } from "@/types";
 import apiClient from "./client";
 
 export const getExpenseCategories = (params?: Record<string, unknown>) =>
-  apiClient.get<PaginatedResponse<ExpenseCategory>>("/expense-categories", { params });
+  apiClient.get<PAGINATED_RESPONSE<EXPENSE_CATEGORY>>("/expense-categories", { params });
 
 export const createExpenseCategory = (data: { name: string }) =>
-  apiClient.post<StandardResponse<ExpenseCategory>>("/expense-categories", data);
+  apiClient.post<STANDARD_RESPONSE<EXPENSE_CATEGORY>>("/expense-categories", data);
 
 export const deleteExpenseCategory = (id: string) =>
-  apiClient.delete<StandardResponse<null>>(`/expense-categories/${id}`);
+  apiClient.delete<STANDARD_RESPONSE<null>>(`/expense-categories/${id}`);
 
 export const getExpenses = (params?: Record<string, unknown>) =>
-  apiClient.get<PaginatedResponse<Expense>>("/expenses", { params });
+  apiClient.get<PAGINATED_RESPONSE<EXPENSE>>("/expenses", { params });
 
 export const getExpenseById = (id: string) =>
-  apiClient.get<StandardResponse<Expense>>(`/expenses/${id}`);
+  apiClient.get<STANDARD_RESPONSE<EXPENSE>>(`/expenses/${id}`);
 
 export const createExpense = (data: {
   category_public_id: string;
@@ -29,7 +29,7 @@ export const createExpense = (data: {
   amount: number;
   expense_date: string;
   is_tenant_charged: boolean;
-}) => apiClient.post<StandardResponse<Expense>>("/expenses", data);
+}) => apiClient.post<STANDARD_RESPONSE<EXPENSE>>("/expenses", data);
 
 export const updateExpense = (
   id: string,
@@ -39,16 +39,16 @@ export const updateExpense = (
     expense_date?: string;
     is_tenant_charged?: boolean;
   },
-) => apiClient.put<StandardResponse<Expense>>(`/expenses/${id}`, data);
+) => apiClient.put<STANDARD_RESPONSE<EXPENSE>>(`/expenses/${id}`, data);
 
 export const deleteExpense = (id: string) =>
-  apiClient.delete<StandardResponse<null>>(`/expenses/${id}`);
+  apiClient.delete<STANDARD_RESPONSE<null>>(`/expenses/${id}`);
 
 export const chargeExpenseToTenants = (
   expenseId: string,
   tenantPublicIds: string[],
 ) =>
-  apiClient.post<StandardResponse<{ charged: number; skipped: number }>>(
+  apiClient.post<STANDARD_RESPONSE<{ charged: number; skipped: number }>>(
     `/expenses/${expenseId}/charge`,
     { tenant_public_ids: tenantPublicIds },
   );

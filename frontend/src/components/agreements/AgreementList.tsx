@@ -9,8 +9,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatCurrency } from "@/lib/utils";
-import type { TenantAgreement } from "@/types";
-import { useQuery } from "@tanstack/react-query";
+import type { TENANT_AGREEMENT } from "@/types";
+import { useFetchData } from "@/hooks/useFetchData";
 import { FileText, Loader2 } from "lucide-react";
 
 interface AgreementListProps {
@@ -18,13 +18,13 @@ interface AgreementListProps {
 }
 
 export default function AgreementList({ tenantId }: AgreementListProps) {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useFetchData({
     queryKey: ["agreements", tenantId],
     queryFn: () => getAgreements(tenantId),
     enabled: !!tenantId,
   });
 
-  const agreements: TenantAgreement[] = data?.data.data ?? [];
+  const agreements: TENANT_AGREEMENT[] = data?.data.data ?? [];
 
   if (isLoading) {
     return (

@@ -1,16 +1,16 @@
 import FormInput from "@/components/custom-ui/form/FormInput";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { buildingSchema, type BuildingInput } from "@/lib/validators/building";
+import { buildingSchema, type CREATE_BUILDING } from "@/schemas/building.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useEffect, type RefObject } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 
 interface BuildingMutationFormProps {
-  onSubmit: (data: BuildingInput) => void;
+  onSubmit: (data: CREATE_BUILDING) => void;
   isPending: boolean;
-  defaultValues?: Partial<BuildingInput>;
+  defaultValues?: Partial<CREATE_BUILDING>;
   formRef?: RefObject<{ reset: () => void } | null>;
   mode?: "create" | "edit";
 }
@@ -22,8 +22,8 @@ export default function BuildingMutationForm({
   formRef,
   mode = "create",
 }: BuildingMutationFormProps) {
-  const form = useForm<BuildingInput>({
-    resolver: zodResolver(buildingSchema) as Resolver<BuildingInput>,
+  const form = useForm<CREATE_BUILDING>({
+    resolver: zodResolver(buildingSchema) as Resolver<CREATE_BUILDING>,
     defaultValues: { name: "", address: "", total_floors: 1, ...defaultValues },
   });
 

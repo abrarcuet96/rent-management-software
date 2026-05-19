@@ -1,7 +1,7 @@
 import ConfirmDialog from "@/components/common/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { getFallback } from "@/lib/getFallback";
-import type { Building } from "@/types";
+import type { BUILDING } from "@/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import { Building2, Layers, Pencil, Trash2 } from "lucide-react";
@@ -10,7 +10,7 @@ import toast from "react-hot-toast";
 import { deleteBuilding } from "@/api/buildings.api";
 
 interface BuildingCardProps {
-  building: Building;
+  building: BUILDING;
   onEdit: () => void;
 }
 

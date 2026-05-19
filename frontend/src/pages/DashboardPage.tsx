@@ -15,8 +15,8 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency } from "@/lib/utils";
-import type { PendingDueCount } from "@/types";
-import { useQuery } from "@tanstack/react-query";
+import type { PENDING_DUE_COUNT } from "@/types";
+import { useFetchData } from "@/hooks/useFetchData";
 import { AlertTriangle, ArrowDown, ArrowUp, Building, Users } from "lucide-react";
 import { useState } from "react";
 
@@ -31,18 +31,18 @@ export default function DashboardPage() {
   const [year, setYear] = useState(now.getFullYear());
   const [generateDueOpen, setGenerateDueOpen] = useState(false);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useFetchData({
     queryKey: ["dashboard", month, year],
     queryFn: () => getDashboardSummary({ month, year }),
   });
 
-  const { data: countData } = useQuery({
+  const { data: countData } = useFetchData({
     queryKey: ["pending-due-count", month, year],
     queryFn: () => getPendingDueCount(month, year),
   });
 
   const summary = data?.data.data;
-  const pendingCount: PendingDueCount | undefined = countData?.data.data;
+  const pendingCount: PENDING_DUE_COUNT | undefined = countData?.data.data;
 
   return (
     <div className="space-y-6">

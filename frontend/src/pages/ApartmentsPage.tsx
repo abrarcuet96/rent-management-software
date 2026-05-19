@@ -16,36 +16,36 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { Apartment, Building } from "@/types";
-import { useQuery } from "@tanstack/react-query";
+import type { APARTMENT, BUILDING } from "@/types";
+import { useFetchData } from "@/hooks/useFetchData";
 import { Building2, DoorOpen, Plus } from "lucide-react";
 import { useState } from "react";
 
 export default function ApartmentsPage() {
   const [selectedBuildingId, setSelectedBuildingId] = useState<string>("");
   const [createOpen, setCreateOpen] = useState(false);
-  const [editApartment, setEditApartment] = useState<Apartment | null>(null);
+  const [editApartment, setEditApartment] = useState<APARTMENT | null>(null);
   const [assignApartmentId, setAssignApartmentId] = useState<string | null>(null);
 
-  const { data: buildingsData } = useQuery({
+  const { data: buildingsData } = useFetchData({
     queryKey: ["buildings"],
     queryFn: () => getBuildings({ page: 1, page_size: 100 }),
   });
 
-  const buildings: Building[] = buildingsData?.data.data ?? [];
+  const buildings: BUILDING[] = buildingsData?.data.data ?? [];
 
   const {
     data: apartmentsData,
     isLoading,
     error,
     refetch,
-  } = useQuery({
+  } = useFetchData({
     queryKey: ["apartments", selectedBuildingId],
     queryFn: () => getApartments(selectedBuildingId, { page: 1, page_size: 100 }),
     enabled: !!selectedBuildingId,
   });
 
-  const apartments: Apartment[] = apartmentsData?.data.data ?? [];
+  const apartments: APARTMENT[] = apartmentsData?.data.data ?? [];
 
   const selectedBuilding = buildings.find((b) => b.public_id === selectedBuildingId);
 
@@ -183,10 +183,10 @@ export default function ApartmentsPage() {
 }
 
 interface ApartmentGridProps {
-  apartments: Apartment[];
+  apartments: APARTMENT[];
   buildingId: string;
   loading: boolean;
-  onEdit: (apt: Apartment) => void;
+  onEdit: (apt: APARTMENT) => void;
   onAssignTenant: (aptId: string) => void;
   emptyTitle: string;
   emptyDescription: string;

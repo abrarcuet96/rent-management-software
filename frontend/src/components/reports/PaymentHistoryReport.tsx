@@ -7,8 +7,8 @@ import PrintButton from "@/components/common/PrintButton";
 import PrintHeader from "@/components/common/PrintHeader";
 import PrintFooter from "@/components/common/PrintFooter";
 import { formatCurrency, getMonthName } from "@/lib/utils";
-import type { Tenant } from "@/types";
-import { useQuery } from "@tanstack/react-query";
+import type { TENANT } from "@/types";
+import { useFetchData } from "@/hooks/useFetchData";
 import { CreditCard, Receipt } from "lucide-react";
 import { useState, useRef } from "react";
 import {
@@ -49,16 +49,16 @@ export default function PaymentHistoryReport() {
   const contentRef = useRef<HTMLDivElement>(null);
   const [selectedTenantId, setSelectedTenantId] = useState<string>("");
 
-  const { data: tenantsData } = useQuery({
+  const { data: tenantsData } = useFetchData({
     queryKey: ["tenants", "all", "report"],
     queryFn: () => getTenants({ page: 1, page_size: 100 }),
   });
 
-  const tenants: Tenant[] = (tenantsData?.data.data ?? []) as Tenant[];
+  const tenants: TENANT[] = (tenantsData?.data.data ?? []) as TENANT[];
 
   const selectedTenant = tenants.find((t) => t.public_id === selectedTenantId);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useFetchData({
     queryKey: ["payment-history", selectedTenantId],
     queryFn: () => getPaymentHistory({ tenant_public_id: selectedTenantId, page: 1, page_size: 100 }),
     enabled: !!selectedTenantId,

@@ -11,8 +11,8 @@ import FormInput from "@/components/custom-ui/form/FormInput";
 import { getFallback } from "@/lib/getFallback";
 import {
   expenseCategorySchema,
-  type ExpenseCategoryInput,
-} from "@/lib/validators/expense";
+  type CREATE_EXPENSE_CATEGORY,
+} from "@/schemas/expense.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
@@ -31,13 +31,13 @@ export default function CreateCategoryDialog({
 }: CreateCategoryDialogProps) {
   const queryClient = useQueryClient();
 
-  const form = useForm<ExpenseCategoryInput>({
+  const form = useForm<CREATE_EXPENSE_CATEGORY>({
     resolver: zodResolver(expenseCategorySchema),
     defaultValues: { name: "" },
   });
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (data: ExpenseCategoryInput) => createExpenseCategory(data),
+    mutationFn: (data: CREATE_EXPENSE_CATEGORY) => createExpenseCategory(data),
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ["expense-categories"] });
       toast.success(res.data.message || "ক্যাটাগরি তৈরি হয়েছে");

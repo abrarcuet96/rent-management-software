@@ -15,8 +15,8 @@ import FormStaticSelect from "@/components/custom-ui/form/FormStaticSelect";
 import { getFallback } from "@/lib/getFallback";
 import {
   bulkRentAdjustSchema,
-  type BulkRentAdjustInput,
-} from "@/lib/validators/agreement";
+  type BULK_RENT_ADJUST_INPUT,
+} from "@/schemas/agreement.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
@@ -35,8 +35,8 @@ export default function BulkRentAdjustDialog({
 }: BulkRentAdjustDialogProps) {
   const queryClient = useQueryClient();
 
-  const form = useForm<BulkRentAdjustInput>({
-    resolver: zodResolver(bulkRentAdjustSchema) as Resolver<BulkRentAdjustInput>,
+  const form = useForm<BULK_RENT_ADJUST_INPUT>({
+    resolver: zodResolver(bulkRentAdjustSchema) as Resolver<BULK_RENT_ADJUST_INPUT>,
     defaultValues: {
       adjustment_type: "fixed",
       scope: "all",
@@ -48,7 +48,7 @@ export default function BulkRentAdjustDialog({
   const scope = form.watch("scope");
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (data: BulkRentAdjustInput) =>
+    mutationFn: (data: BULK_RENT_ADJUST_INPUT) =>
       bulkAdjustRent({
         adjustment_type: data.adjustment_type,
         amount: data.amount,

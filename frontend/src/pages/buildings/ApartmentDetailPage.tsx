@@ -25,8 +25,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useNavigationStore } from "@/stores/navigationStore";
-import type { MonthlyDue, Tenant } from "@/types";
-import { useQuery } from "@tanstack/react-query";
+import type { MONTHLY_DUE, TENANT } from "@/types";
+import { useFetchData } from "@/hooks/useFetchData";
 import { DoorOpen, Edit2, LogOut, Plus, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -37,17 +37,17 @@ export default function ApartmentDetailPage() {
     apartmentId: string;
   }>();
   const [assignOpen, setAssignOpen] = useState(false);
-  const [editTenant, setEditTenant] = useState<Tenant | null>(null);
+  const [editTenant, setEditTenant] = useState<TENANT | null>(null);
   const [moveOutOpen, setMoveOutOpen] = useState(false);
   const [generateDueOpen, setGenerateDueOpen] = useState(false);
-  const [payingDue, setPayingDue] = useState<MonthlyDue | null>(null);
-  const [adjustingDue, setAdjustingDue] = useState<MonthlyDue | null>(null);
+  const [payingDue, setPayingDue] = useState<MONTHLY_DUE | null>(null);
+  const [adjustingDue, setAdjustingDue] = useState<MONTHLY_DUE | null>(null);
   const [expandedDues, setExpandedDues] = useState<Set<string>>(new Set());
   const duesInitialized = useRef(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const { setActiveBuilding, setActiveApartment } = useNavigationStore();
 
-  const { data: buildingData } = useQuery({
+  const { data: buildingData } = useFetchData({
     queryKey: ["buildings", buildingId],
     queryFn: () => getBuildingById(buildingId!),
     enabled: !!buildingId,
@@ -58,7 +58,7 @@ export default function ApartmentDetailPage() {
     isLoading: aptLoading,
     error: aptError,
     refetch: refetchApt,
-  } = useQuery({
+  } = useFetchData({
     queryKey: ["apartments", buildingId, apartmentId],
     queryFn: () => getApartmentById(buildingId!, apartmentId!),
     enabled: !!buildingId && !!apartmentId,
@@ -69,7 +69,7 @@ export default function ApartmentDetailPage() {
   const isOccupied = apartment?.status === "occupied";
 
   // Fetch tenant if occupied
-  const { data: tenantData, isLoading: tenantLoading } = useQuery({
+  const { data: tenantData, isLoading: tenantLoading } = useFetchData({
     queryKey: ["tenants", "active", apartmentId],
     queryFn: () => getActiveTenant(apartmentId!),
     enabled: isOccupied && !!apartmentId,
@@ -78,13 +78,13 @@ export default function ApartmentDetailPage() {
   const tenant = tenantData?.data.data;
 
   // Fetch dues if occupied
-  const { data: duesData, isLoading: duesLoading } = useQuery({
+  const { data: duesData, isLoading: duesLoading } = useFetchData({
     queryKey: ["dues", tenant?.public_id],
     queryFn: () => getDues(tenant!.public_id, { page: 1, page_size: 100 }),
     enabled: isOccupied && !!tenant?.public_id,
   });
 
-  const dues: MonthlyDue[] = duesData?.data.data ?? [];
+  const dues: MONTHLY_DUE[] = duesData?.data.data ?? [];
 
   // Expand all rows by default on first load
   useEffect(() => {
@@ -185,7 +185,7 @@ export default function ApartmentDetailPage() {
         <LoadingSpinner />
       ) : tenant ? (
         <div className="space-y-6">
-          {/* Tenant info card */}
+          {/* TENANT info card */}
           <div className="bg-surface rounded-xl p-5 border border-border">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
               <div className="flex items-center gap-3 min-w-0">

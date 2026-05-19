@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
 import FormInput from "@/components/custom-ui/form/FormInput";
-import { loginSchema, type LoginInput } from "@/lib/validators/auth";
+import { getFallback } from "@/lib/getFallback";
+import { loginSchema, type LOGIN_INPUT } from "@/schemas/auth.schema";
 import { useAuthStore } from "@/stores/authStore";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -27,7 +28,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const setAuth = useAuthStore((s) => s.setAuth);
 
-  const form = useForm<LoginInput>({
+  const form = useForm<LOGIN_INPUT>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
   });
@@ -56,11 +57,7 @@ export default function LoginPage() {
       navigate("/dashboard", { replace: true });
     },
     onError: (error: AxiosError<{ message?: string; detail?: string }>) => {
-      const message =
-        error.response?.data?.message ||
-        error.response?.data?.detail ||
-        "ইমেইল বা পাসওয়ার্ড সঠিক নয়";
-      form.setError("root", { message });
+      getFallback({ error, fallbackMessage: "ইমেইল বা পাসওয়ার্ড সঠিক নয়" });
     },
   });
 

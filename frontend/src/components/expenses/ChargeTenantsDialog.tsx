@@ -11,15 +11,16 @@ import {
 import { Label } from "@/components/ui/label";
 import { getFallback } from "@/lib/getFallback";
 import { formatCurrency } from "@/lib/utils";
-import type { Expense, Tenant } from "@/types";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { EXPENSE, TENANT } from "@/types";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useFetchData } from "@/hooks/useFetchData";
 import type { AxiosError } from "axios";
 import { Loader2, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
 
 interface ChargeTenantsDialogProps {
-  expense: Expense | null;
+  expense: EXPENSE | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -40,13 +41,13 @@ export default function ChargeTenantsDialog({
   }, [expense]);
 
   // Fetch tenants based on scope
-  const { data: activeTenantData, isLoading: loadingApt } = useQuery({
+  const { data: activeTenantData, isLoading: loadingApt } = useFetchData({
     queryKey: ["active-tenant", expense?.apartment_public_id],
     queryFn: () => getActiveTenant(expense!.apartment_public_id!),
     enabled: open && scope === "apartment" && !!expense?.apartment_public_id,
   });
 
-  const { data: buildingTenantsData, isLoading: loadingBldg } = useQuery({
+  const { data: buildingTenantsData, isLoading: loadingBldg } = useFetchData({
     queryKey: ["tenants", "building", expense?.building_public_id],
     queryFn: () =>
       getTenants({
@@ -58,7 +59,7 @@ export default function ChargeTenantsDialog({
     enabled: open && scope === "building" && !!expense?.building_public_id,
   });
 
-  const tenants: Tenant[] = useMemo(() => {
+  const tenants: TENANT[] = useMemo(() => {
     if (scope === "apartment") {
       const t = activeTenantData?.data?.data;
       return t ? [t] : [];

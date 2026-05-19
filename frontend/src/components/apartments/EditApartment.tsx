@@ -7,8 +7,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { getFallback } from "@/lib/getFallback";
-import type { Apartment } from "@/types";
-import type { ApartmentInput } from "@/lib/validators/apartment";
+import type { APARTMENT } from "@/types";
+import type { CREATE_APARTMENT } from "@/schemas/apartment.schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import toast from "react-hot-toast";
@@ -17,7 +17,7 @@ interface EditApartmentProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   buildingId: string;
-  apartment: Apartment;
+  apartment: APARTMENT;
   totalFloors: number;
 }
 
@@ -25,7 +25,7 @@ export default function EditApartment({ open, onOpenChange, buildingId, apartmen
   const queryClient = useQueryClient();
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (data: ApartmentInput) => updateApartment(buildingId, apartment.public_id, data),
+    mutationFn: (data: CREATE_APARTMENT) => updateApartment(buildingId, apartment.public_id, data),
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ["apartments", buildingId] });
       queryClient.invalidateQueries({ queryKey: ["apartments", buildingId, apartment.public_id] });

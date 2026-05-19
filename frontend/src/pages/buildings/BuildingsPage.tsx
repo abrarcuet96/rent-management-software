@@ -6,21 +6,21 @@ import EmptyState from "@/components/common/EmptyState";
 import ErrorState from "@/components/common/ErrorState";
 import SkeletonCard from "@/components/common/SkeletonCard";
 import { Button } from "@/components/ui/button";
-import type { Building } from "@/types";
-import { useQuery } from "@tanstack/react-query";
+import type { BUILDING } from "@/types";
+import { useFetchData } from "@/hooks/useFetchData";
 import { Building2, Plus } from "lucide-react";
 import { useState } from "react";
 
 export default function BuildingsPage() {
   const [createOpen, setCreateOpen] = useState(false);
-  const [editBuilding, setEditBuilding] = useState<Building | null>(null);
+  const [editBuilding, setEditBuilding] = useState<BUILDING | null>(null);
 
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, error, refetch } = useFetchData({
     queryKey: ["buildings"],
     queryFn: () => getBuildings({ page: 1, page_size: 100 }),
   });
 
-  const buildings = data?.data.data ?? [];
+  const buildings: BUILDING[] = data?.data.data ?? [];
 
   if (error) {
     return <ErrorState onRetry={() => refetch()} />;

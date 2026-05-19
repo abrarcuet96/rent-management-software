@@ -12,8 +12,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatCurrency } from "@/lib/utils";
-import type { Expense } from "@/types";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { EXPENSE } from "@/types";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useFetchData } from "@/hooks/useFetchData";
 import type { AxiosError } from "axios";
 import { Pencil, Plus, Receipt, Trash2, Users } from "lucide-react";
 import { useState } from "react";
@@ -25,16 +26,16 @@ import { getFallback } from "@/lib/getFallback";
 export default function ExpensesTab() {
   const queryClient = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
-  const [editExpense, setEditExpense] = useState<Expense | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<Expense | null>(null);
-  const [chargeTarget, setChargeTarget] = useState<Expense | null>(null);
+  const [editExpense, setEditExpense] = useState<EXPENSE | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<EXPENSE | null>(null);
+  const [chargeTarget, setChargeTarget] = useState<EXPENSE | null>(null);
 
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, error, refetch } = useFetchData({
     queryKey: ["expenses"],
     queryFn: () => getExpenses({ page: 1, page_size: 100 }),
   });
 
-  const expenses: Expense[] = data?.data.data ?? [];
+  const expenses: EXPENSE[] = data?.data.data ?? [];
 
   const { mutate: removeExpense, isPending: deleting } = useMutation({
     mutationFn: (id: string) => deleteExpense(id),

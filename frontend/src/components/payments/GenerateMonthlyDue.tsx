@@ -10,7 +10,7 @@ import { Form } from "@/components/ui/form";
 import FormInput from "@/components/custom-ui/form/FormInput";
 import FormDatePicker from "@/components/custom-ui/form/FormDatePicker";
 import { getFallback } from "@/lib/getFallback";
-import { dueSchema, type DueInput } from "@/lib/validators/due";
+import { dueSchema, type CREATE_DUE } from "@/schemas/due.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
@@ -27,8 +27,8 @@ interface GenerateMonthlyDueProps {
 export default function GenerateMonthlyDue({ open, onOpenChange, tenantId }: GenerateMonthlyDueProps) {
   const queryClient = useQueryClient();
 
-  const form = useForm<DueInput>({
-    resolver: zodResolver(dueSchema) as Resolver<DueInput>,
+  const form = useForm<CREATE_DUE>({
+    resolver: zodResolver(dueSchema) as Resolver<CREATE_DUE>,
     defaultValues: {
       month: new Date().getMonth() + 1,
       year: new Date().getFullYear(),
@@ -37,7 +37,7 @@ export default function GenerateMonthlyDue({ open, onOpenChange, tenantId }: Gen
   });
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (data: DueInput) =>
+    mutationFn: (data: CREATE_DUE) =>
       generateDue(tenantId, {
         month: data.month,
         year: data.year,

@@ -7,8 +7,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { getFallback } from "@/lib/getFallback";
-import type { BuildingInput } from "@/lib/validators/building";
-import type { Building } from "@/types";
+import type { CREATE_BUILDING } from "@/schemas/building.schema";
+import type { BUILDING } from "@/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import toast from "react-hot-toast";
@@ -16,14 +16,14 @@ import toast from "react-hot-toast";
 interface EditBuildingProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  building: Building;
+  building: BUILDING;
 }
 
 export default function EditBuilding({ open, onOpenChange, building }: EditBuildingProps) {
   const queryClient = useQueryClient();
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (data: BuildingInput) => updateBuilding(building.public_id, data),
+    mutationFn: (data: CREATE_BUILDING) => updateBuilding(building.public_id, data),
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ["buildings"] });
       queryClient.invalidateQueries({ queryKey: ["buildings", building.public_id] });
