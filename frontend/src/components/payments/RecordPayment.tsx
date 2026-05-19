@@ -1,4 +1,7 @@
 import { recordPayment } from "@/api/payments.api";
+import FormDatePicker from "@/components/custom-ui/form/FormDatePicker";
+import FormInput from "@/components/custom-ui/form/FormInput";
+import FormTextArea from "@/components/custom-ui/form/FormTextArea";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -7,9 +10,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
-import FormInput from "@/components/custom-ui/form/FormInput";
-import FormTextArea from "@/components/custom-ui/form/FormTextArea";
-import FormDatePicker from "@/components/custom-ui/form/FormDatePicker";
 import { getFallback } from "@/lib/getFallback";
 import { formatCurrency } from "@/lib/utils";
 import type { MONTHLY_DUE } from "@/types";
@@ -85,7 +85,7 @@ export default function RecordPayment({
         <DialogHeader>
           <DialogTitle>পেমেন্ট রেকর্ড করুন</DialogTitle>
         </DialogHeader>
-        <div className="bg-neutral-bg rounded-lg p-3 mb-4">
+        <div className="bg-neutral-bg rounded-lg p-3 border">
           <p className="text-sm text-text-secondary">
             বাকি:{" "}
             <span className="font-semibold text-danger">

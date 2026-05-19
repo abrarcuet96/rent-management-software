@@ -13,6 +13,7 @@ import FormDatePicker from "@/components/custom-ui/form/FormDatePicker";
 import FormSearchSelect from "@/components/custom-ui/form/FormSearchSelect";
 import FormStaticSelect from "@/components/custom-ui/form/FormStaticSelect";
 import { getFallback } from "@/lib/getFallback";
+import { toBn } from "@/lib/utils";
 import {
   bulkRentAdjustSchema,
   type BULK_RENT_ADJUST_INPUT,
@@ -61,7 +62,7 @@ export default function BulkRentAdjustDialog({
       queryClient.invalidateQueries({ queryKey: ["agreements"] });
       toast.success(
         res.data.message ||
-          `${res.data.data.tenants_adjusted} জন ভাড়াটের ভাড়া আপডেট হয়েছে`,
+          `${toBn(res.data.data.tenants_adjusted)} জন ভাড়াটের ভাড়া আপডেট হয়েছে`,
       );
       form.reset();
       onOpenChange(false);

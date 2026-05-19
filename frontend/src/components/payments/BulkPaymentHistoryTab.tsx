@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { formatCurrency, getMonthName } from "@/lib/utils";
+import { formatCurrency, getMonthName, toBn } from "@/lib/utils";
 import type { BULK_PAYMENT_HISTORY_ITEM } from "@/types";
 import { useFetchData } from "@/hooks/useFetchData";
 import { ChevronDown, ChevronRight, Receipt } from "lucide-react";
@@ -85,7 +85,7 @@ export default function BulkPaymentHistoryTab() {
                   </div>
                   <div className="flex items-center gap-6 text-sm shrink-0">
                     <span className="text-text-secondary">
-                      {item.dues.length}টি ডিউ
+                      {toBn(item.dues.length)}টি ডিউ
                     </span>
                     <span className="font-semibold text-success">
                       {formatCurrency(item.total_amount)}
@@ -130,7 +130,7 @@ export default function BulkPaymentHistoryTab() {
                             className="border-b border-border/50 hover:bg-neutral-bg"
                           >
                             <TableCell className="px-4 py-2 text-text-primary">
-                              {getMonthName(due.month)} {due.year}
+                              {getMonthName(due.month)} {toBn(due.year)}
                             </TableCell>
                             <TableCell className="px-4 py-2 text-right text-success font-medium">
                               {formatCurrency(due.amount_applied)}
@@ -159,7 +159,7 @@ export default function BulkPaymentHistoryTab() {
                 পূর্ববর্তী
               </Button>
               <span className="px-3 py-1.5 text-sm text-text-secondary">
-                পৃষ্ঠা {page} / {Math.ceil(total / 20)}
+                পৃষ্ঠা {toBn(page)} / {toBn(Math.ceil(total / 20))}
               </span>
               <Button
                 variant="outline"

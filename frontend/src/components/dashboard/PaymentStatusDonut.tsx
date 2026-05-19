@@ -1,4 +1,4 @@
-import { getCssVar } from "@/lib/utils";
+import { getCssVar, toBn } from "@/lib/utils";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 
 interface PaymentStatusDonutProps {
@@ -53,7 +53,7 @@ export default function PaymentStatusDonut({ paid, partial, unpaid }: PaymentSta
             ))}
           </Pie>
           <Tooltip
-            formatter={(value: unknown, name: unknown) => [`${value} টি`, name as string]}
+            formatter={(value: unknown, name: unknown) => [`${toBn(value as number)} টি`, name as string]}
             contentStyle={{
               borderRadius: "8px",
               border: `1px solid ${borderColor}`,
@@ -69,7 +69,7 @@ export default function PaymentStatusDonut({ paid, partial, unpaid }: PaymentSta
         {data.map((d, i) => (
           <div key={i} className="flex items-center gap-1.5">
             <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[i] }} />
-            <span className="text-xs text-text-secondary">{d.name} ({d.value})</span>
+            <span className="text-xs text-text-secondary">{d.name} ({toBn(d.value)})</span>
           </div>
         ))}
       </div>

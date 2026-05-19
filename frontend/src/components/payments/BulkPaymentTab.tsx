@@ -25,7 +25,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { getFallback } from "@/lib/getFallback";
-import { formatCurrency, getMonthName } from "@/lib/utils";
+import { formatCurrency, getMonthName, toBn } from "@/lib/utils";
 import {
   bulkPaymentSchema,
   type BULK_PAYMENT_INPUT,
@@ -196,7 +196,7 @@ export default function BulkPaymentTab() {
             {selectedTenantId && openDues.length > 0 && previewAmount === 0 && (
               <div>
                 <p className="text-sm font-medium text-text-secondary mb-2">
-                  বকেয়া ({openDues.length}টি)
+                  বকেয়া ({toBn(openDues.length)}টি)
                 </p>
                 <div className="border border-border rounded-lg overflow-hidden">
                   <Table className="text-sm">
@@ -223,7 +223,7 @@ export default function BulkPaymentTab() {
                           className="border-t border-border"
                         >
                           <TableCell className="px-3 py-2 text-text-primary">
-                            {getMonthName(due.month)} {due.year}
+                            {getMonthName(due.month)} {toBn(due.year)}
                           </TableCell>
                           <TableCell className="px-3 py-2 text-right text-text-primary">
                             {formatCurrency(due.total_due)}

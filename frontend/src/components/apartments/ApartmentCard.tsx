@@ -12,6 +12,7 @@ import { ChevronDown, ChevronUp, DoorOpen, Pencil, Phone, Plus, Trash2, User } f
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { deleteApartment } from "@/api/apartments.api";
+import { toBn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 
 interface ApartmentCardProps {
@@ -100,10 +101,10 @@ export default function ApartmentCard({ apartment, buildingId, onEdit, onAssignT
               </div>
               <div className="min-w-0">
                 <h3 className="font-semibold text-text-primary leading-tight">
-                  ইউনিট {apartment.unit_number}
+                  ইউনিট {toBn(apartment.unit_number)}
                 </h3>
                 <p className="text-sm text-text-secondary mt-0.5">
-                  তলা {apartment.floor}
+                  তলা {toBn(apartment.floor)}
                 </p>
               </div>
             </div>

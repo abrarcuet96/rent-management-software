@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, toBn } from "@/lib/utils";
 import type { PAYMENT_RECORD } from "@/types";
 import { useFetchData } from "@/hooks/useFetchData";
 import { Loader2 } from "lucide-react";
@@ -44,7 +44,7 @@ export default function DuePaymentHistory({ dueId }: DuePaymentHistoryProps) {
   return (
     <div className="bg-neutral-bg/60 border-t border-border px-4 py-3">
       <p className="text-xs font-semibold text-text-secondary mb-2.5">
-        পেমেন্ট ইতিহাস ({payments.length})
+        পেমেন্ট ইতিহাস ({toBn(payments.length)})
       </p>
       <div className="rounded-lg border border-border overflow-hidden print:overflow-visible bg-surface">
         <Table className="text-xs">

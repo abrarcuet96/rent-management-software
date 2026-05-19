@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatCurrency, getMonthName } from "@/lib/utils";
+import { formatCurrency, getMonthName, toBn } from "@/lib/utils";
 import type { MONTHLY_DUE } from "@/types";
 import { useMemo } from "react";
 
@@ -72,7 +72,7 @@ export default function BulkDistributionPreview({
           {rows.map(({ due, apply, afterRemaining }) => (
             <TableRow key={due.public_id} className="border-t border-border">
               <TableCell className="px-3 py-2 text-text-primary">
-                {getMonthName(due.month)} {due.year}
+                {getMonthName(due.month)} {toBn(due.year)}
               </TableCell>
               <TableCell className="px-3 py-2 text-right text-text-primary">
                 {formatCurrency(due.remaining_balance)}

@@ -53,3 +53,10 @@ export function calculateDaysOverdue(dueDate: string): number {
 export function getCssVar(name: string): string {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
+
+const EN_TO_BN = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
+
+export function toBn(value: number | string | null | undefined): string {
+  if (value === null || value === undefined) return "";
+  return String(value).replace(/[0-9]/g, (d) => EN_TO_BN[+d]);
+}

@@ -18,6 +18,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { APARTMENT, BUILDING } from "@/types";
 import { useFetchData } from "@/hooks/useFetchData";
+import { toBn } from "@/lib/utils";
 import { Building2, DoorOpen, Plus } from "lucide-react";
 import { useState } from "react";
 
@@ -57,7 +58,7 @@ export default function ApartmentsPage() {
           <h2 className="text-xl font-semibold text-text-primary">অ্যাপার্টমেন্ট</h2>
           {selectedBuildingId && !isLoading && (
             <p className="text-sm text-text-secondary mt-0.5">
-              {selectedBuilding?.name} — মোট {apartments.length} টি
+              {selectedBuilding?.name} — মোট {toBn(apartments.length)} টি
             </p>
           )}
         </div>
@@ -107,13 +108,13 @@ export default function ApartmentsPage() {
         <Tabs defaultValue="all">
           <TabsList className="mb-4">
             <TabsTrigger value="all">
-              সব ({apartments.length})
+              সব ({toBn(apartments.length)})
             </TabsTrigger>
             <TabsTrigger value="vacant">
-              খালি ({apartments.filter((a) => a.status === "vacant").length})
+              খালি ({toBn(apartments.filter((a) => a.status === "vacant").length)})
             </TabsTrigger>
             <TabsTrigger value="occupied">
-              ভর্তি ({apartments.filter((a) => a.status === "occupied").length})
+              ভর্তি ({toBn(apartments.filter((a) => a.status === "occupied").length)})
             </TabsTrigger>
           </TabsList>
 

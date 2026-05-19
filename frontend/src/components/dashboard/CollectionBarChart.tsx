@@ -1,4 +1,4 @@
-import { formatCurrency, getCssVar, getMonthName } from "@/lib/utils";
+import { formatCurrency, getCssVar, getMonthName, toBn } from "@/lib/utils";
 import type { DASHBOARD_SUMMARY } from "@/types";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
@@ -29,7 +29,7 @@ export default function CollectionBarChart({ summary }: CollectionBarChartProps)
         <BarChart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke={borderColor} />
           <XAxis dataKey="month" tick={{ fontSize: 12, fill: textSecondary }} />
-          <YAxis tick={{ fontSize: 12, fill: textSecondary }} tickFormatter={(v: number) => `৳${v}`} />
+          <YAxis tick={{ fontSize: 12, fill: textSecondary }} tickFormatter={(v: number) => `৳${toBn(v)}`} />
           <Tooltip
             formatter={(value: unknown) => formatCurrency(value as number)}
             contentStyle={{

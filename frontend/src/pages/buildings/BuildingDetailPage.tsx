@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigationStore } from "@/stores/navigationStore";
 import type { APARTMENT } from "@/types";
 import { useFetchData } from "@/hooks/useFetchData";
+import { toBn } from "@/lib/utils";
 import { DoorOpen, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -73,8 +74,8 @@ export default function BuildingDetailPage() {
         </h2>
         <p className="text-sm text-text-secondary mt-1">{building?.address}</p>
         <p className="text-xs text-text-secondary mt-2">
-          মোট তলা: {building?.total_floors} • মোট অ্যাপার্টমেন্ট:{" "}
-          {apartments.length}
+          মোট তলা: {toBn(building?.total_floors)} • মোট অ্যাপার্টমেন্ট:{" "}
+          {toBn(apartments.length)}
         </p>
       </div>
 

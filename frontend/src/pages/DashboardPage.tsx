@@ -1,10 +1,10 @@
 import { getDashboardSummary } from "@/api/dashboard.api";
 import { getPendingDueCount } from "@/api/dues.api";
+import StatCard from "@/components/common/StatCard";
 import CollectionBarChart from "@/components/dashboard/CollectionBarChart";
 import OverdueTenantList from "@/components/dashboard/OverdueTenantList";
 import PaymentStatusDonut from "@/components/dashboard/PaymentStatusDonut";
 import BulkGenerateDueDialog from "@/components/payments/BulkGenerateDueDialog";
-import StatCard from "@/components/common/StatCard";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -14,15 +14,31 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatCurrency } from "@/lib/utils";
-import type { PENDING_DUE_COUNT } from "@/types";
 import { useFetchData } from "@/hooks/useFetchData";
-import { AlertTriangle, ArrowDown, ArrowUp, Building, Users } from "lucide-react";
+import { formatCurrency, toBn } from "@/lib/utils";
+import type { PENDING_DUE_COUNT } from "@/types";
+import {
+  AlertTriangle,
+  ArrowDown,
+  ArrowUp,
+  Building,
+  Users,
+} from "lucide-react";
 import { useState } from "react";
 
 const MONTHS_BANGLA = [
-  "জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন",
-  "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর",
+  "জানুয়ারি",
+  "ফেব্রুয়ারি",
+  "মার্চ",
+  "এপ্রিল",
+  "মে",
+  "জুন",
+  "জুলাই",
+  "আগস্ট",
+  "সেপ্টেম্বর",
+  "অক্টোবর",
+  "নভেম্বর",
+  "ডিসেম্বর",
 ];
 
 export default function DashboardPage() {
@@ -63,19 +79,18 @@ export default function DashboardPage() {
             ))}
           </SelectContent>
         </Select>
-        <Select
-          value={String(year)}
-          onValueChange={(v) => setYear(Number(v))}
-        >
+        <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
           <SelectTrigger className="w-28">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {Array.from({ length: 5 }, (_, i) => now.getFullYear() - i).map((y) => (
-              <SelectItem key={y} value={String(y)}>
-                {y}
-              </SelectItem>
-            ))}
+            {Array.from({ length: 5 }, (_, i) => now.getFullYear() - i).map(
+              (y) => (
+                <SelectItem key={y} value={String(y)}>
+                  {y}
+                </SelectItem>
+              ),
+            )}
           </SelectContent>
         </Select>
       </div>
@@ -115,14 +130,14 @@ export default function DashboardPage() {
           />
           <StatCard
             title="খালি অ্যাপার্টমেন্ট"
-            value={summary?.vacant_apartments ?? 0}
+            value={toBn(summary?.vacant_apartments ?? 0)}
             subtitle="মোট অ্যাপার্টমেন্ট"
             icon={<Building size={20} />}
             colorClass="bg-neutral"
           />
           <StatCard
             title="ভাড়াটে সংখ্যা"
-            value={summary?.occupied_apartments ?? 0}
+            value={toBn(summary?.occupied_apartments ?? 0)}
             subtitle="সক্রিয় ভাড়াটে"
             icon={<Users size={20} />}
             colorClass="bg-warning"
@@ -137,10 +152,11 @@ export default function DashboardPage() {
             <AlertTriangle size={20} className="text-warning shrink-0" />
             <div>
               <p className="text-sm font-medium text-text-primary">
-                {pendingCount.pending} জন ভাড়াটের ডিউ তৈরি করা বাকি
+                {toBn(pendingCount.pending)} জন ভাড়াটের ডিউ তৈরি করা বাকি
               </p>
               <p className="text-xs text-text-secondary">
-                {MONTHS_BANGLA[month - 1]} {year} মাসের ডিউ তৈরি করতে নিচের বাটনে ক্লিক করুন
+                {MONTHS_BANGLA[month - 1]}, {year} মাসের ডিউ তৈরি করতে নিচের
+                বাটনে ক্লিক করুন
               </p>
             </div>
           </div>

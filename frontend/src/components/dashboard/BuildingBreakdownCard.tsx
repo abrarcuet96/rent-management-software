@@ -1,4 +1,4 @@
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, toBn } from "@/lib/utils";
 
 interface BuildingBreakdownCardProps {
   name: string;
@@ -22,7 +22,7 @@ export default function BuildingBreakdownCard({ name, collected, outstanding, ap
         </div>
         <div className="flex justify-between">
           <span className="text-text-secondary">অ্যাপার্টমেন্ট</span>
-          <span className="text-text-primary font-medium">{apartments}</span>
+          <span className="text-text-primary font-medium">{toBn(apartments)}</span>
         </div>
       </div>
     </div>

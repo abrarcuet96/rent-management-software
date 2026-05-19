@@ -1,4 +1,5 @@
 import { generateBulkDue, getPendingDueCount } from "@/api/dues.api";
+import FormDatePicker from "@/components/custom-ui/form/FormDatePicker";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -6,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import { Form } from "@/components/ui/form";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -16,13 +17,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getFallback } from "@/lib/getFallback";
+import { toBn } from "@/lib/utils";
+import { zodResolver } from "@hookform/resolvers/zod";
 import type { PENDING_DUE_COUNT } from "@/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useFetchData } from "@/hooks/useFetchData";
 import type { AxiosError } from "axios";
 import { AlertTriangle, CheckCircle, Info, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { useForm, type Resolver } from "react-hook-form";
 import toast from "react-hot-toast";
+import { z } from "zod";
+
+const dueDateSchema = z.object({ due_date: z.string().optional() });
+type DueDateForm = z.infer<typeof dueDateSchema>;
 
 interface BulkGenerateDueDialogProps {
   open: boolean;
@@ -52,12 +60,16 @@ export default function BulkGenerateDueDialog({
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [year, setYear] = useState(now.getFullYear());
-  const [dueDate, setDueDate] = useState("");
   const [result, setResult] = useState<{
     created: number;
     skipped: number;
     no_agreement: number;
   } | null>(null);
+
+  const dueDateForm = useForm<DueDateForm>({
+    resolver: zodResolver(dueDateSchema) as Resolver<DueDateForm>,
+    defaultValues: { due_date: "" },
+  });
 
   // Reset state when dialog opens
   const handleOpenChange = (newOpen: boolean) => {
@@ -65,7 +77,7 @@ export default function BulkGenerateDueDialog({
       const now = new Date();
       setMonth(now.getMonth() + 1);
       setYear(now.getFullYear());
-      setDueDate("");
+      dueDateForm.reset({ due_date: "" });
       setResult(null);
     }
     onOpenChange(newOpen);
@@ -84,7 +96,7 @@ export default function BulkGenerateDueDialog({
       generateBulkDue({
         month,
         year,
-        due_date: dueDate || undefined,
+        due_date: dueDateForm.getValues("due_date") || undefined,
       }),
     onSuccess: (res) => {
       const data = res.data.data;
@@ -92,7 +104,7 @@ export default function BulkGenerateDueDialog({
       queryClient.invalidateQueries({ queryKey: ["pending-due-count"] });
       queryClient.invalidateQueries({ queryKey: ["dues"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-      toast.success(res.data.message || `${data.created} টি ডিউ তৈরি হয়েছে`);
+      toast.success(res.data.message || `${toBn(data.created)} টি ডিউ তৈরি হয়েছে`);
     },
     onError: (error: AxiosError<{ message?: string }>) => {
       getFallback({ error });
@@ -163,15 +175,13 @@ export default function BulkGenerateDueDialog({
           </div>
 
           {/* Due date */}
-          <div>
-            <Label>ডিউ তারিখ (ঐচ্ছিক)</Label>
-            <Input
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              className="mt-1.5"
+          <Form {...dueDateForm}>
+            <FormDatePicker
+              form={dueDateForm}
+              name="due_date"
+              label="ডিউ তারিখ (ঐচ্ছিক)"
             />
-          </div>
+          </Form>
 
           {/* Preview */}
           {countLoading ? (
@@ -184,7 +194,7 @@ export default function BulkGenerateDueDialog({
                 <div className="flex items-start gap-2 text-warning">
                   <AlertTriangle size={16} className="shrink-0 mt-0.5" />
                   <span>
-                    <strong>{pending}</strong> জন ভাড়াটের ডিউ তৈরি করা বাকি
+                    <strong>{toBn(pending)}</strong> জন ভাড়াটের ডিউ তৈরি করা বাকি
                   </span>
                 </div>
               ) : (
@@ -197,7 +207,7 @@ export default function BulkGenerateDueDialog({
                 <div className="flex items-start gap-2 text-text-secondary">
                   <CheckCircle size={16} className="shrink-0 mt-0.5" />
                   <span>
-                    <strong>{count.already_has_due}</strong> জনের ইতিমধ্যে ডিউ
+                    <strong>{toBn(count.already_has_due)}</strong> জনের ইতিমধ্যে ডিউ
                     আছে
                   </span>
                 </div>
@@ -206,7 +216,7 @@ export default function BulkGenerateDueDialog({
                 <div className="flex items-start gap-2 text-text-secondary">
                   <Info size={16} className="shrink-0 mt-0.5" />
                   <span>
-                    <strong>{count.no_agreement}</strong> জনের কোনো active
+                    <strong>{toBn(count.no_agreement)}</strong> জনের কোনো active
                     চুক্তি নেই
                   </span>
                 </div>
@@ -219,16 +229,16 @@ export default function BulkGenerateDueDialog({
             <div className="bg-success-bg border border-success/20 rounded-lg p-4 space-y-1 text-sm">
               <p className="font-medium text-success">
                 <CheckCircle size={14} className="inline mr-1" />
-                {result.created} টি ডিউ তৈরি হয়েছে
+                {toBn(result.created)} টি ডিউ তৈরি হয়েছে
               </p>
               {result.skipped > 0 && (
                 <p className="text-text-secondary">
-                  {result.skipped} টি পূর্বে তৈরি করা ছিল
+                  {toBn(result.skipped)} টি পূর্বে তৈরি করা ছিল
                 </p>
               )}
               {result.no_agreement > 0 && (
                 <p className="text-text-secondary">
-                  {result.no_agreement} জনের চুক্তি নেই
+                  {toBn(result.no_agreement)} জনের চুক্তি নেই
                 </p>
               )}
             </div>
@@ -243,7 +253,7 @@ export default function BulkGenerateDueDialog({
               {isPending && (
                 <Loader2 size={16} className="animate-spin mr-1.5" />
               )}
-              {canGenerate ? `ডিউ তৈরি করুন (${pending})` : "ডিউ তৈরি করুন"}
+              {canGenerate ? `ডিউ তৈরি করুন (${toBn(pending)})` : "ডিউ তৈরি করুন"}
             </Button>
           </div>
         </div>

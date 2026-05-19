@@ -6,7 +6,7 @@ import StatusBadge from "@/components/common/StatusBadge";
 import PrintButton from "@/components/common/PrintButton";
 import PrintHeader from "@/components/common/PrintHeader";
 import PrintFooter from "@/components/common/PrintFooter";
-import { formatCurrency, getMonthName } from "@/lib/utils";
+import { formatCurrency, getMonthName, toBn } from "@/lib/utils";
 import type { TENANT } from "@/types";
 import { useFetchData } from "@/hooks/useFetchData";
 import { CreditCard, Receipt } from "lucide-react";
@@ -74,7 +74,7 @@ export default function PaymentHistoryReport() {
           { label: "ভাড়াটে", value: selectedTenant.full_name },
           { label: "ফোন", value: selectedTenant.phone },
           { label: "বিল্ডিং", value: selectedTenant.building_name },
-          { label: "ইউনিট", value: `ইউনিট ${selectedTenant.apartment_unit_number}` },
+          { label: "ইউনিট", value: `ইউনিট ${toBn(selectedTenant.apartment_unit_number)}` },
         ] : []}
       />
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
@@ -133,7 +133,7 @@ export default function PaymentHistoryReport() {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between px-4 py-3 bg-neutral-bg gap-2">
                 <div className="flex items-center gap-3">
                   <span className="text-sm font-medium text-text-primary">
-                    {getMonthName(item.month)} {item.year}
+                    {getMonthName(item.month)} {toBn(item.year)}
                   </span>
                   <StatusBadge status={item.status as "paid" | "partial" | "unpaid"} />
                 </div>

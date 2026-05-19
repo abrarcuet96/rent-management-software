@@ -8,6 +8,7 @@ import { Building2, Layers, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { deleteBuilding } from "@/api/buildings.api";
+import { toBn } from "@/lib/utils";
 
 interface BuildingCardProps {
   building: BUILDING;
@@ -55,7 +56,7 @@ export default function BuildingCard({ building, onEdit }: BuildingCardProps) {
           <div className="flex items-center gap-1.5">
             <span className="inline-flex items-center gap-1 text-xs text-text-secondary bg-neutral-bg rounded-md px-2 py-1">
               <Layers size={12} />
-              {building.total_floors} তলা
+              {toBn(building.total_floors)} তলা
             </span>
           </div>
         </div>

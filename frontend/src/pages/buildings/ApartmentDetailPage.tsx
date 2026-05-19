@@ -27,6 +27,7 @@ import {
 import { useNavigationStore } from "@/stores/navigationStore";
 import type { MONTHLY_DUE, TENANT } from "@/types";
 import { useFetchData } from "@/hooks/useFetchData";
+import { toBn } from "@/lib/utils";
 import { DoorOpen, Edit2, LogOut, Plus, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -115,7 +116,7 @@ export default function ApartmentDetailPage() {
   useEffect(() => {
     if (building) setActiveBuilding(buildingId ?? null, building.name);
     if (apartment)
-      setActiveApartment(apartmentId ?? null, `ইউনিট ${apartment.unit_number}`);
+      setActiveApartment(apartmentId ?? null, `ইউনিট ${toBn(apartment.unit_number)}`);
     return () => {
       setActiveBuilding(null);
       setActiveApartment(null);
@@ -142,7 +143,7 @@ export default function ApartmentDetailPage() {
       <div className="flex print:hidden">
         <PrintButton
           contentRef={contentRef}
-          documentTitle={`ইউনিট ${apartment.unit_number}`}
+          documentTitle={`ইউনিট ${toBn(apartment.unit_number)}`}
         />
       </div>
 
@@ -155,10 +156,10 @@ export default function ApartmentDetailPage() {
             </div>
             <div>
               <h2 className="text-xl font-semibold text-text-primary">
-                ইউনিট {apartment.unit_number}
+                ইউনিট {toBn(apartment.unit_number)}
               </h2>
               <p className="text-sm text-text-secondary">
-                তলা {apartment.floor}
+                তলা {toBn(apartment.floor)}
               </p>
             </div>
           </div>

@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, toBn } from "@/lib/utils";
 import { useFetchData } from "@/hooks/useFetchData";
 import { BarChart3 } from "lucide-react";
 import { useRef, useState } from "react";
@@ -37,7 +37,7 @@ export default function AnnualSummaryTable() {
       <PrintHeader
         title="বার্ষিক সারসংক্ষেপ"
         meta={[
-          { label: "বছর", value: String(year) },
+          { label: "বছর", value: toBn(year) },
           { label: "রিপোর্টের ধরন", value: "বার্ষিক আর্থিক সারসংক্ষেপ" },
         ]}
       />

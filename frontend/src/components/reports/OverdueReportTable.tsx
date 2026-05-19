@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, toBn } from "@/lib/utils";
 import { useFetchData } from "@/hooks/useFetchData";
 import { CheckCircle2 } from "lucide-react";
 import { useRef } from "react";
@@ -50,7 +50,7 @@ export default function OverdueReportTable() {
       <PrintHeader
         title="বকেয়া রিপোর্ট"
         meta={[
-          { label: "মোট বকেয়া", value: `${items.length} টি` },
+          { label: "মোট বকেয়া", value: `${toBn(items.length)} টি` },
           { label: "স্ট্যাটাস", value: "সক্রিয় বকেয়া" },
         ]}
       />
@@ -88,7 +88,7 @@ export default function OverdueReportTable() {
                     {item.building_name} • {item.apartment_unit}
                   </TableCell>
                   <TableCell className="px-3 py-2 text-text-primary">
-                    {item.month}/{item.year}
+                    {toBn(item.month)}/{toBn(item.year)}
                   </TableCell>
                   <TableCell className="px-3 py-2 text-right text-text-primary">
                     {formatCurrency(item.amount_paid)}
@@ -97,7 +97,7 @@ export default function OverdueReportTable() {
                     {formatCurrency(item.remaining_balance)}
                   </TableCell>
                   <TableCell className="px-3 py-2 text-center text-text-secondary">
-                    {item.days_overdue}
+                    {toBn(item.days_overdue)}
                   </TableCell>
                   <TableCell className="px-3 py-2 text-center">
                     <StatusBadge status={item.status as "unpaid" | "partial"} />

@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, toBn } from "@/lib/utils";
 import { useFetchData } from "@/hooks/useFetchData";
 import { CheckCircle2, CreditCard } from "lucide-react";
 import { useState } from "react";
@@ -92,14 +92,14 @@ export default function OverdueTenantList() {
                   {item.building_name} • {item.apartment_unit}
                 </TableCell>
                 <TableCell className="px-3 py-2 text-text-primary">
-                  {item.month}/{item.year}
+                  {toBn(item.month)}/{toBn(item.year)}
                 </TableCell>
                 <TableCell className="px-3 py-2 text-right font-medium text-danger">
                   {formatCurrency(item.remaining_balance)}
                 </TableCell>
                 <TableCell className="px-3 py-2 text-center text-text-secondary">
                   {item.days_overdue > 0 ? (
-                    <span className="text-danger font-medium">{item.days_overdue}</span>
+                    <span className="text-danger font-medium">{toBn(item.days_overdue)}</span>
                   ) : item.days_overdue < 0 ? (
                     <span className="text-text-muted text-xs">আসছে</span>
                   ) : (

@@ -17,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatCurrency, getMonthName } from "@/lib/utils";
+import { formatCurrency, getMonthName, toBn } from "@/lib/utils";
 import { useFetchData } from "@/hooks/useFetchData";
 import { useRef, useState } from "react";
 
@@ -32,7 +32,7 @@ export default function MonthlyCollectionTable() {
       <PrintHeader
         title="মাসিক সংগ্রহ রিপোর্ট"
         meta={[
-          { label: "বছর", value: String(year) },
+          { label: "বছর", value: toBn(year) },
           { label: "মোট মাস", value: "১২ মাস" },
         ]}
       />

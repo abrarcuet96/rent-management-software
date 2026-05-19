@@ -2,7 +2,7 @@ import StatusBadge from "@/components/common/StatusBadge";
 import DuePaymentHistory from "@/components/dues/DuePaymentHistory";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { formatCurrency, getMonthName } from "@/lib/utils";
+import { formatCurrency, getMonthName, toBn } from "@/lib/utils";
 import type { MONTHLY_DUE } from "@/types";
 import { ChevronDown, ChevronRight, CreditCard, Edit2 } from "lucide-react";
 
@@ -28,7 +28,7 @@ export default function MonthlyDueRow({ due, onPay, onAdjust, expanded, onToggle
             ) : (
               <ChevronRight size={14} className="text-text-secondary shrink-0" />
             )}
-            {getMonthName(due.month)} {due.year}
+            {getMonthName(due.month)} {toBn(due.year)}
           </div>
         </TableCell>
         <TableCell className="px-3 py-3 text-right text-text-primary whitespace-nowrap">

@@ -8,6 +8,7 @@ import SkeletonCard from "@/components/common/SkeletonCard";
 import { Button } from "@/components/ui/button";
 import type { BUILDING } from "@/types";
 import { useFetchData } from "@/hooks/useFetchData";
+import { toBn } from "@/lib/utils";
 import { Building2, Plus } from "lucide-react";
 import { useState } from "react";
 
@@ -32,7 +33,7 @@ export default function BuildingsPage() {
         <div>
           <h2 className="text-xl font-semibold text-text-primary">আপনার বিল্ডিং সমূহ</h2>
           <p className="text-sm text-text-secondary mt-0.5">
-            মোট {data?.data.pagination.total ?? 0} টি বিল্ডিং
+            মোট {toBn(data?.data.pagination.total ?? 0)} টি বিল্ডিং
           </p>
         </div>
         <Button

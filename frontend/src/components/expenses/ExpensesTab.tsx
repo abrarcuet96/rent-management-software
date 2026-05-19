@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, toBn } from "@/lib/utils";
 import type { EXPENSE } from "@/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useFetchData } from "@/hooks/useFetchData";
@@ -55,7 +55,7 @@ export default function ExpensesTab() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-sm font-medium text-text-primary">
-          খরচ ({data?.data.pagination.total ?? 0})
+          খরচ ({toBn(data?.data.pagination.total ?? 0)})
         </h3>
         <Button
           onClick={() => setCreateOpen(true)}

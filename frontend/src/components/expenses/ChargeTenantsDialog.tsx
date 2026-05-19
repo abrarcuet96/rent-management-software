@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { getFallback } from "@/lib/getFallback";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, toBn } from "@/lib/utils";
 import type { EXPENSE, TENANT } from "@/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useFetchData } from "@/hooks/useFetchData";
@@ -142,9 +142,9 @@ export default function ChargeTenantsDialog({
       queryClient.invalidateQueries({ queryKey: ["expenses"] });
       queryClient.invalidateQueries({ queryKey: ["dues"] });
       if (charged > 0) {
-        toast.success(`${charged} জনকে সফলভাবে চার্জ করা হয়েছে`);
+        toast.success(`${toBn(charged)} জনকে সফলভাবে চার্জ করা হয়েছে`);
       } else {
-        toast(`${skipped} জন ইতিমধ্যে চার্জ করা আছে বা এই মাসের ডিউ নেই`);
+        toast(`${toBn(skipped)} জন ইতিমধ্যে চার্জ করা আছে বা এই মাসের ডিউ নেই`);
       }
       handleOpenChange(false);
     },

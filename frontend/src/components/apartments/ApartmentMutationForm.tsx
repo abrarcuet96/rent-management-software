@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import type { CREATE_APARTMENT } from "@/schemas/apartment.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toBn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import { useEffect, useMemo, type RefObject } from "react";
 import { useForm, type Resolver } from "react-hook-form";
@@ -34,7 +35,7 @@ export default function ApartmentMutationForm({
         floor: z.coerce
           .number({ message: "তলা নম্বর প্রয়োজন" })
           .min(1, "তলা নম্বর ন্যূনতম ১ হতে হবে")
-          .max(totalFloors, `তলা নম্বর সর্বোচ্চ ${totalFloors} হতে পারে`),
+          .max(totalFloors, `তলা নম্বর সর্বোচ্চ ${toBn(totalFloors)} হতে পারে`),
         status: z.enum(["vacant", "occupied"]).default("vacant"),
       }),
     [totalFloors],
@@ -69,10 +70,10 @@ export default function ApartmentMutationForm({
         <FormInput
           form={form}
           name="floor"
-          label={`তলা (১ – ${totalFloors})`}
+          label={`তলা (১ – ${toBn(totalFloors)})`}
           isRequired
           type="number"
-          placeholder={`১ থেকে ${totalFloors}`}
+          placeholder={`১ থেকে ${toBn(totalFloors)}`}
         />
         {mode === "edit" && (
           <FormStaticSelect

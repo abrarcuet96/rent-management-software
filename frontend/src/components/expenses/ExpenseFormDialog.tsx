@@ -20,6 +20,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { getFallback } from "@/lib/getFallback";
+import { toBn } from "@/lib/utils";
 import {
   expenseSchema,
   type CREATE_EXPENSE,
@@ -153,7 +154,7 @@ export default function ExpenseFormDialog({
                   return (res.data.data ?? []).map(
                     (a: { public_id: string; unit_number: string }) => ({
                       value: a.public_id,
-                      label: `ইউনিট ${a.unit_number}`,
+                      label: `ইউনিট ${toBn(a.unit_number)}`,
                     }),
                   );
                 }}
