@@ -24,7 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 import { useNavigationStore } from "@/stores/navigationStore";
 import type { MONTHLY_DUE } from "@/types";
 import { useFetchData } from "@/hooks/useFetchData";
@@ -194,7 +194,7 @@ export default function TenantDetailPage() {
           <div>
             <p className="text-xs text-text-secondary">প্রবেশের তারিখ</p>
             <p className="text-sm text-text-primary mt-0.5">
-              {tenant.move_in_date}
+              {formatDate(tenant.move_in_date)}
             </p>
           </div>
         </div>

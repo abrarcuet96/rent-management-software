@@ -1,4 +1,5 @@
 import StatusBadge from "@/components/common/StatusBadge";
+import { formatDate } from "@/lib/utils";
 import type { TENANT } from "@/types";
 import { ChevronRight, Phone, User } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -44,7 +45,7 @@ export default function TenantCard({ tenant, buildingName, unitNumber }: TenantC
       {/* Card footer */}
       <div className="border-t border-border px-4 py-2.5 bg-neutral-bg/40 flex items-center justify-between">
         <span className="text-xs text-text-secondary">
-          যোগ: {new Date(tenant.move_in_date).toLocaleDateString("bn-BD")}
+          যোগ: {formatDate(tenant.move_in_date)}
         </span>
         <span className="inline-flex items-center gap-1 text-xs font-medium text-primary group-hover:text-primary/80 transition-colors">
           বিস্তারিত

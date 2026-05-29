@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { getFallback } from "@/lib/getFallback";
-import { formatCurrency, toBn } from "@/lib/utils";
+import { formatCurrency, formatDate, toBn } from "@/lib/utils";
 import type { EXPENSE, TENANT } from "@/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useFetchData } from "@/hooks/useFetchData";
@@ -180,7 +180,7 @@ export default function ChargeTenantsDialog({
               {formatCurrency(expense.amount)}
             </p>
             <p className="text-text-secondary text-xs mt-0.5">
-              তারিখ: {expense.expense_date}
+              তারিখ: {formatDate(expense.expense_date)}
             </p>
           </div>
         )}

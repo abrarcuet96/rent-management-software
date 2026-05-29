@@ -6,7 +6,7 @@ import StatusBadge from "@/components/common/StatusBadge";
 import PrintButton from "@/components/common/PrintButton";
 import PrintHeader from "@/components/common/PrintHeader";
 import PrintFooter from "@/components/common/PrintFooter";
-import { formatCurrency, getMonthName, toBn } from "@/lib/utils";
+import { formatCurrency, formatDate, getMonthName, toBn } from "@/lib/utils";
 import type { TENANT } from "@/types";
 import { useFetchData } from "@/hooks/useFetchData";
 import { CreditCard, Receipt } from "lucide-react";
@@ -178,7 +178,7 @@ export default function PaymentHistoryReport() {
                     {item.payments.map((p) => (
                       <TableRow key={p.public_id} className="border-b border-border/50">
                         <TableCell className="px-4 py-2 text-text-primary">
-                          {p.paid_on}
+                          {formatDate(p.paid_on)}
                         </TableCell>
                         <TableCell className="px-4 py-2 text-right text-success font-medium">
                           {formatCurrency(p.amount_paid)}

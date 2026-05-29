@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { formatCurrency, getMonthName, toBn } from "@/lib/utils";
+import { formatCurrency, formatDate, getMonthName, toBn } from "@/lib/utils";
 import type { BULK_PAYMENT_HISTORY_ITEM } from "@/types";
 import { useFetchData } from "@/hooks/useFetchData";
 import { ChevronDown, ChevronRight, Receipt } from "lucide-react";
@@ -79,7 +79,7 @@ export default function BulkPaymentHistoryTab() {
                         {item.tenant_name}
                       </p>
                       <p className="text-xs text-text-secondary">
-                        {item.paid_on}
+                        {formatDate(item.paid_on)}
                       </p>
                     </div>
                   </div>

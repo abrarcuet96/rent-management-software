@@ -27,7 +27,7 @@ import {
 import { useNavigationStore } from "@/stores/navigationStore";
 import type { MONTHLY_DUE, TENANT } from "@/types";
 import { useFetchData } from "@/hooks/useFetchData";
-import { toBn } from "@/lib/utils";
+import { formatDate, toBn } from "@/lib/utils";
 import { DoorOpen, Edit2, LogOut, Plus, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -231,7 +231,7 @@ export default function ApartmentDetailPage() {
               </p>
             )}
             <p className="text-sm text-text-secondary">
-              প্রবেশ: {tenant.move_in_date} • সদস্য: {tenant.member_count}
+              প্রবেশ: {formatDate(tenant.move_in_date)} • সদস্য: {tenant.member_count}
             </p>
           </div>
 

@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatCurrency, toBn } from "@/lib/utils";
+import { formatCurrency, formatDate, toBn } from "@/lib/utils";
 import type { PAYMENT_RECORD } from "@/types";
 import { useFetchData } from "@/hooks/useFetchData";
 import { Loader2 } from "lucide-react";
@@ -58,7 +58,7 @@ export default function DuePaymentHistory({ dueId }: DuePaymentHistoryProps) {
           <TableBody>
             {payments.map((p) => (
               <TableRow key={p.public_id} className="border-b border-border/50 last:border-0">
-                <TableCell className="px-3 py-2 text-text-primary whitespace-nowrap">{p.paid_on}</TableCell>
+                <TableCell className="px-3 py-2 text-text-primary whitespace-nowrap">{formatDate(p.paid_on)}</TableCell>
                 <TableCell className="px-3 py-2 text-right text-success font-medium whitespace-nowrap">
                   {formatCurrency(p.amount_paid)}
                 </TableCell>

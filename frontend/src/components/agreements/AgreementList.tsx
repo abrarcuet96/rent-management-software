@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 import type { TENANT_AGREEMENT } from "@/types";
 import { useFetchData } from "@/hooks/useFetchData";
 import { FileText, Loader2 } from "lucide-react";
@@ -66,10 +66,10 @@ export default function AgreementList({ tenantId }: AgreementListProps) {
           {agreements.map((ag) => (
             <TableRow key={ag.public_id} className="border-t border-border">
               <TableCell className="px-3 py-2.5 text-text-primary">
-                {ag.start_date}
+                {formatDate(ag.start_date)}
               </TableCell>
               <TableCell className="px-3 py-2.5 text-text-secondary">
-                {ag.end_date ?? "—"}
+                {ag.end_date ? formatDate(ag.end_date) : "—"}
               </TableCell>
               <TableCell className="px-3 py-2.5 text-right text-text-primary font-medium">
                 {formatCurrency(ag.rent_amount)}

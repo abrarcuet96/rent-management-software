@@ -12,7 +12,7 @@ import { ChevronDown, ChevronUp, DoorOpen, Pencil, Phone, Plus, Trash2, User } f
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { deleteApartment } from "@/api/apartments.api";
-import { toBn } from "@/lib/utils";
+import { formatDate, toBn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 
 interface ApartmentCardProps {
@@ -63,7 +63,7 @@ function OccupiedTenantPanel({ apartmentId }: { apartmentId: string }) {
         <span className="text-xs text-text-secondary">{tenant.phone}</span>
       </div>
       <p className="text-xs text-text-secondary">
-        প্রবেশ: {tenant.move_in_date}
+        প্রবেশ: {formatDate(tenant.move_in_date)}
       </p>
     </div>
   );

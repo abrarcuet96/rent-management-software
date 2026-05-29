@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatCurrency, toBn } from "@/lib/utils";
+import { formatCurrency, formatDate, toBn } from "@/lib/utils";
 import type { EXPENSE } from "@/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useFetchData } from "@/hooks/useFetchData";
@@ -130,7 +130,7 @@ export default function ExpensesTab() {
                     {formatCurrency(expense.amount)}
                   </TableCell>
                   <TableCell className="px-3 py-2.5 text-text-secondary">
-                    {expense.expense_date}
+                    {formatDate(expense.expense_date)}
                   </TableCell>
                   <TableCell className="px-3 py-2.5 text-center">
                     {expense.building_public_id ? (
