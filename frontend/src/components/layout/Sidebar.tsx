@@ -148,7 +148,7 @@ function SidebarContent({
         </div>
         {!collapsed && (
           <span className="font-semibold text-base tracking-tight">
-            RentFloww
+            RentFlow
           </span>
         )}
       </div>
