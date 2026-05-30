@@ -5,7 +5,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 import { useUiStore } from "@/stores/uiStore";
@@ -28,7 +33,12 @@ import {
 import { useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 
-type NavLink = { type?: "link"; label: string; icon: React.ElementType; path: string };
+type NavLink = {
+  type?: "link";
+  label: string;
+  icon: React.ElementType;
+  path: string;
+};
 type NavSection = { type: "section"; label: string };
 type NavEntry = NavLink | NavSection;
 
@@ -64,7 +74,17 @@ function NavItem({
   collapsed: boolean;
 }) {
   const location = useLocation();
-  const exactPaths = ["/dashboard", "/buildings", "/apartments", "/tenants", "/payments", "/payment-history", "/expenses", "/reports", "/settings"];
+  const exactPaths = [
+    "/dashboard",
+    "/buildings",
+    "/apartments",
+    "/tenants",
+    "/payments",
+    "/payment-history",
+    "/expenses",
+    "/reports",
+    "/settings",
+  ];
   const isActive = exactPaths.includes(item.path)
     ? location.pathname === item.path
     : location.pathname.startsWith(item.path);
@@ -75,7 +95,8 @@ function NavItem({
       className={cn(
         "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors",
         "text-white/70 hover:text-white hover:bg-white/10",
-        isActive && "text-white bg-white/15 border-l-2 border-white rounded-l-none",
+        isActive &&
+          "text-white bg-white/15 border-l-2 border-white rounded-l-none",
         collapsed && "justify-center px-2",
       )}
     >
@@ -96,10 +117,17 @@ function NavItem({
   return linkEl;
 }
 
-function SidebarContent({ collapsed, onClose }: { collapsed: boolean; onClose?: () => void }) {
+function SidebarContent({
+  collapsed,
+  onClose,
+}: {
+  collapsed: boolean;
+  onClose?: () => void;
+}) {
   const { theme, setTheme, toggleSidebar } = useUiStore();
   const user = useAuthStore((s) => s.user);
-  const CurrentThemeIcon = THEME_OPTIONS.find((t) => t.value === theme)?.icon ?? Monitor;
+  const CurrentThemeIcon =
+    THEME_OPTIONS.find((t) => t.value === theme)?.icon ?? Monitor;
 
   return (
     <div
@@ -119,7 +147,9 @@ function SidebarContent({ collapsed, onClose }: { collapsed: boolean; onClose?: 
           <Building2 size={16} className="text-white" />
         </div>
         {!collapsed && (
-          <span className="font-semibold text-base tracking-tight">RentFlow</span>
+          <span className="font-semibold text-base tracking-tight">
+            RentFloww
+          </span>
         )}
       </div>
 
@@ -136,11 +166,18 @@ function SidebarContent({ collapsed, onClose }: { collapsed: boolean; onClose?: 
                   {item.label}
                 </p>
               ) : (
-                <div key={`section-${i}`} className="border-t border-white/10 my-1" />
+                <div
+                  key={`section-${i}`}
+                  className="border-t border-white/10 my-1"
+                />
               )
             ) : (
-              <NavItem key={(item as NavLink).path} item={item as NavLink} collapsed={collapsed} />
-            )
+              <NavItem
+                key={(item as NavLink).path}
+                item={item as NavLink}
+                collapsed={collapsed}
+              />
+            ),
           )}
         </nav>
 
@@ -201,7 +238,9 @@ function SidebarContent({ collapsed, onClose }: { collapsed: boolean; onClose?: 
                 {user.full_name.charAt(0).toUpperCase()}
               </div>
               {!collapsed && (
-                <span className="text-xs text-white/70 truncate">{user.full_name}</span>
+                <span className="text-xs text-white/70 truncate">
+                  {user.full_name}
+                </span>
               )}
             </div>
           )}
@@ -222,7 +261,8 @@ function SidebarContent({ collapsed, onClose }: { collapsed: boolean; onClose?: 
 }
 
 export default function Sidebar() {
-  const { sidebarCollapsed, mobileMenuOpen, setMobileMenuOpen, theme } = useUiStore();
+  const { sidebarCollapsed, mobileMenuOpen, setMobileMenuOpen, theme } =
+    useUiStore();
 
   // Apply theme class to <html>
   useEffect(() => {
@@ -233,7 +273,10 @@ export default function Sidebar() {
       } else if (theme === "light") {
         root.classList.remove("dark");
       } else {
-        root.classList.toggle("dark", window.matchMedia("(prefers-color-scheme: dark)").matches);
+        root.classList.toggle(
+          "dark",
+          window.matchMedia("(prefers-color-scheme: dark)").matches,
+        );
       }
     };
     applyTheme();
@@ -258,7 +301,10 @@ export default function Sidebar() {
           mobileMenuOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
-        <SidebarContent collapsed={false} onClose={() => setMobileMenuOpen(false)} />
+        <SidebarContent
+          collapsed={false}
+          onClose={() => setMobileMenuOpen(false)}
+        />
       </aside>
     </>
   );
