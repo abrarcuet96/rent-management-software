@@ -10,7 +10,6 @@ import PaymentHistoryPage from "@/pages/PaymentHistoryPage";
 import PaymentsPage from "@/pages/PaymentsPage";
 import ReportsPage from "@/pages/ReportsPage";
 import SettingsPage from "@/pages/SettingsPage";
-import UserManualPage from "@/pages/UserManualPage";
 import TenantDetailPage from "@/pages/tenants/TenantDetailPage";
 import TenantsPage from "@/pages/tenants/TenantsPage";
 import { Navigate, createBrowserRouter } from "react-router-dom";
@@ -44,7 +43,6 @@ export const router = createBrowserRouter([
               { path: "/reports", element: <ReportsPage />, handle: { title: "রিপোর্ট" } },
               { path: "/expenses", element: <ExpensesPage />, handle: { title: "খরচ" } },
               { path: "/settings", element: <SettingsPage />, handle: { title: "সেটিংস" } },
-              { path: "/user-manual", element: <UserManualPage />, handle: { title: "ব্যবহার গাইড" } },
             ],
           },
         ],

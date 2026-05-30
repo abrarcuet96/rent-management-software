@@ -11,7 +11,6 @@ import { useAuthStore } from "@/stores/authStore";
 import { useUiStore } from "@/stores/uiStore";
 import {
   BarChart3,
-  BookOpen,
   Building2,
   ChevronLeft,
   ChevronRight,
@@ -48,7 +47,6 @@ const NAV_ITEMS: NavEntry[] = [
 ];
 
 const BOTTOM_ITEMS = [
-  { label: "ব্যবহার গাইড", icon: BookOpen, path: "/user-manual" },
   { label: "সেটিংস", icon: Settings, path: "/settings" },
 ] as const;
 
@@ -66,7 +64,7 @@ function NavItem({
   collapsed: boolean;
 }) {
   const location = useLocation();
-  const exactPaths = ["/dashboard", "/buildings", "/apartments", "/tenants", "/payments", "/payment-history", "/expenses", "/reports", "/settings", "/user-manual"];
+  const exactPaths = ["/dashboard", "/buildings", "/apartments", "/tenants", "/payments", "/payment-history", "/expenses", "/reports", "/settings"];
   const isActive = exactPaths.includes(item.path)
     ? location.pathname === item.path
     : location.pathname.startsWith(item.path);
