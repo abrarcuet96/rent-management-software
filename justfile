@@ -127,6 +127,9 @@ frontend-dev:
 frontend-build:
     cd frontend && npm run build
 
+frontend-preview:
+    cd frontend && npm run build && npm run preview
+
 frontend-deps:
     cd frontend && npm install
 

@@ -7,6 +7,7 @@ from app.buildings.routes import router as buildings_router
 from app.dashboard.routes import router as dashboard_router
 from app.dues.routes import router as dues_router
 from app.expenses.routes import router as expenses_router
+from app.core.config import settings
 from app.middleware.error_handler import ErrorHandlerMiddleware
 from app.payments.routes import router as payments_router
 from app.reports.routes import router as reports_router
@@ -28,7 +29,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[settings.FRONTEND_URL],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
