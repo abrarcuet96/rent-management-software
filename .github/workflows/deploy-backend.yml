@@ -18,9 +18,10 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /var/www/rentflow
-            git pull origin master
+            git fetch origin
+            git reset --hard origin/master
             cd backend
             source venv/bin/activate
             pip install -r requirements.txt
-            alembic upgrade head
+            APP_ENV=prod alembic upgrade head
             systemctl restart rentflow-backend
