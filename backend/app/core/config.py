@@ -1,8 +1,10 @@
+import os
 from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-_ENV_FILE = Path(__file__).resolve().parent.parent.parent / ".env"
+_env = os.getenv("APP_ENV", "dev")
+_ENV_FILE = Path(__file__).resolve().parent.parent.parent / f".env.{_env}"
 
 
 class Settings(BaseSettings):
