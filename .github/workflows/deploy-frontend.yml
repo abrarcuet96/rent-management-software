@@ -18,7 +18,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /var/www/rentflow
-            git pull origin master
+            git fetch origin
+            git reset --hard origin/master
             cd frontend
             pnpm install
             pnpm build
