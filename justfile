@@ -3,6 +3,9 @@
 set dotenv-load := true
 set export
 
+# ── environment ───────────────────────────────────────────────────────────────
+APP_ENV := "dev"
+
 # ── paths ────────────────────────────────────────────────────────────────────
 VENV     := ".venv"
 PYTHON   := VENV + "/bin/python"
@@ -36,7 +39,10 @@ deps-dev:
 
 # ── dev server ────────────────────────────────────────────────────────────────
 run:
-    {{UVICORN}} main:app --app-dir backend --reload --host 0.0.0.0 --port 8000
+    APP_ENV={{APP_ENV}} {{UVICORN}} main:app --app-dir backend --reload --host 0.0.0.0 --port 8000
+
+run-prod:
+    APP_ENV=prod {{UVICORN}} main:app --app-dir backend --host 0.0.0.0 --port 8000
 
 dev: run
 
