@@ -46,9 +46,12 @@ CREATE TABLE apartment (
     unit_number VARCHAR(50) NOT NULL,
     floor       INTEGER NOT NULL,
     status      VARCHAR(20) NOT NULL DEFAULT 'vacant'
-                    CHECK (status IN ('vacant', 'occupied')),
-    UNIQUE (building_id, unit_number)
+                    CHECK (status IN ('vacant', 'occupied'))
 );
+-- Partial index: allows reusing a unit number after soft-deletion
+CREATE UNIQUE INDEX uq_apartment_active_unit
+    ON apartment(building_id, unit_number)
+    WHERE is_active = TRUE;
 
 -- ------------------------------------------------------------
 -- tenant
